@@ -4,52 +4,96 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
-
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";;
 const Otp = () => {
-    const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
-    const [timer, setTimer] = useState<number>(59);
-    const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+  const [timer, setTimer] = useState<number>(59);
+  const [isExpired, setIsExpired] = useState<boolean>(false);
   
-    useEffect(() => {
-      if (timer > 0) {
-        const countdown = setInterval(() => {
-          setTimer((prevTimer) => prevTimer - 1);
-        }, 1000);
-        return () => clearInterval(countdown);
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (timer > 0) {
+      const countdown = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+      return () => clearInterval(countdown);
+    } else {
+      setIsExpired(true);
+    }
+  }, [timer]);
+
+  const handleChange = (element: HTMLInputElement, index: number) => {
+    if (isNaN(Number(element.value))) return;
+    const newOtp = [...otp];
+    newOtp[index] = element.value;
+    setOtp(newOtp);
+
+    if (element.nextSibling) {
+      (element.nextSibling as HTMLInputElement).focus();
+    }
+  };
+  ;
+
+  const handleSubmit = async () => {
+    try {
+      const otpString = otp.join('');
+      
+      
+      const response = await axios.post(
+        'http://localhost:8000/api/user/verifyotp', 
+        { otp: otpString },
+        { withCredentials: true }
+      );
+  
+      
+      if (response.data.success) {
+        alert('OTP Verified!');
       } else {
-        setIsExpired(true);
+        alert('Invalid OTP or expired.');
       }
-    }, [timer]);
-  
-    const handleChange = (element: HTMLInputElement, index: number) => {
-      if (isNaN(Number(element.value))) return;
-      const newOtp = [...otp];
-      newOtp[index] = element.value;
-      setOtp(newOtp);
-  
-      if (element.nextSibling) {
-        (element.nextSibling as HTMLInputElement).focus();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error)
+        const errorMessage = error.response?.data?.error|| 'An unexpected error occurred.';
+        console.log(errorMessage)
+        toast.error(errorMessage || 'An error occurred during sign-up.');
+      } else {
+        toast.error('Something went wrong. Please try again later.');
       }
-    };
+    }
+  };
+  ;
+
+  const handleResend = async () => {
   
-    const handleSubmit = () => {
-      alert("OTP Submitted: " + otp.join(""));
-    };
-  
-    const handleResend = () => {
-      setOtp(new Array(6).fill(""));
-      setTimer(59)
-      setIsExpired(false);
-     
-      alert("OTP resent");
-    };
+
+    const response = await fetch('/api/resend-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      alert('OTP resent');
+    } else {
+      alert('Error resending OTP');
+    }
+  };
+
   return (
     <>
-     <div className="text-center mb-8">
+    <ToastContainer position="top-right" autoClose={4000} />
+      <div className="text-center mb-8">
         <Image src={Img} alt="Doc Reserva Logo" className="w-16 h-16 mx-auto mb-4" />
         <h1 className="text-4xl font-bold text-teal-700">Doc Reserva</h1>
       </div>
-      
+
       <div className="flex flex-col items-center bg-white p-8 shadow-md rounded-lg max-w-sm w-full">
         <Image src={Img} alt="OTP Illustration" className="w-32 h-32 mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-gray-700 mb-2">OTP verification</h2>
@@ -91,7 +135,7 @@ const Otp = () => {
         )}
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Otp
+export default Otp;
