@@ -1,11 +1,13 @@
 "use client"
-
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
 import { FaGoogle, FaFacebook, FaTwitter, FaEye, FaEyeSlash } from 'react-icons/fa';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";;
 interface SignUpFormValues extends FieldValues {
   email: string;
   username: string;
@@ -13,29 +15,50 @@ interface SignUpFormValues extends FieldValues {
   password: string;
   confirmPassword: string;
 }
-
+;
 function SignUp() {
+  const router = useRouter()
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<SignUpFormValues>();
-
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
-  // Watch the password field
+  
   const password = watch("password");
 
-  const onSubmit: SubmitHandler<SignUpFormValues> = (data) => {
-    console.log(data);
-  };
+  const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
+    try {
+      console.log(data);
+      const response = await axios.post('http://localhost:8000/api/user/signup', data, { withCredentials: true });
+      if(response.data){
+        const userId=response.data._id
+        router.push(`/otp?userId=${userId}`);
+      }
+      
+      
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error)
+        const errorMessage = error.response?.data?.error|| 'An unexpected error occurred.';
+        console.log(errorMessage)
+        toast.error(errorMessage || 'An error occurred during sign-up.');
+      } else {
+        toast.error('Something went wrong. Please try again later.');
+      }
+      
+    }
+  }
 
   return (
+    <>
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="flex flex-col items-center mb-8">
         <Image src={Img} alt="Doc Reserva Logo" className="w-16 h-16 mb-2" />
@@ -150,6 +173,8 @@ function SignUp() {
         </p>
       </form>
     </div>
+    <ToastContainer position="top-right" autoClose={3000} />
+    </>
   );
 }
 
