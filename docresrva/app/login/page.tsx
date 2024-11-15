@@ -4,7 +4,12 @@ import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
 import { FaGoogle, FaFacebook, FaTwitter, FaEye, FaEyeSlash } from 'react-icons/fa';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import {useRouter} from "next/navigation";
+import { setUserDetails} from '../../Store/slices/userSlices';
+import { useDispatch } from 'react-redux';
 interface LoginFormValues extends FieldValues {
   email: string;
   password: string;
@@ -16,16 +21,41 @@ function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormValues>();
-
+   const router=useRouter()
+   const dispatch=useDispatch()
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const onSubmit: SubmitHandler<LoginFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<LoginFormValues> =async (data) => {
+    try{
+      const response= await axios.post('http://localhost:8001/api/user/login', data, { withCredentials: true })
+      if(response.data){
+        console.log(response.data)
+        dispatch(
+          setUserDetails({
+            username: response.data.username,
+            email: response.data.email,
+           
+            isAuthenticated:true,
+          }))
+      
+        router.push(`/`);
+      }
+    }catch(error){
+      if (axios.isAxiosError(error)) {
+        console.log(error)
+        const errorMessage = error.response?.data?.error|| 'An unexpected error occurred.';
+        console.log(errorMessage)
+        toast.error(errorMessage || 'An error occurred during sign-up.');
+      } else {
+        toast.error('Something went wrong. Please try again later.');
+      }
+    }
   };
 
   return (
+    <>
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="flex flex-col items-center mb-8">
         <Image src={Img} alt="Doc Reserva Logo" className="w-16 h-16 mb-2" />
@@ -95,6 +125,8 @@ function Login() {
         </p>
       </form>
     </div>
+    <ToastContainer position="top-right" autoClose={3000} />
+    </>
   );
 }
 

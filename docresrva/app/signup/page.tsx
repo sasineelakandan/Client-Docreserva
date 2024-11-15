@@ -8,6 +8,9 @@ import Image from 'next/image';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";;
+import { setUserDetails} from '../../Store/slices/userSlices';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../Store';
 interface SignUpFormValues extends FieldValues {
   email: string;
   username: string;
@@ -24,7 +27,8 @@ function SignUp() {
     watch,
     formState: { errors },
   } = useForm<SignUpFormValues>();
-  
+  const user = useSelector((state:RootState) => state.user);
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -37,10 +41,17 @@ function SignUp() {
   const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
     try {
       console.log(data);
-      const response = await axios.post('http://localhost:8000/api/user/signup', data, { withCredentials: true });
+      const response = await axios.post('http://localhost:8001/api/user/signup', data, { withCredentials: true });
       if(response.data){
+        dispatch(
+          setUserDetails({
+            username: response.data.username,
+            email: response.data.email,
+           
+            isAuthenticated: false,
+          }))
         const userId=response.data._id
-        router.push(`/otp?userId=${userId}`);
+        router.push(`/otp?id=${userId}`);
       }
       
       
