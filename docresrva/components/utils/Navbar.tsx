@@ -10,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import Image from 'next/image';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
+import { deleteCookie } from './deleteCookie';
 
 const Navbar: React.FC = () => {
   interface User {
@@ -94,11 +95,12 @@ const Navbar: React.FC = () => {
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
             onClick={() => {
               localStorage.removeItem('user'); // Clear user data from local storage
-              setUser(null); // Reset user state
+              setUser(null); 
+              deleteCookie('accessToken')
             }}
           >
             <ExitToApp className="text-lg" />
-            <span className="hidden md:inline font-medium">Logout</span>
+            <span  className="hidden md:inline font-medium">Logout</span>
           </a>
         ) : (
           <a

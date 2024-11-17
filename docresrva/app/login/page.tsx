@@ -40,7 +40,7 @@ function Login() {
             isAuthenticated:true,
           }))
       
-        router.push(`/`);
+        router.replace(`/`);
       }
     }catch(error){
       if (axios.isAxiosError(error)) {

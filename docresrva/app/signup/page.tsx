@@ -51,7 +51,7 @@ function SignUp() {
             isAuthenticated: false,
           }))
         const userId=response.data._id
-        router.push(`/otp?id=${userId}`);
+        router.replace(`/userOtp?id=${userId}`);
       }
       
       
@@ -180,7 +180,7 @@ function SignUp() {
 
         <p className="text-center text-gray-600 text-sm mt-4">
           Are you a doctor?{' '}
-          <a href="/doctor-signup" className="text-teal-500 hover:text-teal-700 font-semibold">Click Here</a>
+          <a href="/doctorSignup" className="text-teal-500 hover:text-teal-700 font-semibold">Click Here</a>
         </p>
       </form>
     </div>
