@@ -55,6 +55,7 @@ function DoctorSignUp() {
         );
         const doctorId = response.data._id;
         router.replace(`/doctorOtp?id=${doctorId}`);
+        toast.success('Sign Up successful! Please verify your email.');
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

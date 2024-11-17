@@ -1,11 +1,17 @@
 
-const changeToHomeRoutes = new Set(["/login", 'signup,/userOtp','doctorLogin','doctorSignup,doctorOtp']);
 
 
+const changeToHomeRoutes = new Set([
+  '/login',
+  '/signup',
+  
+  '/doctorLogin',
+  '/doctorSignup',
+  
+]);
 
 export function toBeRedirectedRoutes(pathname: string): boolean {
-  return changeToHomeRoutes.has(pathname) 
+  return changeToHomeRoutes.has(pathname);
 }
-
 
 

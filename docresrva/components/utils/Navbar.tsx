@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
       setUser(parsedDetails);
     }
   }, []);
-
+ 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
       {/* Left Section: Logo and Search Bar */}
@@ -108,7 +108,7 @@ const Navbar: React.FC = () => {
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
           >
             <AccountCircle className="text-lg" />
-            <span className="hidden md:inline font-medium">Login</span>
+            <span  className="hidden md:inline font-medium">Login</span>
           </a>
         )}
       </div>

@@ -55,7 +55,7 @@ function OTPVerification() {
       );
   
       if(response.data){
-        router.push('/')
+        router.replace('/')
       }
       
     } catch (error) {

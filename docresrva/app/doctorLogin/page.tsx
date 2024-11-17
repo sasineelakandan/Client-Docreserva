@@ -36,12 +36,28 @@ function Login() {
       if (response.data) {
         dispatch(
           setUserDetails({
-            username: response.data.username,
+            username: response.data.name,
             email: response.data.email,
             isAuthenticated: true,
           })
+          
         );
-        toast.success("Login successful!");
+        toast.success(`Welcome back, Dr. ${response.data.name}!`, {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "colored",
+        });
+  
+        // Delay redirection slightly to allow user to see the toast
+        setTimeout(() => {
+          toast.info("Redirecting to your dashboard...", {
+            position: "top-center",
+            autoClose: 2000,
+            theme: "colored",
+          });
+          router.replace("/");
+        }, 2000); 
+      
         router.replace("/");
       }
     } catch (error) {
