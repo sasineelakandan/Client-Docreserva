@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FaCamera } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useSearchParams } from 'next/navigation';
+
 interface DoctorModalProps {
   isOpen: boolean;
   userId?:string
@@ -60,20 +60,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef1 = useRef<HTMLInputElement | null>(null);
   const [previewImage1, setPreviewImage1] = useState<string | null>(null);
-  // const [user,setUser]=useState<any>(null)
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const storedUser = localStorage.getItem('user'); 
-  //     if (storedUser) {
-  //       try {
-  //         const parsedUser = JSON.parse(storedUser); 
-  //         setUser(storedUser)
-  //       } catch (error) {
-  //         console.error("Error parsing user from localStorage:", error);
-  //       }
-  //     }
-  //   }
-  // }, []);
+  
   
   
   
@@ -116,8 +103,8 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
 
       const imageUrl = response.data.url;
       setValue('licenseImage', imageUrl);
-      toast.success('Image uploaded successfully!');
-      setPreviewImage(null); // Clear preview after upload
+      
+      setPreviewImage(null); 
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(`Upload failed: ${error.response?.data || error.message}`);
@@ -181,7 +168,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       
       console.log(data)
       const response = await axios.post(
-        'http://localhost:8001/api/doctor/verifydoctor',
+        'http://localhost:8001/api/doctor/verifyprofile',
         data,
         { withCredentials: true }
       );

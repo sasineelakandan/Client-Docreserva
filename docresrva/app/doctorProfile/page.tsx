@@ -17,7 +17,11 @@ const DoctorProfile: React.FC = () => {
     const fetchDoctorProfile = async () => {
         try {
             const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
-            console.log(response.data); 
+            if(response.data){
+              console.log(response.data)
+              setUser(response.data)
+            }
+            
         } catch (error) {
             console.error("Error fetching doctor profile:", error); 
         }
@@ -28,19 +32,7 @@ const DoctorProfile: React.FC = () => {
 
 
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedProfilePic = localStorage.getItem("profilePic");
-      setProfilePic(storedProfilePic);
-
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      } else {
-        console.log("No user found in localStorage.");
-      }
-    }
-  }, []);
+ 
 
 
 
@@ -69,7 +61,7 @@ const DoctorProfile: React.FC = () => {
       );
 
       localStorage.setItem("profilePic", response.data.url);
-      setProfilePic(response.data.url);
+      
       toast.success("File uploaded successfully!");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -88,7 +80,7 @@ const DoctorProfile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
           <img
-            src={"/default-avatar.png"}
+            src={user?.profilePic}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -113,10 +105,10 @@ const DoctorProfile: React.FC = () => {
         <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
           <h2 className="text-xl font-semibold">{user?.name || 'Dr. Denies Martine'}</h2>
           <p className="text-gray-600">{user?.degree || 'MBBS, MD'}</p>
-          <p className="text-teal-500">{user?.specialty || 'Cardiologist'}</p>
+          <p className="text-teal-500">{user?.specialization || 'Cardiologist'}</p>
           <p className="text-gray-500">{user?.experience || '42 Years Experience'}</p>
           <p className="flex justify-center md:justify-start items-center gap-2 text-gray-500">
-            {user?.hospital || 'Apollo Hospital, West Ham'}
+            {user?.hospitalName || 'Apollo Hospital, West Ham'}
             <FaCheckCircle className="text-teal-500" />
           </p>
           <div className="flex justify-center md:justify-start items-center gap-1 text-yellow-500 mt-2">
@@ -128,17 +120,24 @@ const DoctorProfile: React.FC = () => {
             className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
             onClick={handleOpenModal}
           >
-            Verify
+            Rigister
           </button>
-          <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?.userId}/>
+          <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
         </div>
       </div>
       <div className="bg-teal-100 rounded-lg p-4 mt-6">
-        <h3 className="text-teal-600 font-semibold">Clinic Visit</h3>
+      <h2 className="text-teal-600 font-semibold">Clinic visit</h2>
+        <h3 className="text-teal-600 font-semibold">{user?.hospitalName}</h3>
         <p className="text-gray-600">
-          Serum Clinic, Rose Dam, Near Police Station, West Ham
+         street: {user?.street}
         </p>
-        <p className="font-bold text-teal-700">₹500</p>
+        <p className="text-gray-600">
+          City:  {user?.city}
+        </p>
+        <p className="text-gray-600">
+          State: {user?.state}
+        </p>
+        <p className="font-bold text-teal-700">{user?.fees}</p>
       </div>
       <div className="flex justify-center gap-6 mt-6">
         <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
