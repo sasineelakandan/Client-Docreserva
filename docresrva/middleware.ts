@@ -7,7 +7,7 @@ import { toBeRedirectedRoutes } from "./components/utils/routes";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Exclude specific paths
+  
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/favicon.ico") ||
@@ -16,7 +16,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Verify JWT token
+  
   const tokenVerified = await verifyToken("accessToken", req);
   console.log("Token verified:", tokenVerified);
   if (pathname === "/userOtp" || pathname === "/doctorOtp") {
@@ -30,19 +30,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect unauthenticated users to login
+
   if (!tokenVerified) {
     console.log(`Redirecting unauthenticated user from ${pathname} to /login`);
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Redirect authenticated users from restricted routes to home
+  
   if (toBeRedirectedRoutes(pathname)) {
     console.log(`Redirecting authenticated user from ${pathname} to /`);
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Proceed normally for all other cases
+  
   return NextResponse.next();
 }
 

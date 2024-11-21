@@ -17,9 +17,15 @@ function OTPVerification() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
 
-  // Load timer from local storage on mount
   useEffect(() => {
-    const storedTimer = localStorage.getItem('otpTimer');
+    if (!userId) {
+      toast.error("User ID is missing.");
+      return;
+    }
+
+    const userTimerKey = `otpTimer_${userId}`;
+    const storedTimer = localStorage.getItem(userTimerKey);
+
     if (storedTimer) {
       const savedTimer = parseInt(storedTimer, 10);
       if (savedTimer > 0) {
@@ -29,21 +35,20 @@ function OTPVerification() {
       }
     }
 
-    // Start countdown
     if (timer > 0) {
       const countdown = setInterval(() => {
         setTimer((prevTimer) => {
           const newTimer = prevTimer - 1;
-          // Save updated timer to localStorage
-          localStorage.setItem('otpTimer', newTimer.toString());
+          localStorage.setItem(userTimerKey, newTimer.toString());
           return newTimer;
         });
       }, 1000);
+
       return () => clearInterval(countdown);
     } else {
       setIsExpired(true);
     }
-  }, [timer]);
+  }, [timer, userId]);
 
   const handleChange = (element: HTMLInputElement, index: number) => {
     if (isNaN(Number(element.value))) return;
@@ -59,7 +64,6 @@ function OTPVerification() {
   const handleSubmit = async () => {
     try {
       const otpString = otp.join('');
-
       const response = await axios.post(
         'http://localhost:8001/api/doctor/verifyotp',
         { otp: otpString, userId },
@@ -71,9 +75,8 @@ function OTPVerification() {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error);
         const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
-        toast.error(errorMessage || 'An error occurred during sign-up.');
+        toast.error(errorMessage);
       } else {
         toast.error('Something went wrong. Please try again later.');
       }
@@ -87,13 +90,14 @@ function OTPVerification() {
         setOtp(new Array(6).fill(""));
         setTimer(59);
         setIsExpired(false);
-        // Store initial timer value in localStorage
-        localStorage.setItem('otpTimer', '59');
+
+        const userTimerKey = `otpTimer_${userId}`;
+        localStorage.setItem(userTimerKey, '59');
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
-        toast.error(errorMessage || 'An error occurred during sign-up.');
+        toast.error(errorMessage);
       } else {
         toast.error('Something went wrong. Please try again later.');
       }

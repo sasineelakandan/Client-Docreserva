@@ -47,7 +47,7 @@ function SignUp() {
           setUserDetails({
             username: response.data.username,
             email: response.data.email,
-           
+            userId:response.data.id,
             isAuthenticated: false,
           }))
         const userId=response.data._id

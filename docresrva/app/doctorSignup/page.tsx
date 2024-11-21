@@ -46,16 +46,20 @@ function DoctorSignUp() {
       console.log(data);
       const response = await axios.post('http://localhost:8001/api/doctor/signup', data, { withCredentials: true });
       if (response.data) {
+        console.log(response.data)
+        toast.success('Sign Up successful! Please verify your email.');
         dispatch(
           setUserDetails({
+            userId:response.data._id,
             username: response.data.name,
             email: response.data.email,
             isAuthenticated: false,
           })
         );
+        
         const doctorId = response.data._id;
         router.replace(`/doctorOtp?id=${doctorId}`);
-        toast.success('Sign Up successful! Please verify your email.');
+        
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

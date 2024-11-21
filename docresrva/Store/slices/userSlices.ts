@@ -2,23 +2,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UserState {
+  userId:string
   username: string;
   email: string;
   isAuthenticated: boolean;
+  profilePic?:any;
 }
 
 
-const initialState: UserState = { username: '', email: '', isAuthenticated: false };
+const initialState: UserState = { username: '', email: '', isAuthenticated: false,profilePic:null,userId:'' };
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
     setUserDetails: (state, action: PayloadAction<UserState>) => {
-      const { username, email, isAuthenticated } = action.payload;
+      const { username, email, isAuthenticated,userId,profilePic } = action.payload;
+      state.userId=userId
       state.username = username;
       state.email = email;
       state.isAuthenticated = isAuthenticated;
+      state.profilePic=profilePic
 
      
       if (typeof window !== 'undefined') {
@@ -54,8 +58,10 @@ const userSlice = createSlice({
     loadUserFromStorage: (state) => {
       if (typeof window !== 'undefined') {
         const data = localStorage.getItem('user');
+        console.log(data)
         if (data) {
           const parsed = JSON.parse(data) as UserState;
+          state.userId=parsed.userId
           state.username = parsed.username;
           state.email = parsed.email;
           state.isAuthenticated = parsed.isAuthenticated;

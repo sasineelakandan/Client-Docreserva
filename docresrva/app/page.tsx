@@ -4,7 +4,9 @@ import Navbar from '@/components/utils/Navbar'
 import React,{useEffect} from 'react'
 
 const page = () => {
- 
+  
+
+  
  
   return (
     <>

@@ -36,6 +36,7 @@ function Login() {
       if (response.data) {
         dispatch(
           setUserDetails({
+            userId:response.data._id,
             username: response.data.name,
             email: response.data.email,
             isAuthenticated: true,
@@ -48,15 +49,15 @@ function Login() {
           theme: "colored",
         });
   
-        // Delay redirection slightly to allow user to see the toast
-        setTimeout(() => {
+      
+        
           toast.info("Redirecting to your dashboard...", {
             position: "top-center",
             autoClose: 2000,
             theme: "colored",
-          });
-          router.replace("/");
-        }, 2000); 
+          
+          
+        })
       
         router.replace("/");
       }
