@@ -13,7 +13,21 @@ const DoctorProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
 
-  
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+        try {
+            const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
+            console.log(response.data); 
+        } catch (error) {
+            console.error("Error fetching doctor profile:", error); 
+        }
+    };
+
+    fetchDoctorProfile();
+}, []);
+
+
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedProfilePic = localStorage.getItem("profilePic");
@@ -27,6 +41,8 @@ const DoctorProfile: React.FC = () => {
       }
     }
   }, []);
+
+
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -72,7 +88,7 @@ const DoctorProfile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
           <img
-            src={profilePic || "/default-avatar.png"}
+            src={"/default-avatar.png"}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -93,6 +109,7 @@ const DoctorProfile: React.FC = () => {
             onChange={handleUpload}
           />
         </div>
+        
         <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
           <h2 className="text-xl font-semibold">{user?.name || 'Dr. Denies Martine'}</h2>
           <p className="text-gray-600">{user?.degree || 'MBBS, MD'}</p>

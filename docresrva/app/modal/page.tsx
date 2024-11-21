@@ -21,6 +21,7 @@ const schema = yup.object({
   city: yup.string().required('City is required'),
   state: yup.string().required('State is required'),
   licenseImage: yup.string().required('License image URL is required'),
+  licenseImage1: yup.string().required('profile image URL is required'),
   fees: yup
     .number()
     .required('Fees are required')
@@ -44,9 +45,11 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       city: '',
       state: '',
       licenseImage: '',
+      licenseImage1: '', 
       fees: 0,
     },
   });
+  
   useEffect(() => {
     if (userId) {
       console.log("Modal opened for user:", userId);
@@ -55,6 +58,8 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
   }, [userId]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef1 = useRef<HTMLInputElement | null>(null);
+  const [previewImage1, setPreviewImage1] = useState<string | null>(null);
   // const [user,setUser]=useState<any>(null)
   // useEffect(() => {
   //   if (typeof window !== 'undefined') {
@@ -121,12 +126,59 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       }
     }
   };
+  const handleCameraClick1 = () => {
+    fileInputRef1.current?.click();
+  };
 
+  const handleFileSelection1 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPreviewImage1(URL.createObjectURL(file));
+    }
+  };
+
+  const handleConfirmUpload1 = async () => {
+    if (!previewImage1) {
+      toast.error('No image selected!');
+      return;
+    }
+
+    try {
+      const file = fileInputRef.current?.files?.[0];
+      if (!file) {
+        toast.error('Please select a file!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post<{ url: string }>(
+        '/api/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      const imageUrl1 = response.data.url;
+      setValue('licenseImage1', imageUrl1);
+      toast.success('Image uploaded successfully!');
+      setPreviewImage1(null); // Clear preview after upload
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(`Upload failed: ${error.response?.data || error.message}`);
+      } else {
+        toast.error('Upload failed due to an unknown error.');
+      }
+    }
+  };
   const onSubmit = async (data: any) => {
     try {
       
-      data.userId=userId
-      data.profilePic=localStorage.getItem('profilePic')
+      
       console.log(data)
       const response = await axios.post(
         'http://localhost:8001/api/doctor/verifydoctor',
@@ -145,7 +197,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
   if (!isOpen) return null;
 
   const licenseImage = watch('licenseImage');
-
+  const licenseImage1 = watch('licenseImage1');
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 overflow-y-auto max-h-[80vh]">
@@ -297,6 +349,40 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
             )}
             {errors.licenseImage && (
               <p className="text-red-500 text-sm">{errors.licenseImage.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Profile Image</label>
+            <input
+              type="file"
+              ref={fileInputRef1}
+              onChange={handleFileSelection1}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={handleCameraClick1}
+              className="mt-2 p-2 bg-teal-500 text-white rounded-full hover:bg-teal-600"
+            >
+              <FaCamera className="w-6 h-6" />
+            </button>
+            {previewImage1 && (
+              <div className="mt-4">
+                <img src={previewImage1} alt="Preview" className="w-full rounded-md" />
+                <button
+                  type="button"
+                  onClick={handleConfirmUpload1}
+                  className="mt-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Confirm Upload
+                </button>
+              </div>
+            )}
+            {licenseImage1 && (
+              <p className="text-gray-700 mt-2 text-sm">Uploaded: {licenseImage1}</p>
+            )}
+            {errors.licenseImage1 && (
+              <p className="text-red-500 text-sm">{errors.licenseImage1.message}</p>
             )}
           </div>
           <div className="flex justify-end mt-4 space-x-2">
