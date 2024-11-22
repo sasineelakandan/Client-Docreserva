@@ -131,7 +131,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
     }
 
     try {
-      const file = fileInputRef.current?.files?.[0];
+      const file = fileInputRef1.current?.files?.[0];
       if (!file) {
         toast.error('Please select a file!');
         return;
@@ -166,7 +166,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
     try {
       
       
-      console.log(data)
+      
       const response = await axios.post(
         'http://localhost:8001/api/doctor/verifyprofile',
         data,

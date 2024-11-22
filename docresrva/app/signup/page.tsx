@@ -43,7 +43,9 @@ function SignUp() {
       console.log(data);
       const response = await axios.post('http://localhost:8001/api/user/signup', data, { withCredentials: true });
       if(response.data){
+        toast.success('Sign Up successful! Please verify your email.');
         dispatch(
+          
           setUserDetails({
             username: response.data.username,
             email: response.data.email,
@@ -51,7 +53,10 @@ function SignUp() {
             isAuthenticated: false,
           }))
         const userId=response.data._id
-        router.replace(`/userOtp?id=${userId}`);
+        setTimeout(()=>{
+          router.replace(`/userOtp?id=${userId}`);
+        },2000)
+       
       }
       
       

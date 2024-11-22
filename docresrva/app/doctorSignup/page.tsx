@@ -47,7 +47,10 @@ function DoctorSignUp() {
       const response = await axios.post('http://localhost:8001/api/doctor/signup', data, { withCredentials: true });
       if (response.data) {
         console.log(response.data)
+        
         toast.success('Sign Up successful! Please verify your email.');
+      
+       
         dispatch(
           setUserDetails({
             userId:response.data._id,
@@ -58,7 +61,10 @@ function DoctorSignUp() {
         );
         
         const doctorId = response.data._id;
-        router.replace(`/doctorOtp?id=${doctorId}`);
+        setTimeout(()=>{
+          router.replace(`/doctorOtp?id=${doctorId}`);
+        },2000)
+       
         
       }
     } catch (error) {

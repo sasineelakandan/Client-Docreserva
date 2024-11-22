@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
 import {
   Home,
@@ -14,7 +16,7 @@ import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protectio
 import { deleteCookie } from './deleteCookie';
 
 
-const Navbar: React.FC = () => {
+const doctorNavbar: React.FC = () => {
   interface User {
     userId:string;
     username: string;
@@ -33,27 +35,15 @@ const Navbar: React.FC = () => {
     }
   }, []);
 
- 
+  console.log(user)
+
   const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault(); 
-
-    try {
-        
-        localStorage.removeItem('user');
-
-        
-        setUser(null);
-
-        
-        deleteCookie('accessToken');
-
-        window.location.href = '/';
-        
-    } catch (error) {
-        console.error('Error during logout:', error);
-    }
-};
-
+    event.preventDefault();
+    localStorage.removeItem('user'); 
+    setUser(null); 
+    deleteCookie('accessToken'); 
+    window.location.href='/doctorLogin'
+  };
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
@@ -113,7 +103,7 @@ const Navbar: React.FC = () => {
         </a>
 
         {user ? (
-  <a href={'/userProfile'}
+  <a href={'/doctorProfile'}
     className="hidden md:flex items-center space-x-3 cursor-pointer"
   >
     <Image
@@ -140,7 +130,7 @@ const Navbar: React.FC = () => {
           </a>
         ) : (
           <a
-            href="/login"
+            href="/doctorLogin"
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
           >
             <AccountCircle className="text-lg" />
@@ -152,5 +142,4 @@ const Navbar: React.FC = () => {
   );
 };
 
-export default Navbar;
-
+export default doctorNavbar;

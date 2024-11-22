@@ -73,8 +73,11 @@ function OTPVerification() {
       );
 
       if (response.data) {
+        toast.success('Otp Verified')
         console.log(response.data);
-        router.replace('/'); // Redirect on success
+        setTimeout(()=>{
+          router.replace('/');
+        },2000)
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -95,9 +98,10 @@ function OTPVerification() {
       );
 
       if (response.data) {
+        toast.success(' resend Otp success')
         console.log(response.data);
         setOtp(new Array(6).fill(''));
-        resetTimer(); // Reset timer
+        resetTimer(); 
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {

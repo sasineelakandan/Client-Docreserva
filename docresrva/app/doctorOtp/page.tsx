@@ -71,7 +71,11 @@ function OTPVerification() {
       );
 
       if (response.data) {
-        router.replace('/');
+        toast.success('Otp Verified')
+        setTimeout(()=>{
+          router.replace('/doctorHome');
+        },2000)
+        
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -87,6 +91,7 @@ function OTPVerification() {
     try {
       const response = await axios.post('http://localhost:8001/api/doctor/resendotp', { userId }, { withCredentials: true });
       if (response.data) {
+        toast.success('resend Otp Success')
         setOtp(new Array(6).fill(""));
         setTimer(59);
         setIsExpired(false);

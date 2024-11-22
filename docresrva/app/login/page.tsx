@@ -31,23 +31,38 @@ function Login() {
     try{
       const response= await axios.post('http://localhost:8001/api/user/login', data, { withCredentials: true })
       if(response.data){
-        console.log(response.data)
+        
         dispatch(
           setUserDetails({
             username: response.data.username,
             email: response.data.email,
-           
+             userId:response.data._id,
             isAuthenticated:true,
           }))
-      
-        router.replace(`/`);
+          toast.success(`Welcome back, Dr. ${response.data.username}!`, {
+            position: "top-center",
+            autoClose: 2000,
+            theme: "colored",
+          });
+          toast.info("Redirecting to your dashboard...", {
+            position: "top-center",
+            autoClose: 2000,
+            theme: "colored",
+          
+           
+        })
+        setTimeout(()=>{
+          router.replace('/')
+          
+        
+        },3000)
       }
     }catch(error){
       if (axios.isAxiosError(error)) {
         console.log(error)
-        const errorMessage = error.response?.data?.error|| 'An unexpected error occurred.';
+        const errorMessage = error.response?.data?.error|| 'Please check your email & password';
         console.log(errorMessage)
-        toast.error(errorMessage || 'An error occurred during sign-up.');
+        toast.error(errorMessage || 'Please check your email & password');
       } else {
         toast.error('Something went wrong. Please try again later.');
       }
@@ -103,7 +118,7 @@ function Login() {
 
         <div className="flex items-center justify-between my-6">
           <a href="/forgot-password" className="text-teal-500 hover:text-teal-700 text-sm">
-            Forgot Password?
+            
           </a>
         </div>
 
@@ -118,7 +133,10 @@ function Login() {
             <FaTwitter />
           </button>
         </div>
-
+        <p className="text-center text-gray-600 text-sm">
+          Are you doctor?{' '}
+          <a href="/doctorLogin" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
+        </p>
         <p className="text-center text-gray-600 text-sm">
           Don't have an account?{' '}
           <a href="/signup" className="text-teal-500 hover:text-teal-700 font-semibold">Sign Up</a>

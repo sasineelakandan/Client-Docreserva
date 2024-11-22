@@ -5,29 +5,33 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaCheckCircle, FaCamera } from "react-icons/fa";
 import DoctorModal from "../modal/page";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const DoctorProfile: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [profilePic, setProfilePic] = useState<string | null>(null);
+const userProfile: React.FC = () => {
+ 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-
+  const [profilePic,setProfile1]=useState<string>()
+  const user1=localStorage.getItem('user')
+  console.log(user1)
+  const profilePic1=localStorage.getItem('profilePic')
+  console.log(profilePic)
   useEffect(() => {
-    const fetchDoctorProfile = async () => {
+    const fetchUserProfile = async () => {
         try {
-            const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
+            const response = await axios.post('http://localhost:8001/api/user/profile',{profilePic1}, { withCredentials: true });
             if(response.data){
               console.log(response.data)
               setUser(response.data)
             }
             
         } catch (error) {
-            console.error("Error fetching doctor profile:", error); 
+            console.error("Error fetching user profile:", error); 
         }
     };
 
-    fetchDoctorProfile();
+    fetchUserProfile();
 }, []);
 
 
@@ -36,8 +40,7 @@ const DoctorProfile: React.FC = () => {
 
 
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+ 
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,11 +63,24 @@ const DoctorProfile: React.FC = () => {
         }
       );
       if(response.data){
-        setProfilePic(response.data.url);
+        setProfile1(response.data.url)
+        localStorage.setItem("profilePic", response.data.url);
+        toast.success(" Profile upload success message!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       
-         toast.success("File uploaded successfully!");
       }
       
+      
+      
+        
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(`Upload failed: ${error.response?.data || error.message}`);
@@ -82,7 +98,7 @@ const DoctorProfile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
           <img
-            src={user?.profilePic||profilePic}
+            src={user?.profilePic||profilePic1}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -105,42 +121,22 @@ const DoctorProfile: React.FC = () => {
         </div>
         
         <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
-          <h2 className="text-xl font-semibold">{user?.name || 'Dr. Denies Martine'}</h2>
-          <p className="text-gray-600">{user?.degree || 'MBBS, MD'}</p>
-          <p className="text-teal-500">{user?.specialization || 'Cardiologist'}</p>
-          <p className="text-gray-500">{user?.experience }'Years Experience'</p>
+          <h2 className="text-xl font-semibold">{user?.username || 'Dr. Denies Martine'}</h2>
+          <p className="text-gray-600">{user?.phone || 'MBBS, MD'}</p>
+          <p className="text-teal-500">{user?.email || 'Cardiologist'}</p>
+          <p className="text-gray-500">{user?.experience || ''}</p>
           <p className="flex justify-center md:justify-start items-center gap-2 text-gray-500">
-            {user?.hospitalName || 'Apollo Hospital, West Ham'}
+            {user?.hospitalName || 'Verified'}
             <FaCheckCircle className="text-teal-500" />
           </p>
           <div className="flex justify-center md:justify-start items-center gap-1 text-yellow-500 mt-2">
             <FaStar /> 4.5
           </div>
         </div>
-        <div className="mt-4 md:mt-0">
-          <button
-            className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
-            onClick={handleOpenModal}
-          >
-            Rigister
-          </button>
-          <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
-        </div>
+        
+        
       </div>
-      <div className="bg-teal-100 rounded-lg p-4 mt-6">
-      <h2 className="text-teal-600 font-semibold">Clinic visit</h2>
-        <h3 className="text-teal-600 font-semibold">{user?.hospitalName}</h3>
-        <p className="text-gray-600">
-         street: {user?.street}
-        </p>
-        <p className="text-gray-600">
-          City:  {user?.city}
-        </p>
-        <p className="text-gray-600">
-          State: {user?.state}
-        </p>
-        <p className="font-bold text-teal-700">₹ {user?.fees}</p>
-      </div>
+      <ToastContainer />
       <div className="flex justify-center gap-6 mt-6">
         <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
           Change Password
@@ -153,4 +149,4 @@ const DoctorProfile: React.FC = () => {
   );
 };
 
-export default DoctorProfile;
+export default userProfile;

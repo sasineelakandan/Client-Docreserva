@@ -48,22 +48,22 @@ function Login() {
           autoClose: 2000,
           theme: "colored",
         });
-  
-      
+        toast.info("Redirecting to your dashboard...", {
+          position: "top-center",
+          autoClose: 2000,
+          theme: "colored",
         
-          toast.info("Redirecting to your dashboard...", {
-            position: "top-center",
-            autoClose: 2000,
-            theme: "colored",
-          
-          
-        })
+         
+      })
+      setTimeout(()=>{
+        router.replace('/doctorHome')
+        
       
-        router.replace("/");
+      },3000)
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.error || "An unexpected error occurred.";
+        const errorMessage = error.response?.data?.error || "Please check your email & password";
         toast.error(errorMessage);
       } else {
         toast.error("Something went wrong. Please try again.");
@@ -133,13 +133,17 @@ function Login() {
               <FaTwitter />
             </button>
           </div>
-
+          <p className="text-center text-gray-600 text-sm">
+          Are you  user?{' '}
+          <a href="/login" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
+        </p>
           <p className="text-center text-gray-600 text-sm">
             Don't have an account?{" "}
             <a href="/doctorSignup" className="text-teal-500 hover:text-teal-700 font-semibold">
               Sign Up
             </a>
           </p>
+
 
           
         </form>
