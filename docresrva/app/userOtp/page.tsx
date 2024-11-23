@@ -76,7 +76,7 @@ function OTPVerification() {
         toast.success('Otp Verified')
         console.log(response.data);
         setTimeout(()=>{
-          router.replace('/');
+          router.replace('/userHome');
         },2000)
       }
     } catch (error) {

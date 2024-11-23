@@ -5,18 +5,18 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaCheckCircle, FaCamera } from "react-icons/fa";
 import DoctorModal from "../modal/page";
 import axios from "axios";
-import { toast } from "react-toastify";
-
+import { toast ,ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 const DoctorProfile: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [profilePic1, setProfilePic] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-
+  const profilePic=localStorage.getItem('profilePic')
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
-            const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
+            const response = await axios.post('http://localhost:8001/api/doctor/profile',{profilePic}, { withCredentials: true });
             if(response.data){
               console.log(response.data)
               setUser(response.data)
@@ -30,7 +30,7 @@ const DoctorProfile: React.FC = () => {
     fetchDoctorProfile();
 }, []);
 
-
+console.log(user?.profilePic)
 
  
 
@@ -60,9 +60,19 @@ const DoctorProfile: React.FC = () => {
         }
       );
       if(response.data){
+        localStorage.setItem("profilePic", response.data.url);
         setProfilePic(response.data.url);
-      
-         toast.success("File uploaded successfully!");
+        toast.success(" Profile upload success message!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        })
+         
       }
       
     } catch (error) {
@@ -80,9 +90,10 @@ const DoctorProfile: React.FC = () => {
     <div className="max-w-full">
       <Navbar />
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
+     
         <div className="relative">
           <img
-            src={user?.profilePic||profilePic}
+            src={profilePic||user?.profilePic}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -93,6 +104,7 @@ const DoctorProfile: React.FC = () => {
             className="absolute bottom-0 right-0 p-2 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600"
             onClick={handleCameraClick}
           >
+            
             <FaCamera className="w-6 h-6" />
           </button>
           <input
@@ -149,6 +161,7 @@ const DoctorProfile: React.FC = () => {
           Change Profile
         </button>
       </div>
+      <ToastContainer />
     </div>
   );
 };

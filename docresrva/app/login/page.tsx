@@ -52,7 +52,7 @@ function Login() {
            
         })
         setTimeout(()=>{
-          router.replace('/')
+          router.replace('/userHome')
           
         
         },3000)
