@@ -98,7 +98,7 @@ const userProfile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
           <img
-            src={user?.profilePic||profilePic1}
+            src={profilePic1||user?.profilePic}
             alt="Doctor's profile picture"
             width={128}
             height={128}

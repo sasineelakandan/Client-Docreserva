@@ -27,6 +27,7 @@ const PatientManagement: React.FC = () => {
           "http://localhost:8001/api/admin/patients",
           { withCredentials: true }
         );
+        
         setPatients(data);
       } catch (err) {
         console.error("Failed to fetch patients:", err);
@@ -34,9 +35,9 @@ const PatientManagement: React.FC = () => {
     };
     fetchPatients();
   }, []);
-
+ console.log(patients)
   // Handle delete
-  const handleDelete = (id: string) => {
+  const handleDelete = (_id: string) => {
     Swal.fire({
       title: "Are you sure?",
       text: "This action cannot be undone!",
@@ -48,11 +49,12 @@ const PatientManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:8001/api/admin/patients/${id}`, {
+          const { data } =  await axios.delete(`http://localhost:8001/api/admin/patients?userId=${_id}`, {
             withCredentials: true,
           });
-          setPatients((prev) => prev.filter((patient) => patient._id !== id));
+          
           Swal.fire("Deleted!", "Patient deleted successfully.", "success");
+          window.location.reload()
         } catch (err) {
           console.error("Failed to delete patient:", err);
           Swal.fire("Error!", "Could not delete patient.", "error");
