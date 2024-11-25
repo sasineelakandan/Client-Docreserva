@@ -12,15 +12,15 @@ const userProfile: React.FC = () => {
  
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-  const [profilePic,setProfile1]=useState<string>()
+  const [profilePic1,setProfile1]=useState<string>()
   const user1=localStorage.getItem('user')
   console.log(user1)
-  const profilePic1=localStorage.getItem('profilePic')
+  const profilePic=localStorage.getItem('profilePic')
   console.log(profilePic)
   useEffect(() => {
     const fetchUserProfile = async () => {
         try {
-            const response = await axios.post('http://localhost:8001/api/user/profile',{profilePic1}, { withCredentials: true });
+            const response = await axios.post('http://localhost:8001/api/user/profile',{profilePic}, { withCredentials: true });
             if(response.data){
               console.log(response.data)
               setUser(response.data)
