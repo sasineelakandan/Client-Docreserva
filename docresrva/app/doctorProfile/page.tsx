@@ -9,7 +9,7 @@ import { toast ,ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 const DoctorProfile: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [profilePic1, setProfilePic] = useState<string | null>(null);
+  const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
   const profilePic=localStorage.getItem('profilePic')
@@ -93,7 +93,7 @@ console.log(user?.profilePic)
      
         <div className="relative">
           <img
-            src={profilePic||user?.profilePic}
+            src={profilePic1||user?.profilePic}
             alt="Doctor's profile picture"
             width={128}
             height={128}

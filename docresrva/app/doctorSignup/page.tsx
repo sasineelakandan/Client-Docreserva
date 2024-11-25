@@ -93,14 +93,20 @@ function DoctorSignUp() {
           <h2 className="text-2xl font-semibold text-gray-700 mb-6 text-center">Doctor Sign Up</h2>
 
           <div className="mb-4">
-            <input
-              {...register('email', { required: 'Email is required' })}
-              type="email"
-              placeholder="Enter your email"
-              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-          </div>
+  <input
+    {...register('email', {
+      required: 'Email is required',
+      validate: {
+        isGmail: (value) =>
+          value.endsWith('.com') || 'Only .com emails are allowed',
+      },
+    })}
+    type="email"
+    placeholder="Enter your email"
+    className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+  />
+  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+</div>
 
           <div className="mb-4">
             <input
