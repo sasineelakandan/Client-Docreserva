@@ -42,6 +42,7 @@ const userProfile: React.FC = () => {
 
       
             if(message=='Internal server error.'){
+              toast.error(message)
               deleteCookie('accessToken')
               router.push('/login')
             }

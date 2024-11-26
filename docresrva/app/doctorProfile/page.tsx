@@ -8,6 +8,7 @@ import axios from "axios";
 import { toast ,ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
+import { deleteCookie } from "@/components/utils/deleteCookie";
 const DoctorProfile: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePic1, setProfilePic] = useState<any>(null);
@@ -30,6 +31,7 @@ const DoctorProfile: React.FC = () => {
               const message = error.response.data?.message || "An error occurred while fetching doctor profile.";
 
               if(message=='Internal server error.'){
+                deleteCookie('accessToken')
                 router.push('/login')
               }
              
