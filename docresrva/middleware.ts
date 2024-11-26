@@ -60,7 +60,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// Token verification helper function
+
 async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   const token = req.cookies.get(tokenName);
 

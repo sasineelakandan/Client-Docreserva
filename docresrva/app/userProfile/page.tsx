@@ -3,10 +3,11 @@
 import Navbar from "@/components/utils/Navbar";
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaCheckCircle, FaCamera } from "react-icons/fa";
-import DoctorModal from "../modal/page";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { deleteCookie } from "@/components/utils/deleteCookie";
 
 const userProfile: React.FC = () => {
  
@@ -17,18 +18,38 @@ const userProfile: React.FC = () => {
   console.log(user1)
   const profilePic=localStorage.getItem('profilePic')
   console.log(profilePic)
+  const router=useRouter()
   useEffect(() => {
     const fetchUserProfile = async () => {
-        try {
-            const response = await axios.post('http://localhost:8001/api/user/profile',{profilePic}, { withCredentials: true });
-            if(response.data){
-              console.log(response.data)
-              setUser(response.data)
-            }
+      try {
+        const response = await axios.post('http://localhost:8001/api/user/profile', { profilePic }, { withCredentials: true });
+    
+        if (response.data) {
+            console.log(response.data);
             
-        } catch (error) {
-            console.error("Error fetching user profile:", error); 
+            // Optionally check for a message and log it
+            if (response?.data?.message) {
+                console.log(response?.data?.message);
+            }
+    
+            // Set user data if successful
+            setUser(response.data);
         }
+    } catch (error:any) {
+        // Check if the error response exists and display it using toast
+        if (error?.response) {
+            const message = error.response.data?.message || "An error occurred while fetching user profile.";
+
+      
+            if(message=='Internal server error.'){
+              deleteCookie('accessToken')
+              router.push('/login')
+            }
+        } else {
+            toast.error("An error occurred. Please try again later.");
+        }
+        console.log(error)
+    }
     };
 
     fetchUserProfile();

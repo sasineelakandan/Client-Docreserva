@@ -7,12 +7,14 @@ import DoctorModal from "../modal/page";
 import axios from "axios";
 import { toast ,ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation";
 const DoctorProfile: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
   const profilePic=localStorage.getItem('profilePic')
+  const router=useRouter()
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
@@ -22,9 +24,24 @@ const DoctorProfile: React.FC = () => {
               setUser(response.data)
             }
             
-        } catch (error) {
-            console.error("Error fetching doctor profile:", error); 
-        }
+        }catch (error:any) {
+          // Check if the error response exists and display it using toast
+          if (error?.response) {
+              const message = error.response.data?.message || "An error occurred while fetching doctor profile.";
+
+              if(message=='Internal server error.'){
+                router.push('/login')
+              }
+             
+        
+              
+
+              
+          } else {
+              toast.error("An error occurred. Please try again later.");
+          }
+          console.log(error)
+      }
     };
 
     fetchDoctorProfile();
@@ -77,7 +94,7 @@ console.log(user?.profilePic)
       
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(`Upload failed: ${error.response?.data || error.message}`);
+        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
       } else {
         toast.error("Upload failed due to an unknown error.");
       }

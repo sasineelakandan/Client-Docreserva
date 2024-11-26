@@ -57,9 +57,10 @@ function Login() {
         
         },3000)
       }
-    }catch(error){
+    }catch(error:any){
+      console.log(error.response)
       if (axios.isAxiosError(error)) {
-        console.log(error)
+        
         const errorMessage = error.response?.data?.error|| 'Please check your email & password';
         console.log(errorMessage)
         toast.error(errorMessage || 'Please check your email & password');
