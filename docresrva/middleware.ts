@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-// Define route sets for role-based access control
-const ADMIN_ROUTES = new Set(["/admin", "/patients"]);
+
+const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors"]);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile"]);
 const USER_ROUTES = new Set(["/userHome", "/userProfile"]);
 const PUBLIC_ROUTES = new Set([

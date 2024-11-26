@@ -19,7 +19,7 @@ const PatientManagement: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch patients on component mount
+  
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -30,7 +30,7 @@ const PatientManagement: React.FC = () => {
         
         setPatients(data);
       } catch (err) {
-        console.error("Failed to fetch patients:", err);
+        Swal.fire("Error!", " No data availaple in Patients.", "error");
       }
     };
     fetchPatients();
@@ -106,7 +106,7 @@ const PatientManagement: React.FC = () => {
     });
   };
 
-  // Filter patients based on search term
+  
   const filteredPatients = patients.filter((patient) =>
     patient.username.toLowerCase().includes(searchTerm.toLowerCase())
   );

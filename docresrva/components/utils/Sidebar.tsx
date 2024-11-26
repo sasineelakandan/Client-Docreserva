@@ -22,7 +22,7 @@ const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
 
   try {
       
-      localStorage.removeItem('user');
+      
 
       
   
