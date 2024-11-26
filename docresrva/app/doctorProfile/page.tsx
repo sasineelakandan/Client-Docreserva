@@ -93,7 +93,7 @@ console.log(user?.profilePic)
      
         <div className="relative">
           <img
-            src={profilePic1||user?.profilePic}
+            src={profilePic||profilePic1}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -121,21 +121,25 @@ console.log(user?.profilePic)
           <p className="text-gray-600">{user?.degree || 'MBBS, MD'}</p>
           <p className="text-teal-500">{user?.specialization || 'Cardiologist'}</p>
           <p className="text-gray-500">{user?.experience }'Years Experience'</p>
-          <p className="flex justify-center md:justify-start items-center gap-2 text-gray-500">
-            {user?.hospitalName || 'Apollo Hospital, West Ham'}
-            <FaCheckCircle className="text-teal-500" />
-          </p>
+          {user?.isVerified && (
+  <p className="flex justify-center md:justify-start items-center gap-2 text-gray-500">
+    verified
+    <FaCheckCircle className="text-teal-500" />
+  </p>
+)}
           <div className="flex justify-center md:justify-start items-center gap-1 text-yellow-500 mt-2">
             <FaStar /> 4.5
           </div>
         </div>
         <div className="mt-4 md:mt-0">
-          <button
-            className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
-            onClick={handleOpenModal}
-          >
-            Rigister
-          </button>
+        {!user?.isVerified && (
+  <button
+    className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
+    onClick={handleOpenModal}
+  >
+    Register
+  </button>
+)}
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
         </div>
       </div>

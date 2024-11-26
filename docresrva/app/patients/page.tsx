@@ -23,14 +23,14 @@ const PatientManagement: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const { data } = await axios.get<Patient[]>(
+        const { data } = await axios.get(
           "http://localhost:8001/api/admin/patients",
           { withCredentials: true }
         );
         
         setPatients(data);
       } catch (err) {
-        Swal.fire("Error!", " No data availaple in Patients.", "error");
+        Swal.fire("Empty!", " No data availaple in Patients.", "warning");
       }
     };
     fetchPatients();

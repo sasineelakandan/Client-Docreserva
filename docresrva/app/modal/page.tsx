@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState ,useEffect} from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 
 interface DoctorModalProps {
   isOpen: boolean;
-  userId?:string
+  userId?: string;
   onClose: () => void;
 }
 
@@ -21,7 +21,7 @@ const schema = yup.object({
   city: yup.string().required('City is required'),
   state: yup.string().required('State is required'),
   licenseImage: yup.string().required('License image URL is required'),
-  licenseImage1: yup.string().required('profile image URL is required'),
+  licenseImage1: yup.string().required('Profile image URL is required'),
   fees: yup
     .number()
     .required('Fees are required')
@@ -29,7 +29,7 @@ const schema = yup.object({
     .typeError('Fees must be a valid number'),
 }).required();
 
-const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => {
+const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, userId }) => {
   const {
     control,
     handleSubmit,
@@ -45,25 +45,22 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       city: '',
       state: '',
       licenseImage: '',
-      licenseImage1: '', 
+      licenseImage1: '',
       fees: 0,
     },
   });
-  
+
   useEffect(() => {
     if (userId) {
       console.log("Modal opened for user:", userId);
-      
     }
   }, [userId]);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef1 = useRef<HTMLInputElement | null>(null);
   const [previewImage1, setPreviewImage1] = useState<string | null>(null);
-  
-  
-  
-  
+
   const handleCameraClick = () => {
     fileInputRef.current?.click();
   };
@@ -103,7 +100,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
 
       const imageUrl = response.data.url;
       setValue('licenseImage', imageUrl);
-      
+      toast.success('Image uploaded successfully!');
       setPreviewImage(null); 
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -113,6 +110,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       }
     }
   };
+
   const handleCameraClick1 = () => {
     fileInputRef1.current?.click();
   };
@@ -150,7 +148,8 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
         }
       );
 
-      const imageUrl1 = response.data.url;
+      const imageUrl1 = response.data .url;
+      localStorage.setItem("profilePic", response.data.url);
       setValue('licenseImage1', imageUrl1);
       toast.success('Image uploaded successfully!');
       setPreviewImage1(null); // Clear preview after upload
@@ -162,11 +161,9 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       }
     }
   };
+
   const onSubmit = async (data: any) => {
     try {
-      
-      
-      
       const response = await axios.post(
         'http://localhost:8001/api/doctor/verifyprofile',
         data,
@@ -174,6 +171,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
       );
       if (response.data) {
         toast.success('Doctor details submitted successfully!');
+        window.location.reload()
       }
     } catch (error) {
       toast.error('Failed to submit doctor details.');
@@ -185,6 +183,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
 
   const licenseImage = watch('licenseImage');
   const licenseImage1 = watch('licenseImage1');
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 overflow-y-auto max-h-[80vh]">
@@ -322,13 +321,27 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
             {previewImage && (
               <div className="mt-4">
                 <img src={previewImage} alt="Preview" className="w-full rounded-md" />
-                <button
-                  type="button"
-                  onClick={handleConfirmUpload}
-                  className="mt-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  Confirm Upload
-                </button>
+                <div className="flex mt-2">
+                  <button
+                    type="button"
+                    onClick={handleConfirmUpload}
+                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mr-2"
+                  >
+                    Confirm Upload
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewImage(null); // Clear the preview image
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = ''; // Reset the file input only if it's not null
+                      }// Reset the file input
+                    }}
+                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
             {licenseImage && (
@@ -338,6 +351,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
               <p className="text-red-500 text-sm">{errors.licenseImage.message}</p>
             )}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Profile Image</label>
             <input
@@ -356,13 +370,27 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
             {previewImage1 && (
               <div className="mt-4">
                 <img src={previewImage1} alt="Preview" className="w-full rounded-md" />
-                <button
-                  type="button"
-                  onClick={handleConfirmUpload1}
-                  className="mt-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                >
-                  Confirm Upload
-                </button>
+                <div className="flex mt-2">
+                  <button
+                    type="button"
+                    onClick={handleConfirmUpload1}
+                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mr-2"
+                  >
+                    Confirm Upload
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewImage1(null); // Clear the preview image
+                      if (fileInputRef1.current) {
+                        fileInputRef1.current.value = ''; // Reset the file input only if it's not null
+                      }
+                    }}
+                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
             {licenseImage1 && (
@@ -372,6 +400,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose,userId }) => 
               <p className="text-red-500 text-sm">{errors.licenseImage1.message}</p>
             )}
           </div>
+
           <div className="flex justify-end mt-4 space-x-2">
             <button
               type="button"
