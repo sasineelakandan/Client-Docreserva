@@ -9,13 +9,38 @@ import { toast ,ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "@/components/utils/deleteCookie";
+import { useForm } from "react-hook-form";
 const DoctorProfile: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
   const profilePic=localStorage.getItem('profilePic')
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
+  const passwordForm = useForm({
+    defaultValues: {
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const profileForm = useForm({
+    defaultValues: {
+      name: "",
+      phone: "",
+      hospitalName: "",
+      fees: "",
+      street: "",
+      city: "",
+      state: "",
+      experience: "", 
+    },
+  });
+  
+  
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
@@ -23,10 +48,20 @@ const DoctorProfile: React.FC = () => {
             if(response.data){
               console.log(response.data)
               setUser(response.data)
+              profileForm.reset({
+                name: response.data.name || "",
+                phone: response.data.phone || "", 
+                hospitalName: response.data.hospitalName || "", 
+                fees: response.data.fees || "",
+                street: response.data.street || "", 
+                city: response.data.city || "",
+                state: response.data.state || "", 
+                experience: response.data.experience || "", 
+              });
             }
             
         }catch (error:any) {
-          // Check if the error response exists and display it using toast
+          
           if (error?.response) {
               const message = error.response.data?.message || "An error occurred while fetching doctor profile.";
 
@@ -55,8 +90,7 @@ console.log(user?.profilePic)
 
 
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -104,7 +138,48 @@ console.log(user?.profilePic)
   };
 
   const handleCameraClick = () => fileInputRef.current?.click();
+  const handlePasswordChange = async (data: any) => {
+    try {
+      
+      if (data.newPassword !== data.confirmPassword) {
+        toast.error("New password and confirmation do not match!");
+        return;
+      }
+      let response=await axios.patch("http://localhost:8001/api/doctor/profile",
+        data,
+        { withCredentials: true }
+      );
+      if(response.data){
+        toast.success("Password changed successfully!");
+        
+      }
+      setShowPasswordModal(false);
+        passwordForm.reset();
+      
+    } catch (error) {
+      toast.error("Failed to change password.");
+    }
+  };
 
+  const handleProfileUpdate = async (data: any) => {
+    try {
+      let response=await axios.put("http://localhost:8001/api/doctor/profile",
+          data,
+          { withCredentials: true }
+        );
+        if (response.data) {
+          setUser(response.data);
+          toast.success("Profile updated successfully!");
+        }
+      
+      setShowProfileModal(false);
+      profileForm.reset()
+    } catch (error) {
+      toast.error("Failed to update profile.");
+    }
+  };
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
   return (
     <div className="max-w-full">
       <Navbar />
@@ -176,14 +251,235 @@ console.log(user?.profilePic)
         </p>
         <p className="font-bold text-teal-700">₹ {user?.fees}</p>
       </div>
-      {/* <div className="flex justify-center gap-6 mt-6">
-        <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
+      <div className="flex justify-center gap-6 mt-6">
+        <button
+          onClick={() => setShowPasswordModal(true)}
+          className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700"
+        >
           Change Password
         </button>
-        <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
+        <button
+          onClick={() => setShowProfileModal(true)}
+          className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700"
+        >
           Change Profile
         </button>
-      </div> */}
+      </div>
+
+      {showPasswordModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+      <form onSubmit={passwordForm.handleSubmit(handlePasswordChange)}>
+        <input
+          type="password"
+          placeholder="Old Password"
+          {...passwordForm.register("oldPassword", { required: "Old Password is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            passwordForm.formState.errors.oldPassword ? "border-red-500" : ""
+          }`}
+        />
+        {passwordForm.formState.errors.oldPassword && (
+          <p className="text-red-500 text-sm">{passwordForm.formState.errors.oldPassword.message}</p>
+        )}
+        <input
+          type="password"
+          placeholder="New Password"
+          {...passwordForm.register("newPassword", {
+            required: "New Password is required",
+            minLength: { value: 8, message: "Password must be at least 8 characters long" },
+          })}
+          className={`w-full mb-3 p-2 border rounded ${
+            passwordForm.formState.errors.newPassword ? "border-red-500" : ""
+          }`}
+        />
+        {passwordForm.formState.errors.newPassword && (
+          <p className="text-red-500 text-sm">{passwordForm.formState.errors.newPassword.message}</p>
+        )}
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          {...passwordForm.register("confirmPassword", {
+            required: "Confirm Password is required",
+            validate: (value) =>
+              value === passwordForm.getValues("newPassword") || "Passwords do not match",
+          })}
+          className={`w-full mb-3 p-2 border rounded ${
+            passwordForm.formState.errors.confirmPassword ? "border-red-500" : ""
+          }`}
+        />
+        {passwordForm.formState.errors.confirmPassword && (
+          <p className="text-red-500 text-sm">{passwordForm.formState.errors.confirmPassword.message}</p>
+        )}
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowPasswordModal(false)}
+            type="button"
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+{showProfileModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Update Profile</h2>
+      <form onSubmit={profileForm.handleSubmit(handleProfileUpdate)}>
+        {/* Name */}
+        <input
+          type="text"
+          placeholder="Name"
+          defaultValue={user?.name || ""}
+          {...profileForm.register("name", { required: "Name is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.name ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.name && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.name.message}</p>
+        )}
+
+        {/* Phone */}
+        <input
+          type="text"
+          placeholder="Phone"
+          defaultValue={user?.phone || ""}
+          {...profileForm.register("phone", {
+            required: "Phone is required",
+            pattern: { value: /^[0-9]{10}$/, message: "Invalid phone number" },
+          })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.phone ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.phone && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.phone.message}</p>
+        )}
+
+        {/* Hospital Name */}
+        <input
+          type="text"
+          placeholder="Hospital Name"
+          defaultValue={user?.hospitalName || ""}
+          {...profileForm.register("hospitalName", { required: "Hospital name is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.hospitalName ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.hospitalName && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.hospitalName.message}</p>
+        )}
+
+        {/* Fees */}
+        <input
+          type="number"
+          placeholder="Fees"
+          defaultValue={user?.fees || ""}
+          {...profileForm.register("fees", {
+            required: "Fees are required",
+            min: { value: 0, message: "Fees cannot be negative" },
+          })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.fees ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.fees && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.fees.message}</p>
+        )}
+
+        {/* Street */}
+        <input
+          type="text"
+          placeholder="Street"
+          defaultValue={user?.street || ""}
+          {...profileForm.register("street", { required: "Street is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.street ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.street && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.street.message}</p>
+        )}
+
+        {/* City */}
+        <input
+          type="text"
+          placeholder="City"
+          defaultValue={user?.city || ""}
+          {...profileForm.register("city", { required: "City is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.city ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.city && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.city.message}</p>
+        )}
+
+        {/* State */}
+        <input
+          type="text"
+          placeholder="State"
+          defaultValue={user?.state || ""}
+          {...profileForm.register("state", { required: "State is required" })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.state ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.state && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.state.message}</p>
+        )}
+
+        {/* Experience */}
+        <input
+          type="number"
+          placeholder="Experience (Years)"
+          defaultValue={user?.experience || ""}
+          {...profileForm.register("experience", {
+            required: "Experience is required",
+            min: { value: 0, message: "Experience cannot be negative" },
+            max: { value: 50, message: "Experience seems too high" },
+          })}
+          className={`w-full mb-3 p-2 border rounded ${
+            profileForm.formState.errors.experience ? "border-red-500" : ""
+          }`}
+        />
+        {profileForm.formState.errors.experience && (
+          <p className="text-red-500 text-sm">{profileForm.formState.errors.experience.message}</p>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowProfileModal(false)}
+            type="button"
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
       <ToastContainer />
     </div>
   );
