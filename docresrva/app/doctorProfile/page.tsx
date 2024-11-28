@@ -32,7 +32,7 @@ const DoctorProfile: React.FC = () => {
 
               if(message=='Internal server error.'){
                 deleteCookie('accessToken')
-                window...
+                window.location.reload()
               }
              
         
@@ -176,14 +176,14 @@ console.log(user?.profilePic)
         </p>
         <p className="font-bold text-teal-700">₹ {user?.fees}</p>
       </div>
-      <div className="flex justify-center gap-6 mt-6">
+      {/* <div className="flex justify-center gap-6 mt-6">
         <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
           Change Password
         </button>
         <button className="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700">
           Change Profile
         </button>
-      </div>
+      </div> */}
       <ToastContainer />
     </div>
   );

@@ -120,9 +120,7 @@ function Login() {
        
 
         <div className="flex justify-center space-x-6 mb-6">
-          <button className="bg-red-600 text-white p-3 rounded-full m-4">
-            <FaGoogle />
-          </button>
+          
           
         </div>
        

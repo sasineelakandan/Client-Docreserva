@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";;
 import { setUserDetails} from '../../Store/slices/userSlices';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
+import Spinner from '@/components/Spinner';
 interface SignUpFormValues extends FieldValues {
   email: string;
   username: string;
@@ -30,6 +31,7 @@ function SignUp() {
   const user = useSelector((state:RootState) => state.user);
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -41,6 +43,7 @@ function SignUp() {
   const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
     try {
       console.log(data);
+      setLoading(true)
       const response = await axios.post('http://localhost:8001/api/user/signup', data, { withCredentials: true });
       if(response.data){
         toast.success('Sign Up successful! Please verify your email.');
@@ -53,6 +56,7 @@ function SignUp() {
             isAuthenticated: false,
           }))
         const userId=response.data._id
+        setLoading(false)
         setTimeout(()=>{
           router.replace(`/userOtp?id=${userId}`);
         },2000)
@@ -70,6 +74,8 @@ function SignUp() {
         toast.error('Something went wrong. Please try again later.');
       }
       
+    }finally{
+      setLoading(false)
     }
   }
 
@@ -160,13 +166,14 @@ function SignUp() {
             <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
           )}
         </div>
-
-        <button
+        {loading ? <Spinner/>:(<button
           type="submit"
           className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded mt-4"
         >
           Sign Up
-        </button>
+        </button>)}
+
+        
 
         <div className="flex items-center justify-center my-6">
           <span className="text-gray-500 text-sm">connect with</span>

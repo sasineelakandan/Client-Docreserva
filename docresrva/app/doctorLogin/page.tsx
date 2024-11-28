@@ -119,19 +119,11 @@ function Login() {
           </button>
 
           <div className="flex items-center justify-center my-6">
-            <span className="text-gray-500 text-sm">Or connect with</span>
+            
           </div>
 
           <div className="flex justify-center space-x-6 mb-6">
-            <button className="bg-red-600 text-white p-3 rounded-full">
-              <FaGoogle />
-            </button>
-            <button className="bg-blue-600 text-white p-3 rounded-full">
-              <FaFacebook />
-            </button>
-            <button className="bg-blue-400 text-white p-3 rounded-full">
-              <FaTwitter />
-            </button>
+           
           </div>
           
           <p className="text-center text-gray-600 text-sm">

@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { setUserDetails } from '../../Store/slices/userSlices';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
-
+import Spinner from '@/components/Spinner';
 interface DoctorSignUpFormValues extends FieldValues {
   email: string;
   username: string;
@@ -34,6 +34,7 @@ function DoctorSignUp() {
   const user = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -44,6 +45,7 @@ function DoctorSignUp() {
   const onSubmit: SubmitHandler<DoctorSignUpFormValues> = async (data) => {
     try {
       console.log(data);
+      setLoading(true)
       const response = await axios.post('http://localhost:8001/api/doctor/signup', data, { withCredentials: true });
       if (response.data) {
         console.log(response.data)
@@ -75,6 +77,8 @@ function DoctorSignUp() {
       } else {
         toast.error('Something went wrong. Please try again later.');
       }
+    }finally{
+      setLoading(false)
     }
   };
 
@@ -220,12 +224,13 @@ function DoctorSignUp() {
           Already have an account?{' '}
           <a href="/doctorLogin" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
         </p>
-          <button
+        {loading?<Spinner/>:(<button
             type="submit"
             className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded mt-4"
           >
             Sign Up
-          </button>
+          </button>)}
+          
         </form>
       </div>
       <ToastContainer position="top-right" autoClose={3000} />
