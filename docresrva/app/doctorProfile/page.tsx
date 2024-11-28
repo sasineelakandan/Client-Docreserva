@@ -32,7 +32,7 @@ const DoctorProfile: React.FC = () => {
 
               if(message=='Internal server error.'){
                 deleteCookie('accessToken')
-                router.push('/login')
+                window...
               }
              
         

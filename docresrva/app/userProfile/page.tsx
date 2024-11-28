@@ -44,7 +44,7 @@ const userProfile: React.FC = () => {
             if(message=='Internal server error.'){
               toast.error(message)
               deleteCookie('accessToken')
-              router.push('/login')
+              router.replace('/login')
             }
         } else {
             toast.error("An error occurred. Please try again later.");

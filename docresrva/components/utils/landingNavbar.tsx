@@ -67,7 +67,22 @@ const Navbar: React.FC = () => {
               >
                 Sign Up
               </motion.a>
+              <motion.a
+                href="/doctorLogin"
+                className="px-4 py-2 bg-white text-teal-600 font-semibold rounded-lg shadow-md hover:bg-gray-100 transition"
+                whileHover={{ scale: 1.1 }}
+              >
+                Doctor Login
+              </motion.a>
+              <motion.a
+                href="/doctorSignup"
+                className="px-4 py-2 bg-yellow-400 text-black font-semibold rounded-lg shadow-md hover:bg-yellow-500 transition"
+                whileHover={{ scale: 1.1 }}
+              >
+                DoctorSign Up
+              </motion.a>
             </>
+            
           )}
         </div>
       </div>

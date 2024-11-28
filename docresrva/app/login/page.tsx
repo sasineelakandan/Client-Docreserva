@@ -117,27 +117,15 @@ function Login() {
           Login
         </button>
 
-        <div className="flex items-center justify-between my-6">
-          <a href="/forgot-password" className="text-teal-500 hover:text-teal-700 text-sm">
-            
-          </a>
-        </div>
+       
 
         <div className="flex justify-center space-x-6 mb-6">
-          <button className="bg-red-600 text-white p-3 rounded-full">
+          <button className="bg-red-600 text-white p-3 rounded-full m-4">
             <FaGoogle />
           </button>
-          <button className="bg-blue-600 text-white p-3 rounded-full">
-            <FaFacebook />
-          </button>
-          <button className="bg-blue-400 text-white p-3 rounded-full">
-            <FaTwitter />
-          </button>
+          
         </div>
-        <p className="text-center text-gray-600 text-sm">
-          Are you doctor?{' '}
-          <a href="/doctorLogin" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
-        </p>
+       
         <p className="text-center text-gray-600 text-sm">
           Don't have an account?{' '}
           <a href="/signup" className="text-teal-500 hover:text-teal-700 font-semibold">Sign Up</a>

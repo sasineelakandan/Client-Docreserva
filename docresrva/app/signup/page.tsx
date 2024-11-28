@@ -189,10 +189,7 @@ function SignUp() {
           <a href="/login" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
         </p>
 
-        <p className="text-center text-gray-600 text-sm mt-4">
-          Are you a doctor?{' '}
-          <a href="/doctorSignup" className="text-teal-500 hover:text-teal-700 font-semibold">Click Here</a>
-        </p>
+       
       </form>
     </div>
     <ToastContainer position="top-right" autoClose={3000} />

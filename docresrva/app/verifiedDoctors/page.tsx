@@ -51,7 +51,7 @@ const DoctorManagement: React.FC = () => {
             withCredentials: true,
           });
           Swal.fire("Deleted!", "Doctor deleted successfully.", "success");
-
+          window.location.reload()
         } catch (err) {
           console.error("Failed to delete doctor:", err);
           Swal.fire("Error!", "Could not delete doctor.", "error");

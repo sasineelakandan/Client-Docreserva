@@ -133,10 +133,7 @@ function Login() {
               <FaTwitter />
             </button>
           </div>
-          <p className="text-center text-gray-600 text-sm">
-          Are you  user?{' '}
-          <a href="/login" className="text-teal-500 hover:text-teal-700 font-semibold">Login</a>
-        </p>
+          
           <p className="text-center text-gray-600 text-sm">
             Don't have an account?{" "}
             <a href="/doctorSignup" className="text-teal-500 hover:text-teal-700 font-semibold">
