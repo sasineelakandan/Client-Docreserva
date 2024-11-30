@@ -5,6 +5,7 @@ import {
   Event,
   Notifications,
   ExitToApp,
+  LocalHospital,
   Search,
   AccountCircle, // Profile icon
 } from '@mui/icons-material';
@@ -80,7 +81,7 @@ const Navbar: React.FC = () => {
       {/* Center Section: Navigation Icons */}
       <div className="hidden md:flex items-center space-x-8 text-gray-600">
         <a
-          href="#"
+          href="/userHome"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Home className="text-2xl" />
@@ -99,6 +100,13 @@ const Navbar: React.FC = () => {
         >
           <Event className="text-2xl" />
           <span className="font-medium">Appointments</span>
+        </a>
+        <a
+          href="/alldoctors"
+          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
+        >
+          <LocalHospital className="text-2xl" />
+          <span className="font-medium">All Doctors</span>
         </a>
       </div>
 

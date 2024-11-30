@@ -4,13 +4,20 @@ import Navbar from "@/components/utils/Navbar";
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaCheckCircle, FaCamera } from "react-icons/fa";
 import DoctorModal from "../modal/page";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { toast ,ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
+interface SlotFormData {
+  
+  date: string;
+  startTime: string;
+  endTime: string;
+}
 const DoctorProfile: React.FC = () => {
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -19,6 +26,15 @@ const DoctorProfile: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
+  const [showSlots, setShowSlots] = useState(false);
+  
+  // React Hook Form setup
+  const { register,watch, handleSubmit, formState: { errors } } = useForm<SlotFormData>();
+
+  // Handle open modal for slots
+  const handleOpenSlots = () => {
+    setShowSlots(true);
+  };
   const passwordForm = useForm({
     defaultValues: {
       oldPassword: "",
@@ -180,6 +196,30 @@ console.log(user?.profilePic)
   };
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const onSubmit = async(data:any) => {
+    try {
+      let response=await axios.post("http://localhost:8001/api/doctor/createslots",
+          data,
+          { withCredentials: true }
+        );
+        if (response.data) {
+          
+          toast.success("Slot updated successfully!");
+        }
+      
+      setShowProfileModal(false);
+      profileForm.reset()
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+      
+         toast.error(error.response?.data.error)
+      } else {
+        
+        console.error("An unexpected error occurred:", error.message);
+      }
+    }
+  };
+  
   return (
     <div className="max-w-full">
       <Navbar />
@@ -226,14 +266,22 @@ console.log(user?.profilePic)
           </div>
         </div>
         <div className="mt-4 md:mt-0">
-        {!user?.isVerified && (
+        {!user?.isVerified ? (
   <button
     className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
     onClick={handleOpenModal}
   >
     Register
   </button>
+) : (
+  <button
+    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+    onClick={handleOpenSlots}
+  >
+    Slots
+  </button>
 )}
+
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
         </div>
       </div>
@@ -330,7 +378,99 @@ console.log(user?.profilePic)
     </div>
   </div>
 )}
+{showSlots && user?.isVerified && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Select Your Slot</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Date Picker */}
+        <div>
+          <label htmlFor="date" className="block text-sm font-semibold">Select Date:</label>
+          <input
+            type="date"
+            id="date"
+            {...register("date", {
+              required: "Date is required",
+              validate: (value) => {
+                const selectedDate = new Date(value).setHours(0, 0, 0, 0);
+                const today = new Date().setHours(0, 0, 0, 0);
+                return selectedDate >= today || "Cannot select past dates.";
+              }
+            })}
+            className="w-full px-4 py-2 border rounded-lg"
+          />
+          {errors.date && <span className="text-red-500 text-sm">{errors.date.message}</span>}
+        </div>
 
+        {/* Start Time Picker */}
+        <div>
+          <label htmlFor="startTime" className="block text-sm font-semibold">Start Time (AM/PM):</label>
+          <input
+            type="time"
+            id="startTime"
+            {...register("startTime", {
+              required: "Start time is required",
+              validate: (value) => {
+                const selectedDate = watch("date");
+                if (selectedDate) {
+                  const currentDate = new Date();
+                  const selectedDateTime = new Date(`${selectedDate}T${value}`);
+                  return (
+                    selectedDateTime > currentDate ||
+                    "Start time must be in the future."
+                  );
+                }
+                return true;
+              }
+            })}
+            className="w-full px-4 py-2 border rounded-lg"
+          />
+          {errors.startTime && <span className="text-red-500 text-sm">{errors.startTime.message}</span>}
+        </div>
+
+        {/* End Time Picker */}
+        <div>
+          <label htmlFor="endTime" className="block text-sm font-semibold">End Time (AM/PM):</label>
+          <input
+            type="time"
+            id="endTime"
+            {...register("endTime", {
+              required: "End time is required",
+              validate: (value) => {
+                const startTime = watch("startTime");
+                if (startTime) {
+                  return (
+                    value > startTime || "End time must be after start time."
+                  );
+                }
+                return true;
+              }
+            })}
+            className="w-full px-4 py-2 border rounded-lg"
+          />
+          {errors.endTime && <span className="text-red-500 text-sm">{errors.endTime.message}</span>}
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowSlots(false)}
+            type="button"
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-teal-600 text-white px-4 py-2 rounded-lg"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 {showProfileModal && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
     <div className="bg-white p-6 rounded-lg shadow-lg">
