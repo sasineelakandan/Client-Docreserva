@@ -97,38 +97,52 @@ const DoctorDetails: React.FC = () => {
         </div>
 
         {/* Footer Section */}
-        <footer className="mt-12 border-t pt-6 bg-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-4">
-            <div>
-              <h3 className="text-gray-700 font-bold">Accessories</h3>
-              <ul className="mt-2 text-gray-600">
-                <li>Body Care</li>
-                <li>Chambray</li>
-                <li>Floral</li>
-                <li>Rejuvenation</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-gray-700 font-bold">Brands</h3>
-              <ul className="mt-2 text-gray-600">
-                <li>Barbour</li>
-                <li>Brioni</li>
-                <li>Oliver Spencer</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-gray-700 font-bold">Get In Touch</h3>
-              <ul className="mt-2 text-gray-600">
-                <li>Call us: (555)-555-5555</li>
-                <li>Email: support@domain.com</li>
-                <li className="mt-2">
-                  Follow us:
-                  <span className="text-blue-500 ml-2">Twitter Facebook Instagram</span>
-                </li>
-              </ul>
-            </div>
+        <footer className="mt-12 border-t pt-6 bg-gradient-to-r from-teal-50 to-teal-100 shadow-inner">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-8">
+    {/* Accessories Section */}
+    <div>
+      <h3 className="text-teal-700 font-bold text-lg">Accessories</h3>
+      <ul className="mt-4 space-y-2">
+        <li className="text-gray-600 hover:text-teal-700 transition">Body Care</li>
+        <li className="text-gray-600 hover:text-teal-700 transition">Chambray</li>
+        <li className="text-gray-600 hover:text-teal-700 transition">Floral</li>
+        <li className="text-gray-600 hover:text-teal-700 transition">Rejuvenation</li>
+      </ul>
+    </div>
+
+    {/* Brands Section */}
+    <div>
+      <h3 className="text-teal-700 font-bold text-lg">Brands</h3>
+      <ul className="mt-4 space-y-2">
+        <li className="text-gray-600 hover:text-teal-700 transition">Barbour</li>
+        <li className="text-gray-600 hover:text-teal-700 transition">Brioni</li>
+        <li className="text-gray-600 hover:text-teal-700 transition">Oliver Spencer</li>
+      </ul>
+    </div>
+
+    {/* Get In Touch Section */}
+    <div>
+      <h3 className="text-teal-700 font-bold text-lg">Get In Touch</h3>
+      <ul className="mt-4 space-y-2">
+        <li className="text-gray-600 hover:text-teal-700 transition">
+          Call us: <span className="font-medium">(555)-555-5555</span>
+        </li>
+        <li className="text-gray-600 hover:text-teal-700 transition">
+          Email: <span className="font-medium">support@domain.com</span>
+        </li>
+        <li className="text-gray-600 hover:text-teal-700 transition">
+          Follow us:
+          <div className="flex space-x-4 mt-2">
+            <a href="#" className="text-blue-500 hover:text-blue-700">Twitter</a>
+            <a href="#" className="text-blue-500 hover:text-blue-700">Facebook</a>
+            <a href="#" className="text-blue-500 hover:text-blue-700">Instagram</a>
           </div>
-        </footer>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
       </div>
     </div>
   );
