@@ -5,13 +5,13 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
-
+import BookingModal from "../bookingModal/page";
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       try {
@@ -78,17 +78,23 @@ const DoctorDetails: React.FC = () => {
             </p>
           </div>
         </div>
-
+ 
         {/* Action Buttons */}
         <div className="flex gap-4 mt-6">
-          <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow hover:scale-105 transform transition">
-            Book Now
-          </button>
+        <button
+        onClick={() => setIsModalOpen(true)}
+        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow hover:scale-105 transform transition"
+      >
+        Book Now
+      </button>
+
           <button className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow hover:scale-105 transform transition">
             Message
           </button>
         </div>
-
+        <BookingModal doctorId={doctor._id} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+          
+        
         {/* About Section */}
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-700 mb-4">About Doctor</h2>
