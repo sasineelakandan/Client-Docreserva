@@ -102,7 +102,19 @@ const DoctorProfile: React.FC = () => {
 
 console.log(user?.profilePic)
 
- 
+const getWeekStart = () => {
+  const today = new Date();
+  const nextMonday = new Date(today);
+  nextMonday.setDate(today.getDate() + ((1 - today.getDay() + 7) % 7)); // Find next Monday
+  return nextMonday.toISOString().split("T")[0];
+};
+
+const getWeekEnd = () => {
+  const start = new Date(getWeekStart());
+  const nextFriday = new Date(start);
+  nextFriday.setDate(start.getDate() + 4); // Add 4 days for Friday
+  return nextFriday.toISOString().split("T")[0];
+}
 
 
 
@@ -205,6 +217,7 @@ console.log(user?.profilePic)
         if (response.data) {
           
           toast.success("Slot updated successfully!");
+          setShowSlots(false)
         }
       
       setShowProfileModal(false);
@@ -385,7 +398,9 @@ console.log(user?.profilePic)
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Date Picker */}
         <div>
-          <label htmlFor="date" className="block text-sm font-semibold">Select Date:</label>
+          <label htmlFor="date" className="block text-sm font-semibold">
+            Select Date:
+          </label>
           <input
             type="date"
             id="date"
@@ -394,17 +409,33 @@ console.log(user?.profilePic)
               validate: (value) => {
                 const selectedDate = new Date(value).setHours(0, 0, 0, 0);
                 const today = new Date().setHours(0, 0, 0, 0);
-                return selectedDate >= today || "Cannot select past dates.";
-              }
+
+                if (selectedDate < today) {
+                  return "Cannot select past dates.";
+                }
+
+                const dayOfWeek = new Date(value).getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                  return "Weekends are not allowed.";
+                }
+
+                return true;
+              },
             })}
+            min={getWeekStart()}
+            max={getWeekEnd()}
             className="w-full px-4 py-2 border rounded-lg"
           />
-          {errors.date && <span className="text-red-500 text-sm">{errors.date.message}</span>}
+          {errors.date && (
+            <span className="text-red-500 text-sm">{errors.date.message}</span>
+          )}
         </div>
 
         {/* Start Time Picker */}
         <div>
-          <label htmlFor="startTime" className="block text-sm font-semibold">Start Time (AM/PM):</label>
+          <label htmlFor="startTime" className="block text-sm font-semibold">
+            Start Time (AM/PM):
+          </label>
           <input
             type="time"
             id="startTime"
@@ -421,16 +452,22 @@ console.log(user?.profilePic)
                   );
                 }
                 return true;
-              }
+              },
             })}
             className="w-full px-4 py-2 border rounded-lg"
           />
-          {errors.startTime && <span className="text-red-500 text-sm">{errors.startTime.message}</span>}
+          {errors.startTime && (
+            <span className="text-red-500 text-sm">
+              {errors.startTime.message}
+            </span>
+          )}
         </div>
 
         {/* End Time Picker */}
         <div>
-          <label htmlFor="endTime" className="block text-sm font-semibold">End Time (AM/PM):</label>
+          <label htmlFor="endTime" className="block text-sm font-semibold">
+            End Time (AM/PM):
+          </label>
           <input
             type="time"
             id="endTime"
@@ -444,11 +481,15 @@ console.log(user?.profilePic)
                   );
                 }
                 return true;
-              }
+              },
             })}
             className="w-full px-4 py-2 border rounded-lg"
           />
-          {errors.endTime && <span className="text-red-500 text-sm">{errors.endTime.message}</span>}
+          {errors.endTime && (
+            <span className="text-red-500 text-sm">
+              {errors.endTime.message}
+            </span>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -461,6 +502,7 @@ console.log(user?.profilePic)
             Cancel
           </button>
           <button
+            
             type="submit"
             className="bg-teal-600 text-white px-4 py-2 rounded-lg"
           >
@@ -471,6 +513,7 @@ console.log(user?.profilePic)
     </div>
   </div>
 )}
+
 {showProfileModal && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
     <div className="bg-white p-6 rounded-lg shadow-lg">

@@ -49,7 +49,7 @@ const userSlice = createSlice({
     deauthenticateUser: (state) => {
       state.isAuthenticated = false;
 
-      // Update localStorage
+      
       if (typeof window !== 'undefined') {
         localStorage.setItem('user', JSON.stringify(state));
       }

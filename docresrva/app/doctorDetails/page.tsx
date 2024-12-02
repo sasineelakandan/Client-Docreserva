@@ -6,12 +6,18 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
 import BookingModal from "../bookingModal/page";
+import { setUserDetails} from '../../Store/slices/doctorSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../Store';
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const user = useSelector((state: RootState) => state.doctor);
+  
+  const dispatch=useDispatch()
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       try {
@@ -21,7 +27,36 @@ const DoctorDetails: React.FC = () => {
           { doctorId },
           { withCredentials: true }
         );
-        setDoctor(response.data);
+        if(response.data){
+          dispatch(
+            setUserDetails({
+              _id: response.data._id,
+              name: response.data.name,
+              email: response.data.email,
+              password: response.data.password,
+              specialization: response.data.specialization,
+              experience: response.data.experience,
+              phone: response.data.phone,
+              isVerified: response.data.isVerified,
+              isOtpVerified: response.data.isOtpVerified,
+              isBlocked: response.data.isBlocked,
+              isDeleted: response.data.isDeleted,
+              hospitalName: response.data.hospitalName,
+              licenseNumber: response.data.licenseNumber,
+              street: response.data.street,
+              city: response.data.city,
+              state: response.data.state,
+              licenseImage: response.data.licenseImage,
+              createdAt: response.data.createdAt,
+              updatedAt: response.data.updatedAt,
+              profilePic: response.data.profilePic,
+              fees: response.data.fees,
+              isAuthenticated: false, 
+            })
+          );
+          setDoctor(response.data);
+        }
+        
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Something went wrong");
       } finally {
