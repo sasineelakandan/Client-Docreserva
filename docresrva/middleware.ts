@@ -4,8 +4,8 @@ import { jwtVerify } from "jose";
 
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors"]);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile"]);
-const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails']);
+const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage']);
+const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/paymentSuccessPage','/paymentFailurePage']);
 const PUBLIC_ROUTES = new Set([
   "/login", 
   "/signup", 

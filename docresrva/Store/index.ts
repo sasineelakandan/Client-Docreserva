@@ -1,11 +1,13 @@
 'use client'
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/userSlices';
-import DoctorReduder from './slices/doctorSlice'
+import DoctorReduder from './slices/doctorSlice';
+import patientReducer from './slices/patientDetails'
 const store = configureStore({
   reducer: {
     user: userReducer,
-    doctor:DoctorReduder
+    doctor:DoctorReduder,
+    patient:patientReducer
 
   },
 });

@@ -6,16 +6,22 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { FaHome, FaBell, FaUserAlt, FaUsers } from "react-icons/fa";
 import { useEffect ,useState} from "react";
 import { useSearchParams } from "next/navigation";
+import axios from "axios";
+import { useDispatch } from 'react-redux';
+import { setPatientDetails } from "@/Store/slices/patientDetails";
+import { useRouter } from "next/navigation";
 // Define a type for the form data
 interface FormData {
   firstName: string;
   lastName?: string;
-  slotId:string;
+  slotId: string;
   day: number;
   month: number;
   year: number;
   reason: string;
   terms: boolean;
+  age: number; // Added
+  gender: string; // Added
 }
 interface Doctor {
     _id: string;
@@ -58,12 +64,40 @@ const DoctorPage: React.FC = () => {
       setDoctor(parsedDetails);
     }
   }, []);
-  const onSubmit: SubmitHandler<FormData> = (data:any) => {
-    data.slotId=slotId
-    data.doctorId=doctor?._id
-    console.log(data);
-   
-  };
+  const router=useRouter()
+  const dispatch = useDispatch();
+
+const onSubmit: SubmitHandler<FormData> = async (data: any) => {
+  data.slotId = slotId;
+  data.doctorId = doctor?._id;
+
+  try {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, {withCredentials:true});
+const patientData=response.data
+    if(response.data){
+      dispatch(
+        setPatientDetails({
+          _id: patientData._id,
+          userId: patientData.userId,
+          doctorId: patientData.doctorId,
+          firstName: patientData.firstName.trim(), 
+          lastName: patientData.lastName.trim(),  
+          age: patientData.age,
+          gender: patientData.gender,
+          reason: patientData.reason,
+          slotId: patientData.slotId,
+        })
+      )
+      router.push(`/confirmBooking?id=${slotId}`)
+    }
+  } catch (error:any) {
+    console.error('Error submitting data:', error);
+    if (axios.isAxiosError(error)) {
+      console.log('Axios error response:', error.response?.data);
+    }
+  }
+};
+
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -135,66 +169,45 @@ const DoctorPage: React.FC = () => {
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label htmlFor="day" className="block text-sm font-medium">
-                    Day
-                  </label>
-                  <input
-                    type="number"
-                    id="day"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="DD"
-                    {...register("day", {
-                      required: "Day is required",
-                      min: { value: 1, message: "Day must be between 1 and 31" },
-                      max: { value: 31, message: "Day must be between 1 and 31" },
-                    })}
-                  />
-                  {errors.day && (
-                    <p className="text-red-500 text-sm">{errors.day.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="month" className="block text-sm font-medium">
-                    Month
-                  </label>
-                  <input
-                    type="number"
-                    id="month"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="MM"
-                    {...register("month", {
-                      required: "Month is required",
-                      min: { value: 1, message: "Month must be between 1 and 12" },
-                      max: { value: 12, message: "Month must be between 1 and 12" },
-                    })}
-                  />
-                  {errors.month && (
-                    <p className="text-red-500 text-sm">{errors.month.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="year" className="block text-sm font-medium">
-                    Year
-                  </label>
-                  <input
-                    type="number"
-                    id="year"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="YYYY"
-                    {...register("year", {
-                      required: "Year is required",
-                      min: { value: 1900, message: "Year must be valid" },
-                      max: {
-                        value: new Date().getFullYear(),
-                        message: "Year must be valid",
-                      },
-                    })}
-                  />
-                  {errors.year && (
-                    <p className="text-red-500 text-sm">{errors.year.message}</p>
-                  )}
-                </div>
+              <div>
+  <label htmlFor="age" className="block text-sm font-medium">
+    Age
+  </label>
+  <input
+    type="number"
+    id="age"
+    className="w-full p-2 border border-gray-300 rounded-md"
+    placeholder="Enter Age"
+    {...register("age", {
+      required: "Age is required",
+      min: { value: 0, message: "Age cannot be negative" },
+      max: { value: 120, message: "Please enter a realistic age" },
+    })}
+  />
+  {errors.age && (
+    <p className="text-red-500 text-sm">{errors.age.message}</p>
+  )}
+</div>
+<div>
+  <label htmlFor="gender" className="block text-sm font-medium">
+    Gender
+  </label>
+  <select
+    id="gender"
+    className="w-full p-2 border border-gray-300 rounded-md"
+    {...register("gender", { required: "Gender is required" })}
+  >
+    <option value="">Select Gender</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+  </select>
+  {errors.gender && (
+    <p className="text-red-500 text-sm">{errors.gender.message}</p>
+  )}
+</div>
+                
+               
               </div>
               <div>
                 <label htmlFor="reason" className="block text-sm font-medium">

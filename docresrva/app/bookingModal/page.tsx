@@ -30,34 +30,30 @@ const BookingModal: React.FC<BookingModalProps> = ({
   const getDynamicDates = () => {
     const today = new Date();
     const dates = [];
-    let count = 0;
-
-    for (let i = 0; count < 5; i++) {
+  
+    for (let i = 0; i < 7; i++) { // Generate 7 continuous days
       const futureDate = new Date(today);
       futureDate.setDate(today.getDate() + i);
-
-      if (futureDate.getDay() !== 0 && futureDate.getDay() !== 6) { // Excluding weekends
-        dates.push({
-          label:
-            i === 0
-              ? "Today"
-              : i === 1
-              ? "Tomorrow"
-              : futureDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                }),
-          date: futureDate,
-        });
-        count++;
-      }
+  
+      dates.push({
+        label:
+          i === 0
+            ? "Today"
+            : i === 1
+            ? "Tomorrow"
+            : futureDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              }),
+        date: futureDate,
+      });
     }
-
+  
     return dates;
   };
-
+  
   const dates = getDynamicDates();
-
+  
   // Fetch slots on doctorId change
   useEffect(() => {
     if (!doctorId) return;

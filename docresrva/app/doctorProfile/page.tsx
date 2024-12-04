@@ -1,6 +1,6 @@
 'use client';
 
-import Navbar from "@/components/utils/Navbar";
+import Navbar from "@/components/utils/doctorNavbar";
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaCheckCircle, FaCamera } from "react-icons/fa";
 import DoctorModal from "../modal/page";
@@ -102,19 +102,45 @@ const DoctorProfile: React.FC = () => {
 
 console.log(user?.profilePic)
 
-const getWeekStart = () => {
-  const today = new Date();
-  const nextMonday = new Date(today);
-  nextMonday.setDate(today.getDate() + ((1 - today.getDay() + 7) % 7)); // Find next Monday
-  return nextMonday.toISOString().split("T")[0];
+const getWeekdays = (startDate:any, days = 5) => {
+  const validDates = [];
+  let currentDate = new Date(startDate);
+
+  while (validDates.length < days) {
+    const dayOfWeek = currentDate.getDay();
+
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip Sunday (0) and Saturday (6)
+      validDates.push(new Date(currentDate));
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return validDates;
 };
 
-const getWeekEnd = () => {
-  const start = new Date(getWeekStart());
-  const nextFriday = new Date(start);
-  nextFriday.setDate(start.getDate() + 4); // Add 4 days for Friday
-  return nextFriday.toISOString().split("T")[0];
-}
+// Get the start date (today or next valid weekday)
+const getWeekStart = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+
+  if (dayOfWeek === 0) {
+    // Sunday, move to Monday
+    today.setDate(today.getDate() + 1);
+  } else if (dayOfWeek === 6) {
+    // Saturday, move to Monday
+    today.setDate(today.getDate() + 2);
+  }
+
+  return today.toISOString().split("T")[0]; // Return in 'YYYY-MM-DD' format
+};
+
+// Get the next 5 weekdays
+const getNext5Weekdays = () => {
+  const weekdays = getWeekdays(new Date(), 5);
+  const lastWeekday = weekdays[weekdays.length - 1];
+  return lastWeekday.toISOString().split("T")[0]; // Return in 'YYYY-MM-DD' format
+};
 
 
 
@@ -402,95 +428,96 @@ const getWeekEnd = () => {
             Select Date:
           </label>
           <input
-            type="date"
-            id="date"
-            {...register("date", {
-              required: "Date is required",
-              validate: (value) => {
-                const selectedDate = new Date(value).setHours(0, 0, 0, 0);
-                const today = new Date().setHours(0, 0, 0, 0);
+  type="date"
+  id="date"
+  {...register("date", {
+    required: "Date is required",
+    validate: (value) => {
+      const selectedDate = new Date(value).setHours(0, 0, 0, 0);
+      const today = new Date().setHours(0, 0, 0, 0);
 
-                if (selectedDate < today) {
-                  return "Cannot select past dates.";
-                }
+      if (selectedDate < today) {
+        return "Cannot select past dates.";
+      }
 
-                const dayOfWeek = new Date(value).getDay();
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                  return "Weekends are not allowed.";
-                }
+      const dayOfWeek = new Date(value).getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return "Weekends are not allowed.";
+      }
 
-                return true;
-              },
-            })}
-            min={getWeekStart()}
-            max={getWeekEnd()}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+      return true;
+    },
+  })}
+  min={getWeekStart()} // Dynamic minimum date
+  max={getNext5Weekdays()} // Dynamic maximum date
+  className="w-full px-4 py-2 border rounded-lg"
+/>
           {errors.date && (
             <span className="text-red-500 text-sm">{errors.date.message}</span>
           )}
         </div>
 
         {/* Start Time Picker */}
-        <div>
-          <label htmlFor="startTime" className="block text-sm font-semibold">
-            Start Time (AM/PM):
-          </label>
-          <input
-            type="time"
-            id="startTime"
-            {...register("startTime", {
-              required: "Start time is required",
-              validate: (value) => {
-                const selectedDate = watch("date");
-                if (selectedDate) {
-                  const currentDate = new Date();
-                  const selectedDateTime = new Date(`${selectedDate}T${value}`);
-                  return (
-                    selectedDateTime > currentDate ||
-                    "Start time must be in the future."
-                  );
-                }
-                return true;
-              },
-            })}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-          {errors.startTime && (
-            <span className="text-red-500 text-sm">
-              {errors.startTime.message}
-            </span>
-          )}
-        </div>
+        {/* Start Time Picker */}
+<div>
+  <label htmlFor="startTime" className="block text-sm font-semibold">
+    Start Time (AM/PM):
+  </label>
+  <input
+    type="time"
+    id="startTime"
+    step="3600" // 3600 seconds = 1 hour
+    {...register("startTime", {
+      required: "Start time is required",
+      validate: (value) => {
+        const selectedDate = watch("date");
+        if (selectedDate) {
+          const currentDate = new Date();
+          const selectedDateTime = new Date(`${selectedDate}T${value}`);
+          return (
+            selectedDateTime > currentDate || "Start time must be in the future."
+          );
+        }
+        return true;
+      },
+    })}
+    className="w-full px-4 py-2 border rounded-lg"
+  />
+  {errors.startTime && (
+    <span className="text-red-500 text-sm">
+      {errors.startTime.message}
+    </span>
+  )}
+</div>
 
-        {/* End Time Picker */}
-        <div>
-          <label htmlFor="endTime" className="block text-sm font-semibold">
-            End Time (AM/PM):
-          </label>
-          <input
-            type="time"
-            id="endTime"
-            {...register("endTime", {
-              required: "End time is required",
-              validate: (value) => {
-                const startTime = watch("startTime");
-                if (startTime) {
-                  return (
-                    value > startTime || "End time must be after start time."
-                  );
-                }
-                return true;
-              },
-            })}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-          {errors.endTime && (
-            <span className="text-red-500 text-sm">
-              {errors.endTime.message}
-            </span>
-          )}
-        </div>
+{/* End Time Picker */}
+<div>
+  <label htmlFor="endTime" className="block text-sm font-semibold">
+    End Time (AM/PM):
+  </label>
+  <input
+    type="time"
+    id="endTime"
+    step="3600" // 3600 seconds = 1 hour
+    {...register("endTime", {
+      required: "End time is required",
+      validate: (value) => {
+        const startTime = watch("startTime");
+        if (startTime) {
+          return value > startTime || "End time must be after start time.";
+        }
+        return true;
+      },
+    })}
+    className="w-full px-4 py-2 border rounded-lg"
+  />
+  {errors.endTime && (
+    <span className="text-red-500 text-sm">
+      {errors.endTime.message}
+    </span>
+  )}
+</div>
+
 
         {/* Submit Button */}
         <div className="flex justify-end gap-3">
