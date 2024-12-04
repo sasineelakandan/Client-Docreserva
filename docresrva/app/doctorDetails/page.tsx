@@ -123,9 +123,7 @@ const DoctorDetails: React.FC = () => {
         Book Now
       </button>
 
-          <button className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow hover:scale-105 transform transition">
-            Message
-          </button>
+         
         </div>
         <BookingModal doctorId={doctor._id} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
           

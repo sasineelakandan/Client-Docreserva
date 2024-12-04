@@ -95,7 +95,7 @@ const Navbar: React.FC = () => {
           <span className="font-medium">Messages</span>
         </a>
         <a
-          href="#"
+          href="/appointmentPageuser"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Event className="text-2xl" />
