@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
+import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 interface SlotFormData {
   
   date: string;
@@ -22,7 +23,7 @@ const DoctorProfile: React.FC = () => {
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-  const profilePic=localStorage.getItem('profilePic')
+  
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
@@ -60,7 +61,7 @@ const DoctorProfile: React.FC = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
-            const response = await axios.post('http://localhost:8001/api/doctor/profile',{profilePic}, { withCredentials: true });
+            const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
             if(response.data){
               console.log(response.data)
               setUser(response.data)
@@ -146,50 +147,59 @@ const getNext5Weekdays = () => {
 
   
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      toast.error("Please select a file!");
-      return;
-    }
+const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) {
+    toast.error("Please select a file!");
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const response = await axios.post<{ url: string }>(
-        "http://localhost:3000/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      if(response.data){
-        localStorage.setItem("profilePic", response.data.url);
-        setProfilePic(response.data.url);
-        toast.success(" Profile upload success message!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        })
-         
+    // Upload file to backend
+    const response = await axios.post<{ url: string }>(
+      "http://localhost:3000/api/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
+    );
+
+    if (response.data) {
+      setProfilePic(response.data.url)
+      const uploadedUrl = response.data.url;
+      console.log(uploadedUrl)
       
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
-      } else {
-        toast.error("Upload failed due to an unknown error.");
-      }
+      const getResponse = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
+
+      // Handle the response from the s
+      console.log("URL saved response:", getResponse.data);
+
+      ; // Set the profile picture state
+      toast.success("Profile upload success message!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     }
-  };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+    } else {
+      toast.error("Upload failed due to an unknown error.");
+    }
+  }
+};
+
 
   const handleCameraClick = () => fileInputRef.current?.click();
   const handlePasswordChange = async (data: any) => {
@@ -266,7 +276,7 @@ const getNext5Weekdays = () => {
      
         <div className="relative">
           <img
-            src={profilePic||profilePic1}
+            src={profilePic1||user?.profilePic||Img}
             alt="Doctor's profile picture"
             width={128}
             height={128}

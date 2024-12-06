@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
-
+import Swal from 'sweetalert2';
 
 
 const AppointmentsList = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+   
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -45,18 +45,66 @@ const AppointmentsList = () => {
 const ShowAppointments: React.FC<{ appointments:any }> = ({ appointments }) => {
   const [filterDate, setFilterDate] = useState<string>('');
   const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
-
+  const [change,setChange]=useState(false)
   const filteredAppointments = filterDate
-    ? appointments.filter((appt:any) => appt?.slotId?.date === filterDate)
-    : appointments;
+  ? appointments.filter((appt: any) => {
+      // Extract the date portion from appt.slotId.date
+      const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
+      return appointmentDate === filterDate;
+    })
+  : appointments;
 
-  const handleReschedule = (appt:any,action:string) => {
-    alert(`Rescheduling appointment with ${appt.firstName} ${appt.lastName}`);
+ 
+  const formatTime = (time24:any) => {
+    const [hours, minutes] = time24.split(":");
+    const period = hours >= 12 ? "PM" : "AM";
+    const hours12 = hours % 12 || 12; // Convert 0 to 12 for midnight
+    return `${hours12}:${minutes} ${period}`;
   };
+   ;
 
-  const handleCancel = (appt:any) => {
-    alert(`Cancelling appointment with ${appt.firstName} ${appt.lastName}`);
-  };
+const handleCancel = async (appointmentId: any) => {
+  try {
+    // Show the SweetAlert confirmation dialog
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, cancel it!',
+    });
+
+    if (result.isConfirmed) {
+      // Proceed with cancellation if user confirms
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
+        { appointmentId },
+        { withCredentials: true }
+      );
+
+      if (response.data) {
+        setChange(true);
+        Swal.fire('Cancelled!', 'Your appointment has been cancelled.', 'success');
+      }
+    } else {
+      // Optionally handle if the user cancels
+      Swal.fire('Cancelled', 'Your appointment is safe :)', 'info');
+    }
+  } catch (error) {
+    console.error('Error while canceling the appointment:', error);
+
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error details:', error.response?.data || error.message);
+      Swal.fire('Error', error.response?.data?.message || 'Something went wrong!', 'error');
+    } else {
+      console.error('Unexpected error:', error);
+      Swal.fire('Error', 'Unexpected error occurred.', 'error');
+    }
+  }
+};
+
 
   return (
     <>
@@ -108,22 +156,38 @@ const ShowAppointments: React.FC<{ appointments:any }> = ({ appointments }) => {
               })}
             </p>
             <p className="text-sm text-gray-500">
-              Time: {appt.slotId.startTime} - {appt.slotId.endTime}
-            </p>
+  Time: {formatTime(appt.slotId.startTime)} - {formatTime(appt.slotId.endTime)}
+</p>
             <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-        <button className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:scale-105 transform transition">
-            Message
-          </button>
-  <button
-    onClick={() => handleCancel(appt)}
-    className="bg-red-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-600 transition duration-300"
-  >
-    Cancel
-  </button>
+  {appt.status === "complete" && (
+    <span className="px-4 py-2 bg-green-100 text-green-600 rounded-lg shadow">
+      Complete
+    </span>
+  )}
+  {appt.status === "canceled" && (
+    <span className="px-4 py-2 bg-red-100 text-red-600 rounded-lg shadow">
+      Canceled
+    </span>
+  )}
+
+  {appt.status !== "complete" && appt.status !== "canceled" && (
+    <>
+      <button className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow hover:scale-105 transform transition">
+        Message
+      </button>
+      <button
+        onClick={() => handleCancel(appt._id)}
+        className="bg-red-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-600 transition duration-300"
+      >
+        Cancel
+      </button>
+    </>
+  )}
 </div>
+
 
       </li>
     ))}
