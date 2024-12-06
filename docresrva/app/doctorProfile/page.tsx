@@ -103,24 +103,6 @@ const DoctorProfile: React.FC = () => {
 
 console.log(user?.profilePic)
 
-const getWeekdays = (startDate:any, days = 5) => {
-  const validDates = [];
-  let currentDate = new Date(startDate);
-
-  while (validDates.length < days) {
-    const dayOfWeek = currentDate.getDay();
-
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip Sunday (0) and Saturday (6)
-      validDates.push(new Date(currentDate));
-    }
-
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return validDates;
-};
-
-// Get the start date (today or next valid weekday)
 const getWeekStart = () => {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -133,15 +115,23 @@ const getWeekStart = () => {
     today.setDate(today.getDate() + 2);
   }
 
-  return today.toISOString().split("T")[0]; // Return in 'YYYY-MM-DD' format
+  return today.toISOString().split("T")[0]; // Return 'YYYY-MM-DD'
+};
+const getNext7Weekdays = () => {
+  const validDates = [];
+  let currentDate = new Date(getWeekStart());
+
+  while (validDates.length < 7) {
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      validDates.push(new Date(currentDate));
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return validDates[validDates.length - 1].toISOString().split("T")[0]; // Return 'YYYY-MM-DD'
 };
 
-// Get the next 5 weekdays
-const getNext5Weekdays = () => {
-  const weekdays = getWeekdays(new Date(), 5);
-  const lastWeekday = weekdays[weekdays.length - 1];
-  return lastWeekday.toISOString().split("T")[0]; // Return in 'YYYY-MM-DD' format
-};
 
 
 
@@ -434,38 +424,34 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Date Picker */}
         <div>
-          <label htmlFor="date" className="block text-sm font-semibold">
-            Select Date:
-          </label>
-          <input
-  type="date"
-  id="date"
-  {...register("date", {
-    required: "Date is required",
-    validate: (value) => {
-      const selectedDate = new Date(value).setHours(0, 0, 0, 0);
-      const today = new Date().setHours(0, 0, 0, 0);
+  <label htmlFor="date" className="block text-sm font-semibold">
+    Select Date:
+  </label>
+  <input
+    type="date"
+    id="date"
+    {...register("date", {
+      required: "Date is required",
+      validate: (value) => {
+        const selectedDate = new Date(value).setHours(0, 0, 0, 0);
+        const minDate = new Date(getWeekStart()).setHours(0, 0, 0, 0);
+        const maxDate = new Date(getNext7Weekdays()).setHours(0, 0, 0, 0);
 
-      if (selectedDate < today) {
-        return "Cannot select past dates.";
-      }
+        if (selectedDate < minDate || selectedDate > maxDate) {
+          return `Date must be between ${getWeekStart()} and ${getNext7Weekdays()}.`;
+        }
 
-      const dayOfWeek = new Date(value).getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return "Weekends are not allowed.";
-      }
-
-      return true;
-    },
-  })}
-  min={getWeekStart()} // Dynamic minimum date
-  max={getNext5Weekdays()} // Dynamic maximum date
-  className="w-full px-4 py-2 border rounded-lg"
-/>
-          {errors.date && (
-            <span className="text-red-500 text-sm">{errors.date.message}</span>
-          )}
-        </div>
+        return true;
+      },
+    })}
+    min={getWeekStart()} // Minimum date: start of the 7-day period
+    max={getNext7Weekdays()} // Maximum date: end of the 7-day period
+    className="w-full px-4 py-2 border rounded-lg"
+  />
+  {errors.date && (
+    <span className="text-red-500 text-sm">{errors.date.message}</span>
+  )}
+</div>
 
         {/* Start Time Picker */}
         {/* Start Time Picker */}

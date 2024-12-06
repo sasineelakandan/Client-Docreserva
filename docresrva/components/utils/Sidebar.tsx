@@ -12,7 +12,7 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   { label: "Dashboard", icon: <FaHome />, href: "/dashboard" },
-  { label: "Appointments", icon: <FaCalendarAlt />, href: "/appointments" },
+  { label: "Appointments", icon: <FaCalendarAlt />, href: "/appointmetManagement" },
   { label: "Doctors", icon: <FaUserMd />, href: "/doctors" },
   { label: "VerifiedDoctors", icon: <FaUserMd />, href: "/verifiedDoctors" },
   { label: "Patients", icon: <FaUsers />, href: "/patients" },

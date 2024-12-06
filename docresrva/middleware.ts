@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 
-const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors"]);
+const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement']);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage']);
 const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/paymentSuccessPage','/paymentFailurePage','/appointmentPageuser']);
 const PUBLIC_ROUTES = new Set([
