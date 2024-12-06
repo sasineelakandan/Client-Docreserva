@@ -202,19 +202,16 @@ const AppointmentsList: React.FC = () => {
     }
   };
 
-  const getWeekStart = () => {
-    const date = new Date();
-    const day = date.getDay();
-    const diff = date.getDate() - day;
-    date.setDate(diff);
-    return date.toISOString().split('T')[0];
-  };
+ 
 
-  const getNext7Weekdays = () => {
-    const date = new Date(getWeekStart());
-    date.setDate(date.getDate() + 7);
-    return date.toISOString().split('T')[0];
+  const getNextTwoDays = () => {
+    const today = new Date();
+    const nextTwoDays = new Date(today);
+    nextTwoDays.setDate(today.getDate() + 2);
+    return nextTwoDays.toISOString().split('T')[0]; // Returns the date in 'YYYY-MM-DD' format
   };
+  
+  const today = new Date().toISOString().split('T')[0];
 
   // Watch the specific fields
   
@@ -308,17 +305,17 @@ const AppointmentsList: React.FC = () => {
               required: "Date is required",
               validate: (value) => {
                 const selectedDate = new Date(value).setHours(0, 0, 0, 0);
-                const minDate = new Date(getWeekStart()).setHours(0, 0, 0, 0);
-                const maxDate = new Date(getNext7Weekdays()).setHours(0, 0, 0, 0);
+                const minDate = new Date(today).setHours(0, 0, 0, 0); // Today
+                const maxDate = new Date(getNextTwoDays()).setHours(0, 0, 0, 0); // Next two days
 
                 if (selectedDate < minDate || selectedDate > maxDate) {
-                  return `Date must be between ${getWeekStart()} and ${getNext7Weekdays()}.`;
+                  return `Date must be between ${today} and ${getNextTwoDays()}.`;
                 }
                 return true;
               },
             })}
-            min={getWeekStart()} // Minimum date: start of the 7-day period
-            max={getNext7Weekdays()} // Maximum date: end of the 7-day period
+            min={today} // Minimum date: today
+            max={getNextTwoDays()} // Maximum date: next two days
             className="w-full px-4 py-2 border rounded-lg"
           />
           {errors.date && (
