@@ -5,10 +5,11 @@ import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
-
+import { useRouter } from 'next/navigation';
 interface Appointment {
   _id: string;
   doctorId:{
+    _id:string
     name:string
   }
   slotId: {
@@ -43,7 +44,7 @@ const AppointmentsList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filterPatient, setFilterPatient] = useState("");
-  
+  const router=useRouter()
 
  
 
@@ -241,7 +242,30 @@ const AppointmentsList: React.FC = () => {
   const today = new Date().toISOString().split('T')[0];
 
   // Watch the specific fields
+  const handleChat=async(apptId:string,doctorId:string)=>{
+    try {
+      console.log(apptId,doctorId)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`, {
+        apptId },{withCredentials:true});
   
+      if(response.data){
+        const roomId=response?.data?.data?.status
+        router.push(`/chatroomDoctor?id=${roomId}&&userId=${doctorId}`)
+      }
+  
+      
+      
+    } catch (error:any) {
+      console.error("Error starting chat:", error.message);
+  
+      
+      if (error.response) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert("Unable to start chat. Please try again later.");
+      }
+    }
+  }
 
 
   
@@ -307,15 +331,27 @@ const AppointmentsList: React.FC = () => {
     </div>
     <div className="flex items-center gap-4">
       {appt.status !== "completed" && appt.status !== "canceled" ? (
+        <div className="flex items-center space-x-4">
+        {/* Action Selector */}
         <select
           onChange={(e) => handleSelectChange(e, appt._id)}
-          className="bg-white-500 text-black p-2 rounded-md"
+          className="bg-gray-100 text-black p-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
         >
           <option value="">Actions</option>
           <option value="reschedule">Reschedule</option>
           <option value="complete">Complete</option>
           <option value="cancel">Cancel</option>
         </select>
+      
+        {/* Chat Button */}
+        <button
+          onClick={() => handleChat(appt._id, appt?.doctorId?._id)}
+          className="bg-black text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-blue-500 transition duration-300"
+        >
+          Chat
+        </button>
+      </div>
+        
       ) : (
         <span
           className={`px-4 py-2 rounded-lg shadow ${

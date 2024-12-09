@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 const AppointmentsList = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -15,7 +16,7 @@ const AppointmentsList = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const appointmentsPerPage = 3;
-
+   const router=useRouter()
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -108,19 +109,23 @@ const AppointmentsList = () => {
     setCurrentPage(pageNumber);
   };
 
-  const handleChat=async(apptId:string)=>{
+  const handleChat=async(apptId:string,userId:string)=>{
     try {
-      const response = await axios.post(`/api/chat/`, {
+      console.log(apptId,userId)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat`, {
         apptId },{withCredentials:true});
   
-      console.log("Chat started:", response.data);
+      if(response.data){
+        const roomId=response?.data?.data?.status
+        router.push(`/message?id=${roomId}&&userId=${userId}`)
+      }
   
-      // Handle success (e.g., navigate to chat page, show a success message, etc.)
-      alert(`Chat started with ID: ${response.data.chatId}`);
+      
+      
     } catch (error:any) {
       console.error("Error starting chat:", error.message);
   
-      // Handle errors (e.g., show a user-friendly message)
+      
       if (error.response) {
         alert(`Error: ${error.response.data.message}`);
       } else {
@@ -213,7 +218,7 @@ const AppointmentsList = () => {
                         Cancel
                       </button>
                       <button
-  onClick={() => handleChat(appt._id)}
+  onClick={() => handleChat(appt._id,appt?.userId?._id)}
   className="bg-black text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-800 transition duration-300"
 >
   Chat
