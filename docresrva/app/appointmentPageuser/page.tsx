@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -11,6 +11,10 @@ const AppointmentsList = () => {
   const [error, setError] = useState<string | null>(null);
   const [filterDate, setFilterDate] = useState<string>('');
   const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
+  const [filterDoctor, setFilterDoctor] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const appointmentsPerPage = 3;
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -20,7 +24,6 @@ const AppointmentsList = () => {
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
           { withCredentials: true }
         );
-        console.log(response.data);
         setAppointments(response.data);
       } catch (err: any) {
         setError(err.message);
@@ -31,6 +34,22 @@ const AppointmentsList = () => {
 
     fetchAppointments();
   }, []);
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((appt) => {
+      const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
+      const matchesDate = !filterDate || appointmentDate === filterDate;
+      const matchesDoctor = !filterDoctor || appt.doctorId.name.toLowerCase().includes(filterDoctor.toLowerCase());
+      return matchesDate && matchesDoctor;
+    });
+  }, [appointments, filterDate, filterDoctor]);
+
+  const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
+
+  const paginatedAppointments = useMemo(() => {
+    const startIndex = (currentPage - 1) * appointmentsPerPage;
+    return filteredAppointments.slice(startIndex, startIndex + appointmentsPerPage);
+  }, [filteredAppointments, currentPage]);
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -40,21 +59,8 @@ const AppointmentsList = () => {
     return <div>Error: {error}</div>;
   }
 
-  const filteredAppointments = filterDate
-    ? appointments.filter((appt: any) => {
-        const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
-        return appointmentDate === filterDate;
-      })
-    : appointments;
-
-  const formatTime = (time24: any) => {
-    const [hours, minutes] = time24.split(':');
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const hours12 = hours % 12 || 12;
-    return `${hours12}:${minutes} ${period}`;
-  };
-
-  const handleCancel = async (appointmentId: any) => {
+ 
+  const handleCancel = async (appointmentId: string) => {
     try {
       const result = await Swal.fire({
         title: 'Are you sure?',
@@ -74,27 +80,54 @@ const AppointmentsList = () => {
         );
 
         if (response.data) {
-          setAppointments(prev =>
-            prev.map(appt => (appt._id === appointmentId ? { ...appt, status: "canceled" } : appt))
+          setAppointments((prev) =>
+            prev.map((appt) =>
+              appt._id === appointmentId ? { ...appt, status: 'canceled' } : appt
+            )
           );
           Swal.fire('Cancelled!', 'Your appointment has been cancelled.', 'success');
-          
         }
-      } else {
-        Swal.fire('Cancelled', 'Your appointment is safe :)', 'info');
       }
     } catch (error) {
-      console.error('Error while canceling the appointment:', error);
-
       if (axios.isAxiosError(error)) {
-        console.error('Axios error details:', error.response?.data || error.message);
         Swal.fire('Error', error.response?.data?.message || 'Something went wrong!', 'error');
       } else {
-        console.error('Unexpected error:', error);
         Swal.fire('Error', 'Unexpected error occurred.', 'error');
       }
     }
   };
+
+  const formatTime = (time24: string) => {
+    const [hours, minutes] = time24.split(':');
+    const period = +hours >= 12 ? 'PM' : 'AM';
+    const hours12 = +hours % 12 || 12;
+    return `${hours12}:${minutes} ${period}`;
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleChat=async(apptId:string)=>{
+    try {
+      const response = await axios.post(`/api/chat/`, {
+        apptId },{withCredentials:true});
+  
+      console.log("Chat started:", response.data);
+  
+      // Handle success (e.g., navigate to chat page, show a success message, etc.)
+      alert(`Chat started with ID: ${response.data.chatId}`);
+    } catch (error:any) {
+      console.error("Error starting chat:", error.message);
+  
+      // Handle errors (e.g., show a user-friendly message)
+      if (error.response) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert("Unable to start chat. Please try again later.");
+      }
+    }
+  }
 
   return (
     <>
@@ -102,22 +135,40 @@ const AppointmentsList = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-10 px-6">
         <h1 className="text-4xl font-extrabold text-center text-blue-900 mb-8">Appointments</h1>
 
-        {/* Filter Section */}
-        <div className="max-w-md mx-auto mb-6">
-          <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Date:</label>
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-          />
-        </div>
+        <div className="max-w-md mx-auto">
+  {/* Filter by Date */}
+  <div className="mb-6">
+    <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Date:</label>
+    <input
+      type="date"
+      value={filterDate}
+      onChange={(e) => setFilterDate(e.target.value)}
+      className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+      aria-label="Filter appointments by date"
+    />
+  </div>
+
+  {/* Filter by Doctor Name */}
+  <div className="mb-6">
+    <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Doctor Name:</label>
+    <input
+      type="text"
+      id="doctor"
+      name="doctor"
+      placeholder="Search by doctor name"
+      value={filterDoctor}
+      onChange={(e) => setFilterDoctor(e.target.value)}
+      className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+      aria-label="Filter appointments by doctor name"
+    />
+  </div>
+</div>
 
         {/* Appointment List */}
         <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-2xl font-bold text-blue-700 mb-6">Scheduled Appointments</h2>
           <ul className="space-y-4">
-            {filteredAppointments.map((appt: any) => (
+            {paginatedAppointments.map((appt: any) => (
               <li
                 key={appt._id}
                 className="p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex justify-between items-center"
@@ -161,12 +212,48 @@ const AppointmentsList = () => {
                       >
                         Cancel
                       </button>
+                      <button
+  onClick={() => handleChat(appt._id)}
+  className="bg-black text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-800 transition duration-300"
+>
+  Chat
+</button>
+
                     </>
                   )}
                 </div>
               </li>
             ))}
+            <div className="flex justify-center items-center mt-6">
+<button
+  onClick={() => handlePageChange(currentPage - 1)}
+  disabled={currentPage === 1}
+  className={`px-4 py-2 mx-1 border rounded ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+>
+  Previous
+</button>
+{Array.from({ length: totalPages }, (_, index) => (
+  <button
+    key={index}
+    onClick={() => handlePageChange(index + 1)}
+    className={`px-4 py-2 mx-1 border rounded ${
+      currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'
+    }`}
+  >
+    {index + 1}
+  </button>
+))}
+<button
+  onClick={() => handlePageChange(currentPage + 1)}
+  disabled={currentPage === totalPages}
+  className={`px-4 py-2 mx-1 border rounded ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+>
+  Next
+</button>
+</div>
+            
           </ul>
+          
         </div>
 
         {/* Appointment Details Modal */}

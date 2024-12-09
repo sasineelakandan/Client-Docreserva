@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent,useMemo } from 'react';
 import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -8,6 +8,9 @@ import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 
 interface Appointment {
   _id: string;
+  doctorId:{
+    name:string
+  }
   slotId: {
     date: string;
     startTime: string;
@@ -39,6 +42,10 @@ const AppointmentsList: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterPatient, setFilterPatient] = useState("");
+  
+
+ 
 
   const { register, handleSubmit, formState: { errors },watch } = useForm<FormValues>();
 
@@ -61,13 +68,18 @@ const AppointmentsList: React.FC = () => {
 
     fetchAppointments();
   }, []);
-
-  const filteredAppointments = filterDate
-    ? appointments.filter(appt => {
-        const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
-        return appointmentDate === filterDate;
-      })
-    : appointments;
+   
+  const [currentPage, setCurrentPage] = useState(1);
+  const doctorsPerPage = 1;
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(appt => {
+      const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
+      const matchesDate = !filterDate || appointmentDate === filterDate;
+      const matchesPatient = !filterPatient || appt.patientId.firstName.toLowerCase().includes(filterPatient.toLowerCase());
+      return matchesDate && matchesPatient;
+    });
+  }, [appointments, filterDate, filterPatient]);
+  
 
   const formatTime = (time24: string): string => {
     const [hours, minutes] = time24.split(":").map(Number);
@@ -175,6 +187,7 @@ const AppointmentsList: React.FC = () => {
         setAppointments(prev =>
           prev.map(appt => (appt._id === appointmentId ? { ...appt, status: "completed" } : appt))
         );
+        Swal.fire('Completed!', 'Your appointment has been completed.', 'success');
       }
     } catch (err) {
       console.error("Error completing appointment:", err);
@@ -195,6 +208,7 @@ const AppointmentsList: React.FC = () => {
         setAppointments(prev =>
           prev.map(appt => (appt._id === appointmentId ? { ...appt, status: "canceled" } : appt))
         );
+        Swal.fire('Cancelled!', 'Your appointment has been cancelled.', 'success');
       }
     } catch (err) {
       console.error("Error cancelling appointment:", err);
@@ -203,6 +217,19 @@ const AppointmentsList: React.FC = () => {
   };
 
  
+  const appointmentsPerPage = 3; 
+  
+  const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
+  
+  const paginatedAppointments = useMemo(() => {
+    const startIndex = (currentPage - 1) * appointmentsPerPage;
+    const endIndex = startIndex + appointmentsPerPage;
+    return filteredAppointments.slice(startIndex, endIndex);
+  }, [filteredAppointments, currentPage, appointmentsPerPage]);
+  
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  }
 
   const getNextTwoDays = () => {
     const today = new Date();
@@ -225,16 +252,35 @@ const AppointmentsList: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-10 px-6">
         <h1 className="text-4xl font-extrabold text-center text-blue-900 mb-8">Appointments</h1>
 
-        <div className="max-w-md mx-auto mb-6">
-          <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Date:</label>
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-            aria-label="Filter appointments by date"
-          />
-        </div>
+        <div className="max-w-md mx-auto">
+  {/* Filter by Date */}
+  <div className="mb-6">
+    <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Date:</label>
+    <input
+      type="date"
+      value={filterDate}
+      onChange={(e) => setFilterDate(e.target.value)}
+      className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+      aria-label="Filter appointments by date"
+    />
+  </div>
+
+  {/* Filter by Doctor Name */}
+  <div className="mb-6">
+    <label className="block text-lg font-semibold text-blue-900 mb-2">Filter by Patient Name:</label>
+    <input
+      type="text"
+      id="doctor"
+      name="doctor"
+      placeholder="Search by Patient name"
+      value={filterPatient}
+      onChange={(e) => setFilterPatient(e.target.value)}
+      className="w-full p-3 border border-blue-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+      aria-label="Filter appointments by doctor name"
+    />
+  </div>
+</div>
+
 
         <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-2xl font-bold text-blue-700 mb-6">Scheduled Appointments</h2>
@@ -244,45 +290,71 @@ const AppointmentsList: React.FC = () => {
             <p className="text-red-500">{error}</p>
           ) : filteredAppointments.length > 0 ? (
             <ul className="space-y-4">
-              {filteredAppointments.map(appt => (
-                <li key={appt._id} className="p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={appt.userId.profilePic}
-                      alt={`${appt.patientId.firstName} ${appt.patientId.lastName}`}
-                      className="w-16 h-16 rounded-full object-cover shadow-md"
-                    />
-                    <div>
-                      <p className="text-lg font-semibold text-gray-800">{appt.patientId.firstName} {appt.patientId.lastName}</p>
-                      <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-500">Time: {formatTime(appt.slotId.startTime)} - {formatTime(appt.slotId.endTime)}</p>
-                      <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-  {/* Conditionally render the select or status */}
-  {appt.status !== "completed" && appt.status !== "canceled" ? (
-    <select
-      onChange={(e) => handleSelectChange(e, appt._id)}
-      className="bg-white-500 text-black p-2 rounded-md"
-    >
-      <option value="">Actions</option>
-      <option value="reschedule">Reschedule</option>
-      <option value="complete">Complete</option>
-      <option value="cancel">Cancel</option>
-    </select>
-  ) : (
-    <span
-  className={`px-4 py-2 rounded-lg shadow ${
-    appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-  }`}
+              {paginatedAppointments.map(appt => (
+  <li key={appt._id} className="p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex justify-between items-center">
+    <div className="flex items-center gap-4">
+      <img
+        src={appt.userId.profilePic}
+        alt={`${appt.patientId.firstName} ${appt.patientId.lastName}`}
+        className="w-16 h-16 rounded-full object-cover shadow-md"
+      />
+      <div>
+        <p className="text-lg font-semibold text-gray-800">{appt.patientId.firstName} {appt.patientId.lastName}</p>
+        <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toLocaleDateString()}</p>
+        <p className="text-sm text-gray-500">Time: {formatTime(appt.slotId.startTime)} - {formatTime(appt.slotId.endTime)}</p>
+        <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-4">
+      {appt.status !== "completed" && appt.status !== "canceled" ? (
+        <select
+          onChange={(e) => handleSelectChange(e, appt._id)}
+          className="bg-white-500 text-black p-2 rounded-md"
+        >
+          <option value="">Actions</option>
+          <option value="reschedule">Reschedule</option>
+          <option value="complete">Complete</option>
+          <option value="cancel">Cancel</option>
+        </select>
+      ) : (
+        <span
+          className={`px-4 py-2 rounded-lg shadow ${
+            appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+          }`}
+        >
+          {appt.status === "completed" ? "Completed" : "Canceled"}
+        </span>
+      )}
+    </div>
+  </li>
+))}<div className="flex justify-center items-center mt-6">
+<button
+  onClick={() => handlePageChange(currentPage - 1)}
+  disabled={currentPage === 1}
+  className={`px-4 py-2 mx-1 border rounded ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
 >
-  {appt.status === "completed" ? "Completed" : "Canceled"}
-</span>
-  )}
+  Previous
+</button>
+{Array.from({ length: totalPages }, (_, index) => (
+  <button
+    key={index}
+    onClick={() => handlePageChange(index + 1)}
+    className={`px-4 py-2 mx-1 border rounded ${
+      currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'
+    }`}
+  >
+    {index + 1}
+  </button>
+))}
+<button
+  onClick={() => handlePageChange(currentPage + 1)}
+  disabled={currentPage === totalPages}
+  className={`px-4 py-2 mx-1 border rounded ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'bg-blue-500 text-white'}`}
+>
+  Next
+</button>
 </div>
-                </li>
-              ))}
+
             </ul>
           ) : (
             <p>No appointments available.</p>
@@ -397,8 +469,11 @@ const AppointmentsList: React.FC = () => {
         </div>
       </form>
     </div>
+    
   </div>
 )}
+
+
 
       </div>
     </>

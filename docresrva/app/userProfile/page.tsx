@@ -9,14 +9,15 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
-
+import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
+import Image from "next/image";
 const UserProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [profilePic1, setProfile1] = useState<string>();
+  const [profilePic, setProfilePic] = useState<string>();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const profilePic = localStorage.getItem("profilePic");
+  
   const router = useRouter();
 
   const passwordForm = useForm({
@@ -37,9 +38,9 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:8001/api/user/profile",
-          { profilePic },
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
+          
           { withCredentials: true }
         );
 
@@ -75,11 +76,12 @@ const UserProfile: React.FC = () => {
       toast.error("Please select a file!");
       return;
     }
-
+  
     try {
       const formData = new FormData();
       formData.append("file", file);
-
+  
+      // Upload file to backend
       const response = await axios.post<{ url: string }>(
         "http://localhost:3000/api/upload",
         formData,
@@ -89,17 +91,38 @@ const UserProfile: React.FC = () => {
           },
         }
       );
-
+  
       if (response.data) {
-        setProfile1(response.data.url);
-        localStorage.setItem("profilePic", response.data.url);
-        toast.success("Profile upload success!");
+        setProfilePic(response.data.url)
+        const uploadedUrl = response.data.url;
+        console.log(uploadedUrl)
+        
+        const getResponse = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
+  
+        // Handle the response from the s
+        console.log("URL saved response:", getResponse.data);
+  
+        ; // Set the profile picture state
+        toast.success("Profile upload success message!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       }
     } catch (error) {
-      toast.error("Upload failed. Please try again.");
+      if (axios.isAxiosError(error)) {
+        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+      } else {
+        toast.error("Upload failed due to an unknown error.");
+      }
     }
   };
-
+  
   const handleCameraClick = () => fileInputRef.current?.click();
 
   const handlePasswordChange = async (data: any) => {
@@ -109,7 +132,7 @@ const UserProfile: React.FC = () => {
         toast.error("New password and confirmation do not match!");
         return;
       }
-      let response=await axios.put("http://localhost:8001/api/user/profile",
+      let response=await axios.put(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
         data,
         { withCredentials: true }
       );
@@ -127,7 +150,7 @@ const UserProfile: React.FC = () => {
 
   const handleProfileUpdate = async (data: any) => {
     try {
-      let response=await axios.patch("http://localhost:8001/api/user/profile",
+      let response=await axios.patch(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
           data,
           { withCredentials: true }
         );
@@ -142,14 +165,15 @@ const UserProfile: React.FC = () => {
       toast.error("Failed to update profile.");
     }
   };
+  console.log(user)
 
   return (
     <div className="max-w-full">
       <Navbar />
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
-          <img
-            src={profilePic1 || user?.profilePic}
+          <Image
+            src={user?.profilePic||profilePic||Img}
             alt="Profile picture"
             width={128}
             height={128}

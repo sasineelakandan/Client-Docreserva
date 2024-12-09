@@ -213,8 +213,25 @@ const AppointmentManagement: React.FC = () => {
       {/* Payment Details */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold mb-2">Payment Details</h3>
-        <p><strong>Amount:</strong> {selectedAppointment?.paymentId?.amount}</p>
-        <p><strong>Status:</strong> {selectedAppointment?.status}</p>
+        <p><strong>Amount:</strong>₹ {selectedAppointment?.paymentId?.amount}</p>
+        <p>
+  <strong>Status:</strong>{" "}
+  <span
+    className={`${
+      selectedAppointment?.status === "scheduled"
+        ? "text-blue-500"
+        : selectedAppointment?.status === "rescheduled"
+        ? "text-yellow-500"
+        : selectedAppointment?.status === "canceled"
+        ? "text-red-500"
+        : selectedAppointment?.status === "completed"
+        ? "text-green-500"
+        : "text-gray-500"
+    } font-semibold`}
+  >
+    {selectedAppointment?.status}
+  </span>
+</p>
       </div>
 
       <button

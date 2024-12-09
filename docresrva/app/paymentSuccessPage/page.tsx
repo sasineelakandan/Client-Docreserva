@@ -27,7 +27,7 @@ const PaymentSuccessPage = () => {
 
                 <div className="text-left text-gray-700 mb-6">
                     <p className="mb-2"><span className="font-semibold">🩺 Doctor Appointment Confirmed</span></p>
-                    <p className="mb-2"><span className="font-semibold">💵 Amount Paid:</span> {amount}</p>
+                    <p className="mb-2"><span className="font-semibold">💵 Amount Paid:</span>₹ {amount}</p>
                     <p className="mb-2"><span className="font-semibold">🔢 Reference Number:</span> {bankRefNum}</p>
                 </div>
 

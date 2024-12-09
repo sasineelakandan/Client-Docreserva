@@ -44,7 +44,7 @@ function SignUp() {
     try {
       console.log(data);
       setLoading(true)
-      const response = await axios.post('http://localhost:8001/api/user/signup', data, { withCredentials: true });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/signup`, data, { withCredentials: true });
       if(response.data){
         toast.success('Sign Up successful! Please verify your email.');
         dispatch(

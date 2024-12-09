@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
+import Image from "next/image";
 interface SlotFormData {
   
   date: string;
@@ -105,32 +106,17 @@ console.log(user?.profilePic)
 
 const getWeekStart = () => {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-
-  if (dayOfWeek === 0) {
-    // Sunday, move to Monday
-    today.setDate(today.getDate() + 1);
-  } else if (dayOfWeek === 6) {
-    // Saturday, move to Monday
-    today.setDate(today.getDate() + 2);
-  }
-
-  return today.toISOString().split("T")[0]; // Return 'YYYY-MM-DD'
+  today.setHours(0, 0, 0, 0); // Set time to 00:00:00
+  return today.toISOString().split("T")[0]; // Return date in YYYY-MM-DD format
 };
+
+// Function to get the last day of a 7-day period (including weekends)
 const getNext7Weekdays = () => {
-  const validDates = [];
-  let currentDate = new Date(getWeekStart());
-
-  while (validDates.length < 7) {
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-      validDates.push(new Date(currentDate));
-    }
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return validDates[validDates.length - 1].toISOString().split("T")[0]; // Return 'YYYY-MM-DD'
-};
+  const today = new Date();
+  const next7Days = new Date(today.setDate(today.getDate() + 7)); // Add 7 days
+  next7Days.setHours(0, 0, 0, 0); // Set time to 00:00:00
+  return next7Days.toISOString().split("T")[0]; // Return date in YYYY-MM-DD format
+};;
 
 
 
@@ -265,7 +251,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
      
         <div className="relative">
-          <img
+          <Image
             src={profilePic1||user?.profilePic||Img}
             alt="Doctor's profile picture"
             width={128}

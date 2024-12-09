@@ -29,7 +29,7 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> =async (data) => {
     try{
-      const response= await axios.post('http://localhost:8001/api/user/login', data, { withCredentials: true })
+      const response= await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/login`, data, { withCredentials: true })
       if(response.data){
         
         dispatch(

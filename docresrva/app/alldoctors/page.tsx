@@ -20,7 +20,7 @@ interface Doctor {
 const App: React.FC = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filters, setFilters] = useState({
-    name:"",
+    name: "",
     location: "",
     specialization: "",
     experience: "",
@@ -31,10 +31,14 @@ const App: React.FC = () => {
   const doctorsPerPage = 6;
 
   const router = useRouter();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        if (!process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL) {
+          throw new Error("Backend URL is missing in environment variables");
+        }
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
           { withCredentials: true }
@@ -49,7 +53,9 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
@@ -73,6 +79,10 @@ const App: React.FC = () => {
     setCurrentPage(pageNumber);
   };
 
+  if (currentDoctors.length === 0 && filteredDoctors.length > 0) {
+    setCurrentPage(1); // Reset to page 1 if filtered results are empty for the current page
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -85,74 +95,76 @@ const App: React.FC = () => {
     router.push(`/doctorDetails?id=${doctorId}`);
   };
 
+  const handleResetFilters = () => {
+    setFilters({
+      name: "",
+      location: "",
+      specialization: "",
+      experience: "",
+      fees: "",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-teal-50 to-teal-100">
       <Navbar />
       <div className="container mx-auto p-6 flex gap-8">
         {/* Sidebar */}
         <aside className="w-1/4 bg-white rounded-lg shadow-lg p-6">
-  <h2 className="text-2xl font-bold text-teal-600 mb-6">Filters</h2>
-  
-  {/* Name Filter */}
-  <div className="mb-5">
-    <label className="block text-gray-700 font-semibold mb-2">Name</label>
-    <input
-      type="text"
-      name="name"
-      placeholder="Search by name"
-      className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
-      onChange={handleFilterChange}
-    />
-  </div>
-  
-  {/* Location Filter */}
-  <div className="mb-5">
-    <label className="block text-gray-700 font-semibold mb-2">Location</label>
-    <input
-      type="text"
-      name="location"
-      placeholder="Search by location"
-      className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
-      onChange={handleFilterChange}
-    />
-  </div>
-  
-  {/* Specialization Filter */}
-  <div className="mb-5">
-    <label className="block text-gray-700 font-semibold mb-2">Specialization</label>
-    <input
-      type="text"
-      name="specialization"
-      placeholder="Search by specialization"
-      className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
-      onChange={handleFilterChange}
-    />
-  </div>
-  
-  {/* Min Experience Filter */}
-  <div className="mb-5">
-    <label className="block text-gray-700 font-semibold mb-2">Min Experience</label>
-    <input
-      type="number"
-      name="experience"
-      placeholder="Years"
-      className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
-      onChange={handleFilterChange}
-    />
-  </div>
-  
-  {/* Max Fees Filter */}
-  <div className="mb-5">
-    <label className="block text-gray-700 font-semibold mb-2">Max Fees</label>
-    <input
-      type="number"
-      name="fees"
-      placeholder="Fees in ₹"
-      className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
-      onChange={handleFilterChange}
-    />
-  </div>
-</aside>
+          <h2 className="text-2xl font-bold text-teal-600 mb-6">Filters</h2>
+
+          {/* Filter Fields */}
+          {["name", "location", "experience", "fees"].map((filter) => (
+            <div className="mb-5" key={filter}>
+              <label
+                htmlFor={filter}
+                className="block text-gray-700 font-semibold mb-2 capitalize"
+              >
+                {filter === "fees" ? "Max Fees" : `Search by ${filter}`}
+              </label>
+              <input
+                type={filter === "experience" || filter === "fees" ? "number" : "text"}
+                id={filter}
+                name={filter}
+                placeholder={`Enter ${filter}`}
+                className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                onChange={handleFilterChange}
+              />
+            </div>
+          ))}
+
+          {/* Specialization Dropdown */}
+          <div className="mb-5">
+            <label
+              htmlFor="specialization"
+              className="block text-gray-700 font-semibold mb-2"
+            >
+              Specialization
+            </label>
+            <select
+              id="specialization"
+              name="specialization"
+              className="border border-gray-300 p-3 w-full rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+              value={filters.specialization}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Specializations</option>
+              <option value="cardiology">Cardiology</option>
+              <option value="dermatology">Dermatology</option>
+              <option value="pediatrics">Pediatrics</option>
+              <option value="neurology">Neurology</option>
+              <option value="orthopedics">Orthopedics</option>
+            </select>
+          </div>
+
+          {/* Reset Filters */}
+          <button
+            className="bg-teal-500 text-white px-4 py-2 rounded-lg w-full hover:bg-teal-600 transition duration-200"
+            onClick={handleResetFilters}
+          >
+            Reset Filters
+          </button>
+        </aside>
 
         {/* Main Content */}
         <main className="flex-1">
@@ -165,7 +177,7 @@ const App: React.FC = () => {
                 onClick={() => handleCardClick(doctor._id)}
               >
                 <img
-                  src={doctor.profilePic}
+                  src={doctor.profilePic || "/default-avatar.png"}
                   alt={doctor.name}
                   className="w-28 h-28 rounded-full object-cover border-4 border-teal-600"
                 />
