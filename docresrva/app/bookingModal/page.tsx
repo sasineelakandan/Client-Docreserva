@@ -1,210 +1,176 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
-interface BookingModalProps {
+interface AppointmentBookingProps {
   doctorId: string;
-  isOpen: boolean;
-  onClose: () => void;
+  isModalOpen: boolean;
+  setIsModalOpen: (open: boolean) => void;
 }
-const BookingModal: React.FC<BookingModalProps> = ({
-  isOpen,
-  onClose,
+
+const generateSlotsForDay = (date: Date, doctorId: string) => {
+  const slots = [];
+  const startTime = 9; // 9 AM
+  const endTime = 17; // 5 PM
+  const now = new Date();
+
+  for (let hour = startTime; hour < endTime; hour++) {
+    const slotStart = new Date(date);
+    slotStart.setHours(hour, 0, 0, 0);
+
+    // Skip slots that are in the past
+    if (slotStart < now) continue;
+
+    const startTimeStr = `${hour % 12 === 0 ? 12 : hour % 12}:00 ${hour >= 12 ? "PM" : "AM"}`;
+    const endTimeStr = `${(hour + 1) % 12 === 0 ? 12 : (hour + 1) % 12}:00 ${(hour + 1) >= 12 ? "PM" : "AM"}`;
+    slots.push({
+      date: date.toISOString().split("T")[0],
+      startTime: startTimeStr,
+      endTime: endTimeStr,
+      doctorId,
+      isBooked:false
+    });
+  }
+
+  return slots;
+};
+
+const generateSlots = (doctorId: string) => {
+  const today = new Date();
+  const slots = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+    date.setDate(today.getDate() + i);
+    slots.push(...generateSlotsForDay(date, doctorId));
+  }
+
+  return slots;
+};
+
+const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
   doctorId,
+  isModalOpen,
+  setIsModalOpen,
 }) => {
-  const [selectedDate, setSelectedDate] = useState<string>("Today");
-  const [slots, setSlots] = useState<any[]>([]);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const allSlots = generateSlots(doctorId); // Passing doctorId here
+  const uniqueDates = Array.from(new Set(allSlots.map((slot) => slot.date)));
   const router=useRouter()
-  // Function to convert time to 12-hour format
-  const convertTo12HourFormat = (time: string): string => {
-    const [hour, minute] = time.split(":").map(Number);
-    const period = hour >= 12 ? "PM" : "AM";
-    const newHour = hour % 12 || 12; // Converts 0 to 12 for midnight
-    return `${newHour}:${minute < 10 ? "0" + minute : minute} ${period}`;
-  };
+  const [selectedDate, setSelectedDate] = useState<string | null>(uniqueDates.length > 0 ? uniqueDates[0] : null); // Ensure it's not null
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const slotsForSelectedDate = allSlots.filter((slot) => slot.date === selectedDate);
 
-  // Function to generate upcoming weekdays
-  const getDynamicDates = () => {
-    const today = new Date();
-    const dates = [];
-  
-    for (let i = 0; i < 7; i++) { // Generate 7 continuous days
-      const futureDate = new Date(today);
-      futureDate.setDate(today.getDate() + i);
-  
-      dates.push({
-        label:
-          i === 0
-            ? "Today"
-            : i === 1
-            ? "Tomorrow"
-            : futureDate.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              }),
-        date: futureDate,
+ 
+const handleBooking = async (slot: { 
+  doctorId: string; 
+  startTime: string; 
+  endTime: string; 
+  date: string; 
+  isBooked: boolean; 
+}) => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots`, slot,{withCredentials:true});
+
+    if (response.data) {
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Appointment booked successfully!",
+        confirmButtonText: "OK",
       });
+      
+      setIsModalOpen(false);
+      router.push(`/patientDetails?id=${response?.data?._id}`)
     }
-  
-    return dates;
-  };
-  
-  const dates = getDynamicDates();
-  
-  // Fetch slots on doctorId change
-  useEffect(() => {
-    if (!doctorId) return;
+  } catch (error: any) {
+    console.error("Error booking appointment:", error);
 
-    const fetchSlots = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.put(
-          `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
-          { doctorId },
-          { withCredentials: true }
-        );
-
-        const formattedSlots = response.data.map((slot: any) => ({
-          ...slot,
-          formattedDate: new Date(slot.date).toLocaleDateString("en-US"),
-          formattedStartTime: convertTo12HourFormat(slot.startTime),
-          formattedEndTime: convertTo12HourFormat(slot.endTime),
-        }));
-        setSlots(formattedSlots);
-      } catch (err: any) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: err.response?.data?.message || "Something went wrong",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSlots();
-  }, [doctorId]);
-
-  // Filter slots based on selected date
-  const filteredSlots = slots.filter((slot) => {
-    const selectedFullDate = dates.find((d) => d.label === selectedDate)?.date;
-    return selectedFullDate && new Date(slot.date).toDateString() === selectedFullDate.toDateString();
-  });
-
-  // Toggle slot selection
-  const toggleSlotSelection = (slotId: string) => {
-    if (bookedSlots.includes(slotId)) return;
-    setSelectedSlot((prev) => (prev === slotId ? null : slotId));
-  };
-
-  // Handle booking submission
-  const handleBookingSubmit = async () => {
-    if (!selectedSlot) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: "Please select a slot to book.",
-      });
-      return;
+    let errorMessage = "There was an error booking your appointment. Please try again.";
+    if (error.response && error.response.data) {
+      errorMessage = error.response.data.message || errorMessage;
     }
 
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
-        { doctorId, selectedSlot },
-        { withCredentials: true }
-      );
-      if (response.data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: "Appointment booked successfully!",
-          
-        });
-        router.push(`/patientDetails?id=${selectedSlot}`)
-      } else {
-        Swal.fire({
-          icon: 'info',
-          title: 'Already exists',
-          text: response?.data?.message || "Failed to book appointment.",
-        });
-      }
+    setError(errorMessage);
 
-      setSelectedSlot(null);
-      onClose();
-    } catch (err: any) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err.response?.data?.message || "Failed to book appointment.",
-      });
-    }
-  };
-
-  if (!isOpen) return null;
+    await Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: errorMessage,
+      confirmButtonText: "OK",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-3/4 max-w-lg relative">
-        <button
-          className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-        <h2 className="text-xl font-bold mb-4">Book Appointment</h2>
-        <div className="flex gap-2 overflow-x-auto">
-          {dates.map(({ label }) => (
-            <button
-              key={label}
-              onClick={() => setSelectedDate(label)}
-              className={`px-4 py-2 rounded-lg ${
-                selectedDate === label
-                  ? "bg-teal-600 text-white"
-                  : "bg-teal-200 text-teal-700"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-4 gap-2 mt-6">
-          {loading && <p>Loading available slots...</p>}
-          {!loading && filteredSlots.length === 0 && (
-            <p className="text-red-500 col-span-4 text-center">No slots available for this day.</p>
-          )}
-          {!loading &&
-            filteredSlots.map((slot) => (
+    isModalOpen && (
+      <div
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+        role="dialog"
+        aria-labelledby="modal-title"
+        aria-modal="true"
+      >
+        <div className="p-6 bg-white shadow-2xl rounded-xl max-w-lg w-full relative">
+          <h1 id="modal-title" className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+            Book an Appointment Slot
+          </h1>
+
+          {/* Date Selection */}
+          <div className="flex space-x-2 mb-4 overflow-x-auto">
+            {uniqueDates.map((date) => (
               <button
-                key={slot._id}
-                onClick={() => toggleSlotSelection(slot._id)}
-                disabled={bookedSlots.includes(slot._id)}
-                className={`px-3 py-1 rounded-md ${
-                  bookedSlots.includes(slot._id)
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : selectedSlot === slot._id
-                    ? "bg-teal-600 text-white"
-                    : "bg-teal-200 text-teal-700"
+                key={date}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-all shadow-md ${
+                  selectedDate === date
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 hover:bg-blue-100 text-gray-800"
                 }`}
+                onClick={() => setSelectedDate(date)}
+                aria-pressed={selectedDate === date}
               >
-                {slot.formattedStartTime} - {slot.formattedEndTime}
+                {date}
               </button>
             ))}
-        </div>
-        <div className="mt-6 flex justify-between">
-          <button className="px-6 py-2 bg-red-500 text-white rounded-lg" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="px-6 py-2 bg-teal-600 text-white rounded-lg" onClick={handleBookingSubmit}>
-            Ok
+          </div>
+
+          {/* Error Message */}
+          {error && <p className="text-red-500 text-center font-medium mb-4">{error}</p>}
+
+          {/* Slots */}
+          <div className="grid grid-cols-2 gap-4">
+            {slotsForSelectedDate.length > 0 ? (
+              slotsForSelectedDate.map((slot) => (
+                <button
+                  key={slot.startTime}
+                  className={`px-4 py-3 text-sm font-semibold border rounded-lg shadow-md transition-all ${
+                    loading ? "bg-gray-200 text-gray-400" : "bg-gray-50 hover:bg-blue-50 text-gray-800"
+                  }`}
+                  onClick={() => handleBooking(slot)}
+                  disabled={loading}
+                >
+                  {slot.startTime} - {slot.endTime}
+                </button>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center col-span-2">No available slots for this date</p>
+            )}
+          </div>
+
+          <button
+            className="mt-6 px-6 py-3 rounded-lg bg-red-600 text-white font-medium text-lg w-full shadow-lg hover:bg-red-700 transition-all"
+            onClick={() => setIsModalOpen(false)}
+          >
+            Close
           </button>
         </div>
       </div>
-    </div>
+    )
   );
 };
 
-export default BookingModal;
+export default AppointmentBooking;

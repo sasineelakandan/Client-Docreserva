@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
-import BookingModal from "../bookingModal/page";
+import AppointmentBooking from "../bookingModal/page";
 import { setUserDetails} from '../../Store/slices/doctorSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
@@ -125,8 +125,11 @@ const DoctorDetails: React.FC = () => {
 
          
         </div>
-        <BookingModal doctorId={doctor._id} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-          
+        <AppointmentBooking
+  doctorId={doctor?._id} 
+  isModalOpen={isModalOpen}
+  setIsModalOpen={setIsModalOpen}
+/>          
         
         {/* About Section */}
         <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
