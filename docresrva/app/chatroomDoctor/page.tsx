@@ -1,6 +1,5 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+'use client'
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -12,7 +11,6 @@ interface Message {
     timestamp: Date;
 }
 
-// Socket initialization
 let socket: ReturnType<typeof io>;
 
 const ChatRoom = () => {
@@ -22,10 +20,11 @@ const ChatRoom = () => {
     const [users, setUsers] = useState<any[]>([]);
 
     const searchParams = useSearchParams();
-    const doctorId = searchParams.get('doctorId');
+    const roomId = searchParams.get('id');
+
+    const messagesEndRef = useRef<HTMLDivElement | null>(null); // Create a ref for the message container
 
     useEffect(() => {
-        // Initialize socket connection
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
         socket.on("receiveMessage", (msg: Message) => {
@@ -43,7 +42,7 @@ const ChatRoom = () => {
         });
 
         return () => {
-            socket.disconnect(); // Clean up socket connection
+            socket.disconnect();
         };
     }, []);
 
@@ -53,21 +52,22 @@ const ChatRoom = () => {
                 const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chatroom`, {
                     withCredentials: true,
                 });
+            
                 setUsers(response.data);
-                if (doctorId) setActiveUser(doctorId);
+                if (roomId) setActiveUser(roomId);
             } catch (error) {
                 console.error('Error fetching users:', error);
             }
         };
         fetchUsers();
-    }, [doctorId]);
+    }, [roomId]);
 
     useEffect(() => {
         const fetchMessages = async () => {
-            if (!activeUser) return;
+            if (!roomId) return;
             try {
                 const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat?roomId=${activeUser}`,
+                    `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat?roomId=${roomId}`,
                     { withCredentials: true }
                 );
                 setMessages(
@@ -76,13 +76,20 @@ const ChatRoom = () => {
                         timestamp: new Date(msg.timestamp),
                     }))
                 );
-                socket.emit('joinRoom', activeUser); // Join the room
+                socket.emit('joinRoom', roomId);
             } catch (error) {
                 console.error('Error fetching messages:', error);
             }
         };
         fetchMessages();
-    }, [activeUser]);
+    }, [roomId]);
+
+    useEffect(() => {
+        // Scroll to the bottom whenever messages change
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]); // Trigger the scroll effect when messages change
 
     const sendMessage = async () => {
         if (!message.trim()) return;
@@ -95,25 +102,22 @@ const ChatRoom = () => {
         };
 
         try {
-            // Emit the message to the server
-            socket.emit('sendMessage', { roomId: activeUser, message: newMessage });
+            socket.emit('sendMessage', { roomId: roomId, message: newMessage });
 
-            setMessage('')
+            setMessage('');
 
-            // Save the message to the database
             await axios.put(
                 `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`,
-                { roomId: activeUser, message: newMessage },
+                { roomId: roomId, message: newMessage },
                 { withCredentials: true }
             );
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     };
 
     return (
         <div className="flex h-screen bg-gray-100">
-            {/* Sidebar */}
             <div className="w-1/4 bg-white shadow-md p-4 overflow-y-auto">
                 <h2 className="text-xl font-semibold mb-4">Chats</h2>
                 {users.length > 0 ? (
@@ -122,7 +126,7 @@ const ChatRoom = () => {
                             <li
                                 key={user._id}
                                 className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${
-                                    activeUser === user._id ? 'bg-gray-300' : ''
+                                    roomId === user._id ? 'bg-gray-300' : ''
                                 }`}
                                 onClick={() => setActiveUser(user._id)}
                             >
@@ -137,8 +141,11 @@ const ChatRoom = () => {
                                         user?.patient?.username?.charAt(0)
                                     )}
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <span className="font-bold">{user?.patient?.username}</span>
+                                    <p className="text-sm text-gray-500 truncate">
+                                        {user?.lastMessage || 'No messages yet'}
+                                    </p>
                                 </div>
                             </li>
                         ))}
@@ -148,7 +155,6 @@ const ChatRoom = () => {
                 )}
             </div>
 
-            {/* Chat Window */}
             <div className="w-3/4 flex flex-col p-4">
                 <div className="flex-1 overflow-y-auto mb-4">
                     {messages.length > 0 ? (
@@ -173,6 +179,8 @@ const ChatRoom = () => {
                     ) : (
                         <p>No messages yet.</p>
                     )}
+                    {/* Scroll to bottom */}
+                    <div ref={messagesEndRef} />
                 </div>
                 <div className="flex items-center space-x-3">
                     <input

@@ -1,6 +1,5 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+'use client'
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios';
@@ -13,7 +12,7 @@ interface Message {
 }
 
 // Socket initialization
-let socket:  ReturnType<typeof io>;
+let socket: ReturnType<typeof io>;
 
 const ChatRoom = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -24,30 +23,36 @@ const ChatRoom = () => {
     const [loadingMessages, setLoadingMessages] = useState(false);
 
     const searchParams = useSearchParams();
-    const userId = searchParams.get('userId');
+    const roomId = searchParams.get('id');
+    const messageEndRef = useRef<HTMLDivElement | null>(null); // Ref for scrolling
 
     useEffect(() => {
-      // Initialize socket connection
-      socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+        if (roomId) {
+            setActiveUser(roomId); // Set the active user based on roomId from search params
+        }
+    }, [roomId]);
 
-      socket.on("receiveMessage", (msg: Message) => {
-          const messageWithTimestamp = {
-              ...msg,
-              timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-          };
+    useEffect(() => {
+        socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-          setMessages((prevMessages) => {
-              if (!prevMessages.some((m) => m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() && m.sender === messageWithTimestamp.sender)) {
-                  return [...prevMessages, messageWithTimestamp];
-              }
-              return prevMessages;
-          });
-      });
+        socket.on("receiveMessage", (msg: Message) => {
+            const messageWithTimestamp = {
+                ...msg,
+                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+            };
 
-      return () => {
-          socket.disconnect(); 
-      };
-  }, []);
+            setMessages((prevMessages) => {
+                if (!prevMessages.some((m) => m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() && m.sender === messageWithTimestamp.sender)) {
+                    return [...prevMessages, messageWithTimestamp];
+                }
+                return prevMessages;
+            });
+        });
+
+        return () => {
+            socket.disconnect(); 
+        };
+    }, []);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -57,7 +62,6 @@ const ChatRoom = () => {
                     withCredentials: true,
                 });
                 setUsers(response.data);
-                if (userId) setActiveUser(userId);
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
@@ -65,7 +69,7 @@ const ChatRoom = () => {
             }
         };
         fetchUsers();
-    }, [userId]);
+    }, []);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -111,10 +115,7 @@ const ChatRoom = () => {
         try {
           // Emit the message to the server
           socket.emit('sendMessage', { roomId: activeUser, message: newMessage });
-
-         
-          
-          setMessage('')
+          setMessage('');
           
           await axios.put(
               `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat`,
@@ -125,6 +126,13 @@ const ChatRoom = () => {
         console.log(error)
       }
     };
+
+    // Scroll to the bottom when messages change
+    useEffect(() => {
+        if (messageEndRef.current) {
+            messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -154,8 +162,11 @@ const ChatRoom = () => {
                                         user?.doctor?.name?.charAt(0)
                                     )}
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <span className="font-bold">{user?.doctor?.name}</span>
+                                    <p className="text-sm text-gray-500 truncate">
+                                        {user?.lastMessage || 'No messages yet'}
+                                    </p>
                                 </div>
                             </li>
                         ))}
@@ -192,6 +203,8 @@ const ChatRoom = () => {
                     ) : (
                         <p>No messages yet.</p>
                     )}
+                    {/* Scroll to the bottom */}
+                    <div ref={messageEndRef} />
                 </div>
                 <div className="flex items-center space-x-3">
                     <input
@@ -200,12 +213,10 @@ const ChatRoom = () => {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type your message..."
                         className="w-full p-2 border border-gray-300 rounded-lg"
-                        aria-label="Type your message"
                     />
                     <button
                         onClick={sendMessage}
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                        aria-label="Send message"
                     >
                         Send
                     </button>

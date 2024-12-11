@@ -88,7 +88,7 @@ const Navbar: React.FC = () => {
           <span className="font-medium">Home</span>
         </a>
         <a
-          href="#"
+          href="/message"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Mail className="text-2xl" />
