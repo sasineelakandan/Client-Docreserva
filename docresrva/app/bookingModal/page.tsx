@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+
 interface AppointmentBookingProps {
   doctorId: string;
   isModalOpen: boolean;
@@ -28,7 +29,7 @@ const generateSlotsForDay = (date: Date, doctorId: string) => {
       startTime: startTimeStr,
       endTime: endTimeStr,
       doctorId,
-      isBooked:false
+      isBooked: false,
     });
   }
 
@@ -53,60 +54,82 @@ const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
   isModalOpen,
   setIsModalOpen,
 }) => {
-  const allSlots = generateSlots(doctorId); // Passing doctorId here
+  const router = useRouter();
+  const allSlots = generateSlots(doctorId);
   const uniqueDates = Array.from(new Set(allSlots.map((slot) => slot.date)));
-  const router=useRouter()
-  const [selectedDate, setSelectedDate] = useState<string | null>(uniqueDates.length > 0 ? uniqueDates[0] : null); // Ensure it's not null
+  const [selectedDate, setSelectedDate] = useState<string | null>(uniqueDates[0] || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const slotsForSelectedDate = allSlots.filter((slot) => slot.date === selectedDate);
+  const [bookedSlots, setBookedSlots] = useState<any[]>([]);
+  const slotsForSelectedDate = allSlots.filter(
+    (slot) => slot.date === selectedDate
+  );
 
- 
-const handleBooking = async (slot: { 
-  doctorId: string; 
-  startTime: string; 
-  endTime: string; 
-  date: string; 
-  isBooked: boolean; 
-}) => {
-  setLoading(true);
-  setError(null);
+  useEffect(() => {
+    const fetchBookedSlots = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.put(
+          `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,{doctorId},{withCredentials:true});
+          
+        setBookedSlots(response.data);
+      } catch (err: any) {
+        setError("Failed to fetch booked slots.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots`, slot,{withCredentials:true});
+    fetchBookedSlots();
+  }, [doctorId]);
 
-    if (response.data) {
+  const handleBooking = async (slot: {
+    doctorId: string;
+    startTime: string;
+    endTime: string;
+    date: string;
+    isBooked: boolean;
+  }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots`,
+        slot,
+        { withCredentials: true }
+      );
+
+      if (response.data) {
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Appointment booked successfully!",
+          confirmButtonText: "OK",
+        });
+
+        setIsModalOpen(false);
+        router.push(`/patientDetails?id=${response.data._id}`);
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "There was an error booking your appointment. Please try again.";
+
+      setError(errorMessage);
+
       await Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Appointment booked successfully!",
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
         confirmButtonText: "OK",
       });
-      
-      setIsModalOpen(false);
-      router.push(`/patientDetails?id=${response?.data?._id}`)
+    } finally {
+      setLoading(false);
     }
-  } catch (error: any) {
-    console.error("Error booking appointment:", error);
-
-    let errorMessage = "There was an error booking your appointment. Please try again.";
-    if (error.response && error.response.data) {
-      errorMessage = error.response.data.message || errorMessage;
-    }
-
-    setError(errorMessage);
-
-    await Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: errorMessage,
-      confirmButtonText: "OK",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
+   console.log(bookedSlots)
+   console.log(slotsForSelectedDate)
   return (
     isModalOpen && (
       <div
@@ -116,16 +139,18 @@ const handleBooking = async (slot: {
         aria-modal="true"
       >
         <div className="p-6 bg-white shadow-2xl rounded-xl max-w-lg w-full relative">
-          <h1 id="modal-title" className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+          <h1
+            id="modal-title"
+            className="text-3xl font-semibold text-gray-800 mb-6 text-center"
+          >
             Book an Appointment Slot
           </h1>
 
-          {/* Date Selection */}
           <div className="flex space-x-2 mb-4 overflow-x-auto">
             {uniqueDates.map((date) => (
               <button
                 key={date}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-all shadow-md ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   selectedDate === date
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 hover:bg-blue-100 text-gray-800"
@@ -138,31 +163,35 @@ const handleBooking = async (slot: {
             ))}
           </div>
 
-          {/* Error Message */}
           {error && <p className="text-red-500 text-center font-medium mb-4">{error}</p>}
 
-          {/* Slots */}
           <div className="grid grid-cols-2 gap-4">
-            {slotsForSelectedDate.length > 0 ? (
-              slotsForSelectedDate.map((slot) => (
+            {slotsForSelectedDate.map((slot) => {
+              const isBooked = bookedSlots.some(
+                (bookedSlot) =>
+                  new Date(bookedSlot.date).toISOString().split("T")[0] === slot.date &&
+                  bookedSlot.startTime === slot.startTime
+              );
+
+              return (
                 <button
                   key={slot.startTime}
-                  className={`px-4 py-3 text-sm font-semibold border rounded-lg shadow-md transition-all ${
-                    loading ? "bg-gray-200 text-gray-400" : "bg-gray-50 hover:bg-blue-50 text-gray-800"
+                  className={`px-4 py-3 text-sm font-semibold border rounded-lg ${
+                    isBooked
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-50 hover:bg-blue-50 text-gray-800"
                   }`}
-                  onClick={() => handleBooking(slot)}
-                  disabled={loading}
+                  onClick={() => !isBooked && handleBooking(slot)}
+                  disabled={isBooked || loading}
                 >
                   {slot.startTime} - {slot.endTime}
                 </button>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center col-span-2">No available slots for this date</p>
-            )}
+              );
+            })}
           </div>
 
           <button
-            className="mt-6 px-6 py-3 rounded-lg bg-red-600 text-white font-medium text-lg w-full shadow-lg hover:bg-red-700 transition-all"
+            className="mt-6 px-6 py-3 rounded-lg bg-red-600 text-white font-medium text-lg w-full shadow-lg hover:bg-red-700"
             onClick={() => setIsModalOpen(false)}
           >
             Close

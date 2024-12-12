@@ -325,7 +325,7 @@ const AppointmentsList: React.FC = () => {
       <div>
         <p className="text-lg font-semibold text-gray-800">{appt.patientId.firstName} {appt.patientId.lastName}</p>
         <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toLocaleDateString()}</p>
-        <p className="text-sm text-gray-500">Time: {formatTime(appt.slotId.startTime)} - {formatTime(appt.slotId.endTime)}</p>
+        <p className="text-sm text-gray-500">Time: {appt.slotId.startTime} - {appt.slotId.endTime}</p>
         <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
       </div>
     </div>
