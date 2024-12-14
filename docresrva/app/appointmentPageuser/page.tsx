@@ -36,11 +36,11 @@ const AppointmentsList = () => {
     fetchAppointments();
   }, []);
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((appt) => {
+    return appointments.filter(appt => {
       const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
       const matchesDate = !filterDate || appointmentDate === filterDate;
-      const matchesDoctor = !filterDoctor || appt.doctorId.name.toLowerCase().includes(filterDoctor.toLowerCase());
-      return matchesDate && matchesDoctor;
+      const matchesPatient = !filterDoctor || appt.doctorId.name.toLowerCase().includes(filterDoctor.toLowerCase());
+      return matchesDate && matchesPatient;
     });
   }, [appointments, filterDate, filterDoctor]);
 
@@ -196,13 +196,13 @@ const AppointmentsList = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {appt.status === 'complete' && (
+                  {appt.status === 'completed' && (
                     <span className="px-4 py-2 bg-green-100 text-green-600 rounded-lg shadow">Complete</span>
                   )}
                   {appt.status === 'canceled' && (
                     <span className="px-4 py-2 bg-red-100 text-red-600 rounded-lg shadow">Canceled</span>
                   )}
-                  {appt.status !== 'complete' && appt.status !== 'canceled' && (
+                  {appt.status !== 'completed' && appt.status !== 'canceled' && (
                     <>
                       <span
                         className={`px-4 py-2 rounded-lg shadow ${

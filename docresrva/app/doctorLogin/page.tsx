@@ -36,12 +36,11 @@ function Login() {
       if (response.data) {
         dispatch(
           setUserDetails({
-            userId:response.data._id,
+            userId: response.data._id,
             username: response.data.name,
             email: response.data.email,
             isAuthenticated: true,
           })
-          
         );
         toast.success(`Welcome back, Dr. ${response.data.name}!`, {
           position: "top-center",
@@ -52,14 +51,10 @@ function Login() {
           position: "top-center",
           autoClose: 2000,
           theme: "colored",
-        
-         
-      })
-      setTimeout(()=>{
-        router.replace('/doctorHome')
-        
-      
-      },3000)
+        });
+        setTimeout(() => {
+          router.replace("/doctorHome");
+        }, 3000);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -73,68 +68,63 @@ function Login() {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-teal-400 to-blue-500 p-4">
         <div className="flex flex-col items-center mb-8">
-          <Image src={Img} alt="Doc Reserva Logo" className="w-16 h-16 mb-2" />
-          <h1 className="text-3xl font-bold text-teal-700">Doc Reserva</h1>
+          <Image src={Img} alt="Doc Reserva Logo" className="w-20 h-20 mb-4 drop-shadow-xl" />
+          <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">Doc Reserva</h1>
         </div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white shadow-md rounded-lg p-8 w-full max-w-md"
+          className="bg-white shadow-lg rounded-2xl p-10 w-full max-w-lg transform hover:scale-105 transition-transform duration-300"
         >
-          <h2 className="text-2xl font-semibold text-gray-700 mb-6 text-center">Doctor Login</h2>
+          <h2 className="text-3xl font-bold text-gray-700 mb-8 text-center">Doctor Login</h2>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <input
               {...register("email", { required: "Email is required" })}
-              type="text"
+              type="email"
               placeholder="Enter your email"
-              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
-          <div className="mb-4 relative">
+          <div className="mb-6 relative">
             <input
               {...register("password", { required: "Password is required" })}
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 ease-in-out shadow-md hover:shadow-lg"
             />
             <span
               onClick={togglePasswordVisibility}
-              className="absolute right-3 top-3 text-gray-500 cursor-pointer"
+              className="absolute right-3 top-3 text-gray-500 cursor-pointer hover:text-teal-600 transition-all duration-200"
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded mt-4"
+            className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-bold py-3 rounded-lg shadow-md transform hover:-translate-y-1 transition-transform duration-200"
           >
             Login
           </button>
 
-          <div className="flex items-center justify-center my-6">
-            
-          </div>
-
-          <div className="flex justify-center space-x-6 mb-6">
-           
-          </div>
           
-          <p className="text-center text-gray-600 text-sm">
+          
+
+          <p className="text-center text-gray-600 text-sm mt-6">
             Don't have an account?{" "}
-            <a href="/doctorSignup" className="text-teal-500 hover:text-teal-700 font-semibold">
+            <a
+              href="/doctorSignup"
+              className="text-teal-500 hover:text-teal-700 font-semibold transition-colors"
+            >
               Sign Up
             </a>
           </p>
-
-
-          
         </form>
       </div>
       <ToastContainer position="top-right" autoClose={3000} />

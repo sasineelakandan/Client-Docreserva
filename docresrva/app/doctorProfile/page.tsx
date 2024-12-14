@@ -291,21 +291,18 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           </div>
         </div>
         <div className="mt-4 md:mt-0">
-        {!user?.isVerified ? (
-  <button
-    className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
-    onClick={handleOpenModal}
-  >
-    Register
-  </button>
-) : (
-  <button
-    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-    onClick={handleOpenSlots}
-  >
-    Slots
-  </button>
+        {!user?.isVerified && (
+  <>
+    <button
+      className="px-6 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600"
+      onClick={handleOpenModal}
+    >
+      Register
+    </button>
+    
+  </>
 )}
+
 
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
         </div>

@@ -10,7 +10,7 @@ import {
   AccountCircle, // Profile icon
 } from '@mui/icons-material';
 import Image from 'next/image';
-import Img from '../../public/1600w--HXaczhPPfU.webp';
+import Img from '../../public/PngItem_93782.png';
 import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg';
 import { deleteCookie } from './deleteCookie';
 
@@ -113,7 +113,7 @@ const Navbar: React.FC = () => {
       {/* Right Section: User Profile and Actions */}
       <div className="flex items-center space-x-4">
         <a
-          href="#"
+          href="/Notification"
           className="relative text-gray-600 hover:text-teal-700 transition duration-200"
         >
           <Notifications className="text-2xl" />
