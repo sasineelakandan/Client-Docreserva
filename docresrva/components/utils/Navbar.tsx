@@ -1,31 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Home,
-  Mail,
-  Event,
-  Notifications,
-  ExitToApp,
-  LocalHospital,
-  Search,
-  AccountCircle, // Profile icon
-} from '@mui/icons-material';
+import { Home, Mail, Event, Notifications, ExitToApp, LocalHospital, Search, AccountCircle } from '@mui/icons-material';
 import Image from 'next/image';
 import Img from '../../public/PngItem_93782.png';
 import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg';
-import { deleteCookie } from './deleteCookie';
+import io from 'socket.io-client';
+import axios from 'axios';
 
+interface Message {
+  id: string;
+  content: string;
+  isRead: boolean;
+  timestamp: Date;
+}
+
+interface User {
+  userId: string;
+  username: string;
+  email: string;
+  profilePicture?: string;
+}
+
+let socket: ReturnType<typeof io>;
 
 const Navbar: React.FC = () => {
-  interface User {
-    userId:string;
-    username: string;
-    email: string;
-    profilePicture?: string;
-  }
-
-  ;
   const [user, setUser] = useState<User | null>(null);
+  const [chatrooms, setChatrooms] = useState<Message[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fetch user from localStorage
   useEffect(() => {
     const savedUserDetails = localStorage.getItem('user');
     if (savedUserDetails) {
@@ -34,38 +36,53 @@ const Navbar: React.FC = () => {
     }
   }, []);
 
- 
+  // Fetch chatrooms on load
+  useEffect(() => {
+    const fetchChatrooms = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chatroom`, {
+          withCredentials: true,
+        });
+        
+        setUnreadCount(response.data.reduce((a:any,b:any)=>a+b.isReadUc,0));
+      } catch (error) {
+        console.error('Error fetching chatrooms:', error);
+      }
+    };
+
+    fetchChatrooms();
+  }, []);
+
+  
+  useEffect(() => {
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+
+    socket.on('updateUnreaduser', (unreadCountuser: number) => {
+      
+      setUnreadCount(unreadCountuser); 
+    });
+    // Cleanup WebSocket connection on component unmount
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, []);
+
   const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault(); 
-
+    event.preventDefault();
     try {
-        
-        localStorage.removeItem('user');
-
-        
-        setUser(null);
-
-        
-        deleteCookie('accessToken');
-
-        window.location.href = '/';
-        
+      localStorage.removeItem('user');
+      setUser(null);
+      window.location.href = '/';
     } catch (error) {
-        console.error('Error during logout:', error);
+      console.error('Error during logout:', error);
     }
-};
-
+  };
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
       {/* Left Section: Logo and Search Bar */}
       <div className="flex items-center space-x-4">
-        <Image
-          src={Img}
-          alt="Doc Reserva Logo"
-          className="h-20 w-auto"
-          priority
-        />
+        <Image src={Img} alt="Logo" className="h-20 w-auto" priority />
         <div className="relative w-64">
           <input
             type="text"
@@ -80,62 +97,51 @@ const Navbar: React.FC = () => {
 
       {/* Center Section: Navigation Icons */}
       <div className="hidden md:flex items-center space-x-8 text-gray-600">
-        <a
-          href="/userHome"
-          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
-        >
+        <a href="/userHome" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <Home className="text-2xl" />
           <span className="font-medium">Home</span>
         </a>
-        <a
-          href="/message"
-          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
-        >
+
+        <a href="/message" className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+              {unreadCount}
+            </span>
+          )}
           <span className="font-medium">Messages</span>
         </a>
-        <a
-          href="/appointmentPageuser"
-          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
-        >
+
+        <a href="/appointmentPageuser" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <Event className="text-2xl" />
           <span className="font-medium">Appointments</span>
         </a>
-        <a
-          href="/alldoctors"
-          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
-        >
+        <a href="/alldoctors" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <LocalHospital className="text-2xl" />
           <span className="font-medium">All Doctors</span>
         </a>
       </div>
 
-      {/* Right Section: User Profile and Actions */}
+      {/* Right Section: Notifications, User Profile, and Logout */}
       <div className="flex items-center space-x-4">
-        <a
-          href="/Notification"
-          className="relative text-gray-600 hover:text-teal-700 transition duration-200"
-        >
+        <a href="/Notification" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
           <Notifications className="text-2xl" />
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
         </a>
 
         {user ? (
-  <a href={'/userProfile'}
-    className="hidden md:flex items-center space-x-3 cursor-pointer"
-  >
-    <Image
-      src={user.profilePicture || Img2}
-      alt="User Profile Picture"
-      className="h-12 w-12 rounded-full border border-gray-300"
-      priority
-    />
-    <div className="text-sm">
-      <p className="font-semibold text-gray-700">Hi, {user.username}</p>
-      <p className="text-gray-500">Good Morning</p>
-    </div>
-  </a>
-) : null}
+          <a href={'/userProfile'} className="hidden md:flex items-center space-x-3 cursor-pointer">
+            <Image
+              src={Img2}
+              alt="User Profile Picture"
+              className="h-12 w-12 rounded-full border border-gray-300"
+              priority
+            />
+            <div className="text-sm">
+              <p className="font-semibold text-gray-700">Hi, {user.username}</p>
+              <p className="text-gray-500">Good Morning</p>
+            </div>
+          </a>
+        ) : null}
 
         {user ? (
           <a
@@ -151,7 +157,7 @@ const Navbar: React.FC = () => {
             href="/login"
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
           >
-            <AccountCircle className="text-lg" />
+            <ExitToApp className="text-lg" />
             <span className="hidden md:inline font-medium">Login</span>
           </a>
         )}
@@ -161,4 +167,3 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
-

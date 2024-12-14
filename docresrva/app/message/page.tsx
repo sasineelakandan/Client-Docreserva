@@ -9,6 +9,7 @@ interface Message {
     receiver: string;
     content: string;
     timestamp: Date;
+    
 }
 
 // Socket initialization
@@ -21,7 +22,7 @@ const ChatRoom = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
     const [loadingMessages, setLoadingMessages] = useState(false);
-
+    const[noti,setNoti]=useState(0)
     const searchParams = useSearchParams();
     const roomId = searchParams.get('id');
     const messageEndRef = useRef<HTMLDivElement | null>(null); // Ref for scrolling
@@ -86,6 +87,11 @@ const ChatRoom = () => {
                         timestamp: new Date(msg.timestamp),
                     }))
                 );
+                setUsers((prevUsers) =>
+                    prevUsers.map((user) =>
+                        user._id === activeUser ? { ...user, isReadUc: 0 } : user
+                    )
+                );
                 socket.emit('joinRoom', activeUser);
             } catch (error) {
                 console.error('Error fetching messages:', error);
@@ -149,7 +155,8 @@ const ChatRoom = () => {
                                 className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${
                                     activeUser === user._id ? 'bg-gray-300' : ''
                                 }`}
-                                onClick={() => setActiveUser(user._id)}
+                                
+                                onClick={() => setActiveUser(user._id,)}
                             >
                                 <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
                                     {user?.doctor?.profilePic ? (
@@ -163,11 +170,24 @@ const ChatRoom = () => {
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <span className="font-bold">{user?.doctor?.name}</span>
-                                    <p className="text-sm text-gray-500 truncate">
-                                        {user?.lastMessage || 'No messages yet'}
-                                    </p>
-                                </div>
+    <span  className="font-bold">{user?.doctor?.name} </span>
+    <p className="text-sm text-gray-500 truncate flex items-center">
+    <span>{user?.lastMessage || 'No messages yet'}</span>
+    {user?.isReadUc > 0 && (
+        
+        <span className="relative inline-block ml-4">
+            {/* Notification Badge */}
+            <span className="flex items-center justify-center text-xs text-white bg-green-700 rounded-full w-5 h-5">
+                {user?.isReadUc}
+            </span>
+        </span>
+    )}
+</p>
+
+
+    
+</div>
+
                             </li>
                         ))}
                     </ul>
