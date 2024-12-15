@@ -14,7 +14,9 @@ import Image from 'next/image';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg';
 import { deleteCookie } from './deleteCookie';
-
+import io from 'socket.io-client';
+import axios from 'axios';
+let socket: ReturnType<typeof io>;
 
 const doctorNavbar: React.FC = () => {
   interface User {
@@ -26,7 +28,7 @@ const doctorNavbar: React.FC = () => {
 
   ;
   const [user, setUser] = useState<User | null>(null);
-
+  const [unreadCount, setUnreadCount] = useState(0);
   useEffect(() => {
     const savedUserDetails = localStorage.getItem('user');
     if (savedUserDetails) {
@@ -35,7 +37,37 @@ const doctorNavbar: React.FC = () => {
     }
   }, []);
 
-  console.log(user)
+  useEffect(() => {
+    const fetchChatrooms = async () => {
+       setUnreadCount(0)
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chatroom`, {
+          withCredentials: true,
+        });
+        
+
+      } catch (error) {
+        console.error('Error fetching chatrooms:', error);
+      }
+    };
+
+    fetchChatrooms();
+  }, []);
+
+  
+  useEffect(() => {
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+
+    socket.on('updateDoctorUnreadCount', (unreadCountDoctor: number) => {
+      
+      setUnreadCount(unreadCountDoctor); 
+    });
+    // Cleanup WebSocket connection on component unmount
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, []);
+
 
   const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
@@ -76,11 +108,13 @@ const doctorNavbar: React.FC = () => {
           <Home className="text-2xl" />
           <span className="font-medium">Home</span>
         </a>
-        <a
-          href="#"
-          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
-        >
+        <a href="/chatroomDoctor" className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+              {unreadCount}
+            </span>
+          )}
           <span className="font-medium">Messages</span>
         </a>
         <a

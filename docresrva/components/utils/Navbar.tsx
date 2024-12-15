@@ -44,7 +44,8 @@ const Navbar: React.FC = () => {
           withCredentials: true,
         });
         
-        setUnreadCount(response.data.reduce((a:any,b:any)=>a+b.isReadUc,0));
+        
+        
       } catch (error) {
         console.error('Error fetching chatrooms:', error);
       }
@@ -57,16 +58,17 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-    socket.on('updateUnreaduser', (unreadCountuser: number) => {
+    socket.on('updateUnreadCount', (unreadCount: number) => {
       
-      setUnreadCount(unreadCountuser); 
+      setUnreadCount(unreadCount); 
     });
     // Cleanup WebSocket connection on component unmount
     return () => {
       if (socket) socket.disconnect();
     };
   }, []);
-
+   console.log(unreadCount)
+   
   const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
@@ -109,7 +111,7 @@ const Navbar: React.FC = () => {
               {unreadCount}
             </span>
           )}
-          <span className="font-medium">Messages</span>
+          <span  className="font-medium">Messages</span>
         </a>
 
         <a href="/appointmentPageuser" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">

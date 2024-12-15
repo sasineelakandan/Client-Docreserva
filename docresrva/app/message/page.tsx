@@ -4,19 +4,13 @@ import { useSearchParams } from 'next/navigation';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios';
 
-interface Message {
-    sender: string;
-    receiver: string;
-    content: string;
-    timestamp: Date;
-    
-}
+
 
 // Socket initialization
 let socket: ReturnType<typeof io>;
 
 const ChatRoom = () => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<any[]>([]);
     const [message, setMessage] = useState('');
     const [activeUser, setActiveUser] = useState<string | null>(null);
     const [users, setUsers] = useState<any[]>([]);
@@ -36,7 +30,7 @@ const ChatRoom = () => {
     useEffect(() => {
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-        socket.on("receiveMessage", (msg: Message) => {
+        socket.on("receiveMessage", (msg:any) => {
             const messageWithTimestamp = {
                 ...msg,
                 timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
@@ -111,7 +105,7 @@ const ChatRoom = () => {
     const sendMessage = async () => {
         if (!message.trim() || !activeUser) return;
 
-        const newMessage: Message = {
+        const newMessage: any = {
             sender: 'patient',
             receiver: 'Doctor',
             content: message,
@@ -171,17 +165,9 @@ const ChatRoom = () => {
                                 </div>
                                 <div className="flex-1">
     <span  className="font-bold">{user?.doctor?.name} </span>
-    <p className="text-sm text-gray-500 truncate flex items-center">
+    <p className="text-sm text-black-500 truncate flex items-center">
     <span>{user?.lastMessage || 'No messages yet'}</span>
-    {user?.isReadUc > 0 && (
-        
-        <span className="relative inline-block ml-4">
-            {/* Notification Badge */}
-            <span className="flex items-center justify-center text-xs text-white bg-green-700 rounded-full w-5 h-5">
-                {user?.isReadUc}
-            </span>
-        </span>
-    )}
+    
 </p>
 
 
