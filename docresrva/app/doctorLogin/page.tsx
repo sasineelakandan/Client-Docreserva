@@ -106,15 +106,16 @@ function Login() {
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
           </div>
 
+          <p className="text-right text-sm text-teal-500 hover:text-teal-700 font-semibold cursor-pointer transition-colors mb-6">
+            <a href="/ForgotPassword">Forgot Password?</a>
+          </p>
+
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white font-bold py-3 rounded-lg shadow-md transform hover:-translate-y-1 transition-transform duration-200"
           >
             Login
           </button>
-
-          
-          
 
           <p className="text-center text-gray-600 text-sm mt-6">
             Don't have an account?{" "}

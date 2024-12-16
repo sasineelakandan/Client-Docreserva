@@ -12,6 +12,8 @@ import { RootState } from '../../Store';
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [reviews, setReviews] = useState<any[]>([]);
+
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,6 +68,28 @@ const DoctorDetails: React.FC = () => {
 
     fetchDoctorDetails();
   }, [doctorId]);
+
+  
+    
+    
+
+    
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/reviews`,
+            { withCredentials: true }
+          );
+          setReviews(response.data); // Assuming response.data is an array of reviews
+        } catch (err) {
+          console.log(err);
+        }
+      };
+    
+      fetchData();
+    }, []);
+    
 
   if (loading) {
     return (
@@ -137,6 +161,50 @@ const DoctorDetails: React.FC = () => {
           <p className="text-gray-600">Dr. {doctor?.name} is a highly skilled medical professional specializing in {doctor?.specialization}. With over {doctor?.specialization} of experience, they are dedicated to providing exceptional care and fostering long-term patient relationships.  Dr. {doctor?.name} is known for their compassionate approach, clinical expertise, and commitment to staying updated with the latest advancements in their field. They are affiliated with {doctor?.hospitalName} and strive to make a positive impact on the lives of their patients every day.
           </p>
         </div>
+   {/* Reviews Section */}
+<div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+  <h2 className="text-2xl font-bold text-gray-700 mb-4">Reviews</h2>
+  {reviews.length > 0 ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-h-80 overflow-y-auto">
+      {reviews.map((review: any) => (
+        <div
+          key={review._id}
+          className="bg-gray-200 rounded-lg shadow-md p-4"
+        >
+          <div className="flex items-center gap-4">
+            <img
+              src={review?.userId?.profilePic || "/default-avatar.png"}
+              alt={review?.userId?.username || "User"}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {review?.userId?.username || "Anonymous"}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {new Date(review?.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+          <div className="mt-2">
+            <p className="text-gray-700">
+              <span className="font-semibold">Rating:</span> {review?.rating} ⭐
+            </p>
+            <p className="mt-1 text-gray-600">{review?.reviewText}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-600">No reviews available yet.</p>
+  )}
+</div>
+
+
 
         {/* Footer Section */}
         <footer className="mt-12 border-t pt-6 bg-gradient-to-r from-teal-50 to-teal-100 shadow-inner">
