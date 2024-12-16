@@ -133,7 +133,7 @@ function Login() {
     <>
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-teal-400 via-teal-500 to-teal-600 p-4">
         <div className="flex flex-col items-center mb-8">
-          <Image src={Img} alt="Doc Reserva Logo" className="w-20 h-20 mb-4 rounded-full shadow-lg" />
+          <Image src={Img} alt="Doc Reserva Logo" className="w-20 h-20 mb-4 " />
           <h1 className="text-4xl font-bold text-white tracking-tight">Doc Reserva</h1>
         </div>
 

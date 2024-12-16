@@ -338,7 +338,7 @@ const AppointmentsList: React.FC = () => {
           className="bg-gray-100 text-black p-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
         >
           <option value="">Actions</option>
-          <option value="reschedule">Reschedule</option>
+         
           <option value="complete">Complete</option>
           <option value="cancel">Cancel</option>
         </select>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
-import Img from "../../public/1600w--HXaczhPPfU.webp";
+import Img from "../../public/PngItem_93782.png";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../../Store/slices/userSlices";
 

@@ -78,7 +78,7 @@ const DoctorDetails: React.FC = () => {
       const fetchData = async () => {
         try {
           const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/reviews`,
+            `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/reviews?doctorId=${doctorId}`,
             { withCredentials: true }
           );
           setReviews(response.data); // Assuming response.data is an array of reviews

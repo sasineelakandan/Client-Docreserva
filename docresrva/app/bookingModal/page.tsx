@@ -128,8 +128,27 @@ const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
       setLoading(false);
     }
   };
-   console.log(bookedSlots)
-   console.log(slotsForSelectedDate)
+
+  const filterFutureSlots = (slots: any[]) => {
+    const now = new Date();
+    return slots.filter((slot) => {
+      const slotDate = new Date(slot.date);
+      if (slotDate < now) return false;
+
+      if (slotDate.toDateString() === now.toDateString()) {
+        const [hour, minute] = slot.startTime.split(":");
+        const slotStartTime = new Date(now);
+        slotStartTime.setHours(Number(hour), Number(minute.split(" ")[0]));
+
+        return slotStartTime > now; // Only show future time slots for today
+      }
+
+      return true; // For future dates, show all slots
+    });
+  };
+
+  const futureSlots = filterFutureSlots(slotsForSelectedDate);
+
   return (
     isModalOpen && (
       <div
@@ -166,7 +185,7 @@ const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
           {error && <p className="text-red-500 text-center font-medium mb-4">{error}</p>}
 
           <div className="grid grid-cols-2 gap-4">
-            {slotsForSelectedDate.map((slot) => {
+            {futureSlots.map((slot) => {
               const isBooked = bookedSlots.some(
                 (bookedSlot) =>
                   new Date(bookedSlot.date).toISOString().split("T")[0] === slot.date &&
