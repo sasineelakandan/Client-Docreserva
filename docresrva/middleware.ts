@@ -15,7 +15,8 @@ const PUBLIC_ROUTES = new Set([
   "/doctorOtp", 
   "/adminLogin",
   '/ForgotPassword',
-  '/forgotOtp'
+  '/forgotOtp',
+  '/map'
 ]);
 const UNPROTECTED_ROUTES = new Set(["/_next/", "/favicon.ico", "/api/"]);
 
