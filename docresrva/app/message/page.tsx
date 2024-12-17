@@ -1,12 +1,10 @@
 'use client'
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import io, { Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 import axios from 'axios';
 
-
-
-// Socket initialization
 let socket: ReturnType<typeof io>;
 
 const ChatRoom = () => {
@@ -16,38 +14,35 @@ const ChatRoom = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
     const [loadingMessages, setLoadingMessages] = useState(false);
-    const[noti,setNoti]=useState(0)
+    const [selectedUserProfile, setSelectedUserProfile] = useState<any>(null);
     const searchParams = useSearchParams();
     const roomId = searchParams.get('id');
-    const messageEndRef = useRef<HTMLDivElement | null>(null); // Ref for scrolling
+    const userId = searchParams.get('userId');
+    const messageEndRef = useRef<HTMLDivElement | null>(null);
+    const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
-        if (roomId) {
-            setActiveUser(roomId); // Set the active user based on roomId from search params
-        }
-    }, [roomId]);
-
-    useEffect(() => {
+        // Initialize the socket connection
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-        socket.on("receiveMessage", (msg:any) => {
-            const messageWithTimestamp = {
-                ...msg,
-                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-            };
+        if (userId) {
+            socket.emit("userOnline", userId);
+        }
 
-            setMessages((prevMessages) => {
-                if (!prevMessages.some((m) => m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() && m.sender === messageWithTimestamp.sender)) {
-                    return [...prevMessages, messageWithTimestamp];
-                }
-                return prevMessages;
-            });
+        socket.on("updateUserStatus", (users: any) => {
+            setOnlineUsers(users);
         });
 
         return () => {
-            socket.disconnect(); 
+            socket.disconnect();
         };
-    }, []);
+    }, [userId]);
+
+    useEffect(() => {
+        if (roomId) {
+            setActiveUser(roomId);
+        }
+    }, [roomId]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -81,11 +76,6 @@ const ChatRoom = () => {
                         timestamp: new Date(msg.timestamp),
                     }))
                 );
-                setUsers((prevUsers) =>
-                    prevUsers.map((user) =>
-                        user._id === activeUser ? { ...user, isReadUc: 0 } : user
-                    )
-                );
                 socket.emit('joinRoom', activeUser);
             } catch (error) {
                 console.error('Error fetching messages:', error);
@@ -101,6 +91,32 @@ const ChatRoom = () => {
             }
         };
     }, [activeUser]);
+    useEffect(() => {
+        socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+
+        socket.on('receiveMessage', (msg:any) => {
+            const messageWithTimestamp = {
+                ...msg,
+                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+            };
+            setMessages((prevMessages) => {
+                if (
+                    !prevMessages.some(
+                        (m) =>
+                            m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() &&
+                            m.sender === messageWithTimestamp.sender
+                    )
+                ) {
+                    return [...prevMessages, messageWithTimestamp];
+                }
+                return prevMessages;
+            });
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     const sendMessage = async () => {
         if (!message.trim() || !activeUser) return;
@@ -113,26 +129,32 @@ const ChatRoom = () => {
         };
 
         try {
-          // Emit the message to the server
-          socket.emit('sendMessage', { roomId: activeUser, message: newMessage });
-          setMessage('');
-          
-          await axios.put(
-              `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat`,
-              { roomId: activeUser, message: newMessage },
-              { withCredentials: true }
-          );
-      } catch (error) {
-        console.log(error)
-      }
+            socket.emit('sendMessage', { roomId: activeUser, message: newMessage });
+
+            setMessage('');
+
+            await axios.put(
+                `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`,
+                { roomId: activeUser, message: newMessage },
+                { withCredentials: true }
+            );
+        } catch (error) {
+            console.log(error)
+        }
     };
 
-    // Scroll to the bottom when messages change
     useEffect(() => {
         if (messageEndRef.current) {
             messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
+
+    const handleUserSelect = (user: any) => {
+        setActiveUser(user._id);
+        setSelectedUserProfile(user);
+    };
+    const key=Object.keys(onlineUsers)
+    const isOnline=key.includes(selectedUserProfile?.doctor?._id)
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -143,40 +165,43 @@ const ChatRoom = () => {
                     <p>Loading users...</p>
                 ) : users.length > 0 ? (
                     <ul>
-                        {users.map((user: any) => (
+                    {users.map((user: any) => {
+                        const keys = Object.keys(onlineUsers);
+                        const isUserOnline = keys.includes(user?.doctor?._id);
+                        return (
                             <li
                                 key={user._id}
-                                className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${
-                                    activeUser === user._id ? 'bg-gray-300' : ''
-                                }`}
-                                
-                                onClick={() => setActiveUser(user._id,)}
+                                className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${activeUser === user._id ? 'bg-gray-300' : ''}`}
+                                onClick={() => handleUserSelect(user)}
                             >
-                                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
+                                <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
                                     {user?.doctor?.profilePic ? (
-                                        <img
-                                            src={user?.doctor?.profilePic}
-                                            alt="Profile"
-                                            className="w-full h-full object-cover rounded-full"
-                                        />
+                                        <>
+                                            <img
+                                                src={user?.doctor?.profilePic}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover rounded-full"
+                                            />
+                                            <span
+                                                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isUserOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                                            ></span>
+                                        </>
                                     ) : (
                                         user?.doctor?.name?.charAt(0)
                                     )}
                                 </div>
+                
                                 <div className="flex-1">
-    <span  className="font-bold">{user?.doctor?.name} </span>
-    <p className="text-sm text-black-500 truncate flex items-center">
-    <span>{user?.lastMessage || 'No messages yet'}</span>
-    
-</p>
-
-
-    
-</div>
-
+                                    <span className="font-bold">{user?.doctor?.name}</span>
+                                    <p className="text-sm text-black-500 truncate">
+                                        {user?.lastMessage || 'No messages yet'}
+                                    </p>
+                                </div>
                             </li>
-                        ))}
-                    </ul>
+                        );
+                    })}
+                </ul>
+                
                 ) : (
                     <p>No users available.</p>
                 )}
@@ -184,6 +209,31 @@ const ChatRoom = () => {
 
             {/* Chat Window */}
             <div className="w-3/4 flex flex-col p-4">
+                {selectedUserProfile && (
+                    <div className="flex items-center mb-4">
+                        <div className="relative">
+                            <img
+                                src={selectedUserProfile?.doctor?.profilePic || 'default-profile-pic.jpg'}
+                                alt="Profile"
+                                className="w-12 h-12 rounded-full border-2 border-white"
+                            />
+                            <span
+                                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-500'}`}
+                                title={isOnline ? 'Online' : 'Offline'}
+                            ></span>
+                        </div>
+                        <div className="ml-3">
+                            <h3 className="text-lg font-semibold text-gray-800">
+                                {selectedUserProfile?.doctor?.name || 'Unknown User'}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                                {isOnline ? 'Online' : 'Offline'}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Messages */}
                 <div className="flex-1 overflow-y-auto mb-4">
                     {loadingMessages ? (
                         <p>Loading messages...</p>
@@ -191,9 +241,7 @@ const ChatRoom = () => {
                         messages.map((msg, index) => (
                             <div key={index} className={`message ${msg.sender === 'patient' ? 'text-right' : 'text-left'}`}>
                                 <div
-                                    className={`inline-block max-w-xs p-2 rounded-lg ${
-                                        msg.sender === 'patient' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'
-                                    }`}
+                                    className={`inline-block max-w-xs p-2 rounded-lg ${msg.sender === 'patient' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
                                 >
                                     {msg.content}
                                 </div>
@@ -209,9 +257,10 @@ const ChatRoom = () => {
                     ) : (
                         <p>No messages yet.</p>
                     )}
-                    {/* Scroll to the bottom */}
                     <div ref={messageEndRef} />
                 </div>
+
+                {/* Message Input */}
                 <div className="flex items-center space-x-3">
                     <input
                         type="text"

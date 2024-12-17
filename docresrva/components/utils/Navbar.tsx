@@ -104,7 +104,7 @@ const Navbar: React.FC = () => {
           <span className="font-medium">Home</span>
         </a>
 
-        <a href="/message" className="relative flex items-center space-x-2">
+        <a href={`/message/?userId=${user?.userId}`} className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
           {unreadCount > 0 && (
             <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
