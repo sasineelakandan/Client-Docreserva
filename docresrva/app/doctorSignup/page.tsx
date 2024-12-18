@@ -13,10 +13,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
 import Spinner from '@/components/Spinner';
 import Map from '../map/page'; // Import the MapComponent
-
+import Swal from 'sweetalert2';
+import Icon from '../../public/png-transparent-computer-icons-map-map-cdr-map-vector-map.png'
 interface DoctorSignUpFormValues extends FieldValues {
   email: string;
-  username: string;
+  name: string;
   phone: string;
   password: string;
   confirmPassword: string;
@@ -33,7 +34,7 @@ function DoctorSignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+  const [showMap, setShowMap] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
@@ -52,40 +53,61 @@ const handleLocationSelect = (locationData: { latitude: any; longitude: any; add
 };
 
 
-  const onSubmit: SubmitHandler<DoctorSignUpFormValues> = async (data) => {
-    try {
-      console.log(data);
-      const fullData = { ...data, location }; // Include location in the data
-      setLoading(true);
-      const response = await axios.post('http://localhost:8001/api/doctor/signup', fullData, { withCredentials: true });
-      if (response.data) {
-        console.log(response.data);
-        toast.success('Sign Up successful! Please verify your email.');
-        dispatch(
-          setUserDetails({
-            userId: response.data._id,
-            username: response.data.name,
-            email: response.data.email,
-            isAuthenticated: false,
-          })
-        );
-        const doctorId = response.data._id;
-        setTimeout(() => {
-          router.replace(`/doctorOtp?id=${doctorId}`);
-        }, 2000);
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error);
-        const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
-        toast.error(errorMessage || 'An error occurred during sign-up.');
-      } else {
-        console.log(error);
-      }
-    } finally {
-      setLoading(false);
+ 
+
+const onSubmit: SubmitHandler<DoctorSignUpFormValues> = async (data) => {
+  try {
+    if (!location.latitude || !location.longitude) {
+      // Location is not selected, show SweetAlert with a map icon
+      Swal.fire({
+        icon: 'error',
+        title: 'Location Missing',
+        text: 'Please select a location before submitting the form.',
+        // Dynamically set the image src for the SweetAlert icon
+        iconHtml: `<img src="${Icon.src}" style="width: 40px; height: 40px; color: red;" />`,  // Use Icon.src for the correct path
+        customClass: {
+          icon: 'swal2-icon swal2-error',  // Styling for the icon
+        },
+        confirmButtonText: 'Okay',
+        confirmButtonColor: '#4CAF50',
+      });
+      return;
     }
-  };
+
+    const fullData = { ...data, location };  // Include location in the data
+    setLoading(true);
+    console.log(fullData)
+    const response = await axios.post('http://localhost:8001/api/doctor/signup', fullData, { withCredentials: true });
+
+    if (response.data) {
+      console.log(response.data);
+      toast.success('Sign Up successful! Please verify your email.');
+      dispatch(
+        setUserDetails({
+          userId: response.data._id,
+          username: response.data.name,
+          email: response.data.email,
+          isAuthenticated: false,
+        })
+      );
+      const doctorId = response.data._id;
+      setTimeout(() => {
+        router.replace(`/doctorOtp?id=${doctorId}`);
+      }, 2000);
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error);
+      const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
+      toast.error(errorMessage || 'An error occurred during sign-up.');
+    } else {
+      console.log(error);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -119,12 +141,12 @@ const handleLocationSelect = (locationData: { latitude: any; longitude: any; add
 
           <div className="mb-4">
             <input
-              {...register('username', { required: 'Username is required' })}
+              {...register('name', { required: 'Username is required' })}
               type="text"
               placeholder="Create username"
               className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
             />
-            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
 
           <div className="mb-4">
@@ -214,9 +236,22 @@ const handleLocationSelect = (locationData: { latitude: any; longitude: any; add
           </div>
 
           {/* Add the MapComponent for location selection */}
-          <div className="mb-4">
-            <Map onLocationSelect={handleLocationSelect} />
+          <div className="mb-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowMap(!showMap)} // Toggle the map visibility
+              className="bg-teal-600 text-white py-2 px-4 rounded-lg text-lg"
+            >
+              {showMap ? 'Hide Location Map' : 'Select Location'}
+            </button>
           </div>
+
+          {/* Show the Map component only when showMap is true */}
+          {showMap && (
+            <div className="mb-4">
+              <Map onLocationSelect={handleLocationSelect} />
+            </div>
+          )}
 
           <div className="flex justify-center items-center">
             <button
