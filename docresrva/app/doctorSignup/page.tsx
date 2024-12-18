@@ -1,9 +1,8 @@
-
 "use client";
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
-import { FaGoogle, FaFacebook, FaTwitter, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
 import { ToastContainer, toast } from 'react-toastify';
@@ -13,6 +12,7 @@ import { setUserDetails } from '../../Store/slices/userSlices';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
 import Spinner from '@/components/Spinner';
+import Map from '../map/page'; // Import the MapComponent
 
 interface DoctorSignUpFormValues extends FieldValues {
   email: string;
@@ -33,17 +33,31 @@ function DoctorSignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   const password = watch("password");
 
+  const [location, setLocation] = useState({
+    latitude: null,
+    longitude: null,
+    address: '',
+});
+
+const handleLocationSelect = (locationData: { latitude: any; longitude: any; address: string }) => {
+  console.log('Location data received from child:', locationData);
+  setLocation(locationData);
+};
+
+
   const onSubmit: SubmitHandler<DoctorSignUpFormValues> = async (data) => {
     try {
       console.log(data);
+      const fullData = { ...data, location }; // Include location in the data
       setLoading(true);
-      const response = await axios.post('http://localhost:8001/api/doctor/signup', data, { withCredentials: true });
+      const response = await axios.post('http://localhost:8001/api/doctor/signup', fullData, { withCredentials: true });
       if (response.data) {
         console.log(response.data);
         toast.success('Sign Up successful! Please verify your email.');
@@ -66,7 +80,7 @@ function DoctorSignUp() {
         const errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
         toast.error(errorMessage || 'An error occurred during sign-up.');
       } else {
-        console.log(error)
+        console.log(error);
       }
     } finally {
       setLoading(false);
@@ -105,9 +119,9 @@ function DoctorSignUp() {
 
           <div className="mb-4">
             <input
-              {...register('name', { required: 'name is required' })}
+              {...register('username', { required: 'Username is required' })}
               type="text"
-              placeholder="Create name"
+              placeholder="Create username"
               className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
             />
             {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username.message}</p>}
@@ -189,26 +203,33 @@ function DoctorSignUp() {
             {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
           </div>
 
-          <div className="mb-6 flex justify-center">
+          <div className="mb-4">
+            <input
+              {...register('licenseNumber', { required: 'License number is required' })}
+              type="text"
+              placeholder="Enter License Number"
+              className="border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+            />
+            {errors.licenseNumber && <p className="text-red-500 text-xs mt-1">{errors.licenseNumber.message}</p>}
+          </div>
+
+          {/* Add the MapComponent for location selection */}
+          <div className="mb-4">
+            <Map onLocationSelect={handleLocationSelect} />
+          </div>
+
+          <div className="flex justify-center items-center">
             <button
               type="submit"
+              className="bg-teal-600 text-white py-3 px-6 rounded-lg text-lg w-full disabled:bg-gray-400"
               disabled={loading}
-              className="bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg py-3 px-6 w-full mt-3 transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
             >
               {loading ? <Spinner /> : 'Sign Up'}
             </button>
           </div>
 
-          
-
-          <div className="text-center text-gray-600">
-            Already have an account?{' '}
-            <a href="/doctorLogin" className="text-teal-500 hover:text-teal-700">
-              Login
-            </a>
-          </div>
+          <ToastContainer />
         </form>
-        <ToastContainer />
       </div>
     </>
   );
