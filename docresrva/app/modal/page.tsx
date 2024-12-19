@@ -17,9 +17,7 @@ interface DoctorModalProps {
 const schema = yup.object({
   hospitalName: yup.string().required('Hospital name is required'),
   licenseNumber: yup.string().required('License number is required'),
-  street: yup.string().required('Street address is required'),
-  city: yup.string().required('City is required'),
-  state: yup.string().required('State is required'),
+
   licenseImage: yup.string().required('License image URL is required'),
   licenseImage1: yup.string().required('Profile image URL is required'),
   fees: yup
@@ -41,9 +39,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, userId }) =>
     defaultValues: {
       hospitalName: '',
       licenseNumber: '',
-      street: '',
-      city: '',
-      state: '',
+      
       licenseImage: '',
       licenseImage1: '',
       fees: 0,
@@ -227,63 +223,7 @@ const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, userId }) =>
               <p className="text-red-500 text-sm">{errors.licenseNumber.message}</p>
             )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Street Address</label>
-            <Controller
-              name="street"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  {...field}
-                  className={`mt-1 p-2 w-full border ${
-                    errors.street ? 'border-red-500' : 'border-gray-300'
-                  } rounded-md`}
-                />
-              )}
-            />
-            {errors.street && (
-              <p className="text-red-500 text-sm">{errors.street.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">City</label>
-            <Controller
-              name="city"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  {...field}
-                  className={`mt-1 p-2 w-full border ${
-                    errors.city ? 'border-red-500' : 'border-gray-300'
-                  } rounded-md`}
-                />
-              )}
-            />
-            {errors.city && (
-              <p className="text-red-500 text-sm">{errors.city.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">State</label>
-            <Controller
-              name="state"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  {...field}
-                  className={`mt-1 p-2 w-full border ${
-                    errors.state ? 'border-red-500' : 'border-gray-300'
-                  } rounded-md`}
-                />
-              )}
-            />
-            {errors.state && (
-              <p className="text-red-500 text-sm">{errors.state.message}</p>
-            )}
-          </div>
+          
           <div>
             <label className="block text-sm font-medium text-gray-700">Fees</label>
             <Controller

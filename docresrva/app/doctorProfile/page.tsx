@@ -29,7 +29,7 @@ const DoctorProfile: React.FC = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
   const [showSlots, setShowSlots] = useState(false);
-  
+  const [address,setAddress]=useState<string>('')
   // React Hook Form setup
   const { register,watch, handleSubmit, formState: { errors } } = useForm<SlotFormData>();
 
@@ -51,9 +51,7 @@ const DoctorProfile: React.FC = () => {
       phone: "",
       hospitalName: "",
       fees: "",
-      street: "",
-      city: "",
-      state: "",
+      location,
       experience: "", 
     },
   });
@@ -66,14 +64,13 @@ const DoctorProfile: React.FC = () => {
             if(response.data){
               console.log(response.data)
               setUser(response.data)
+              setAddress(response.data.location.address)
               profileForm.reset({
                 name: response.data.name || "",
                 phone: response.data.phone || "", 
                 hospitalName: response.data.hospitalName || "", 
                 fees: response.data.fees || "",
-                street: response.data.street || "", 
-                city: response.data.city || "",
-                state: response.data.state || "", 
+                location:response.data.location, 
                 experience: response.data.experience || "", 
               });
             }
@@ -119,7 +116,19 @@ const getNext7Weekdays = () => {
 };;
 
 
+function splitAddress(address:string) {
+  const parts = address.split(',').map(part => part.trim());
+  return {
+      street: parts.slice(0, parts.length - 4).join(', '),
+      city: parts[parts.length - 4],
+      state: parts[parts.length - 3],
+      pincode: parts[parts.length - 2],
+      country: parts[parts.length - 1]
+  };
+}
 
+const result = splitAddress(address);
+console.log(result);
 
   
 
@@ -209,6 +218,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         );
         if (response.data) {
           setUser(response.data);
+          setAddress(response?.data?.location?.address)
           toast.success("Profile updated successfully!");
         }
       
@@ -311,13 +321,16 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       <h2 className="text-teal-600 font-semibold">Clinic visit</h2>
         <h3 className="text-teal-600 font-semibold">{user?.hospitalName}</h3>
         <p className="text-gray-600">
-         street: {user?.street}
+         street: {result?.street}
         </p>
         <p className="text-gray-600">
-          City:  {user?.city}
+          City:  {result?.city}
         </p>
         <p className="text-gray-600">
-          State: {user?.state}
+          State: {result?.state}
+        </p>
+        <p className="text-gray-600">
+          Pincode: {result?.pincode}
         </p>
         <p className="font-bold text-teal-700">₹ {user?.fees}</p>
       </div>
@@ -583,51 +596,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             profileForm.formState.errors.fees ? "border-red-500" : ""
           }`}
         />
-        {profileForm.formState.errors.fees && (
-          <p className="text-red-500 text-sm">{profileForm.formState.errors.fees.message}</p>
-        )}
-
-        {/* Street */}
-        <input
-          type="text"
-          placeholder="Street"
-          defaultValue={user?.street || ""}
-          {...profileForm.register("street", { required: "Street is required" })}
-          className={`w-full mb-3 p-2 border rounded ${
-            profileForm.formState.errors.street ? "border-red-500" : ""
-          }`}
-        />
-        {profileForm.formState.errors.street && (
-          <p className="text-red-500 text-sm">{profileForm.formState.errors.street.message}</p>
-        )}
-
-        {/* City */}
-        <input
-          type="text"
-          placeholder="City"
-          defaultValue={user?.city || ""}
-          {...profileForm.register("city", { required: "City is required" })}
-          className={`w-full mb-3 p-2 border rounded ${
-            profileForm.formState.errors.city ? "border-red-500" : ""
-          }`}
-        />
-        {profileForm.formState.errors.city && (
-          <p className="text-red-500 text-sm">{profileForm.formState.errors.city.message}</p>
-        )}
-
-        {/* State */}
-        <input
-          type="text"
-          placeholder="State"
-          defaultValue={user?.state || ""}
-          {...profileForm.register("state", { required: "State is required" })}
-          className={`w-full mb-3 p-2 border rounded ${
-            profileForm.formState.errors.state ? "border-red-500" : ""
-          }`}
-        />
-        {profileForm.formState.errors.state && (
-          <p className="text-red-500 text-sm">{profileForm.formState.errors.state.message}</p>
-        )}
+        
 
         {/* Experience */}
         <input

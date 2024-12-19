@@ -89,6 +89,7 @@ const MapComponent: React.FC<Props> = ({ onLocationSelect }) => {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log(data)
                 if (data?.results?.length > 0) {
                     const formattedAddress = data.results[0]?.formatted_address || 'Address not found';
                     setAddress(formattedAddress);
@@ -149,7 +150,7 @@ const MapComponent: React.FC<Props> = ({ onLocationSelect }) => {
                 return data?.result?.geometry?.location || null;
             }
         } catch (error) {
-            console.error('Error fetching place details:', error);
+            console.log('Error fetching place details:', error);
         }
         return null;
     };

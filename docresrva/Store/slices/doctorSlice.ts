@@ -15,9 +15,7 @@ interface DoctorState {
   isDeleted: boolean;
   hospitalName: string;
   licenseNumber: string;
-  street: string;
-  city: string;
-  state: string;
+  location:any,
   licenseImage: string;
   createdAt: string;
   updatedAt: string;
@@ -40,9 +38,7 @@ const initialState: DoctorState = {
   isDeleted: false,
   hospitalName: '',
   licenseNumber: '',
-  street: '',
-  city: '',
-  state: '',
+  location:null,
   licenseImage: '',
   createdAt: '',
   updatedAt: '',
@@ -59,7 +55,7 @@ const DoctorSlice = createSlice({
       const {
         _id, name, email, password, specialization, experience, phone,
         isVerified, isOtpVerified, isBlocked, isDeleted, hospitalName,
-        licenseNumber, street, city, state, licenseImage, createdAt,
+        licenseNumber, location, licenseImage, createdAt,
         updatedAt, profilePic, fees, isAuthenticated
       } = action.payload;
       
@@ -76,9 +72,8 @@ const DoctorSlice = createSlice({
       State.isDeleted = isDeleted;
       State.hospitalName = hospitalName;
       State.licenseNumber = licenseNumber;
-      State.street = street;
-      State.city = city;
-      State.state = state;
+      State.location =location;
+     
       State.licenseImage = licenseImage;
       State.createdAt = createdAt;
       State.updatedAt = updatedAt;

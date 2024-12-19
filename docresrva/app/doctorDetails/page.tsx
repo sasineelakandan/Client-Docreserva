@@ -13,7 +13,7 @@ const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [reviews, setReviews] = useState<any[]>([]);
-
+  const [address,setAddress]=useState<string>('')
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +30,7 @@ const DoctorDetails: React.FC = () => {
           { withCredentials: true }
         );
         if(response.data){
+          console.log(response.data)
           dispatch(
             setUserDetails({
               _id: response.data._id,
@@ -45,9 +46,7 @@ const DoctorDetails: React.FC = () => {
               isDeleted: response.data.isDeleted,
               hospitalName: response.data.hospitalName,
               licenseNumber: response.data.licenseNumber,
-              street: response.data.street,
-              city: response.data.city,
-              state: response.data.state,
+              location:response.data.location,
               licenseImage: response.data.licenseImage,
               createdAt: response.data.createdAt,
               updatedAt: response.data.updatedAt,
@@ -57,6 +56,8 @@ const DoctorDetails: React.FC = () => {
             })
           );
           setDoctor(response.data);
+          
+          setAddress(response.data.location.address)
         }
         
       } catch (err: any) {
@@ -69,6 +70,18 @@ const DoctorDetails: React.FC = () => {
     fetchDoctorDetails();
   }, [doctorId]);
 
+  function splitAddress(address:string) {
+    const parts = address.split(',').map(part => part.trim());
+    return {
+        street: parts.slice(0, parts.length - 4).join(', '),
+        city: parts[parts.length - 4],
+        state: parts[parts.length - 3],
+        pincode: parts[parts.length - 2],
+        country: parts[parts.length - 1]
+    };
+  }
+  
+  const result = splitAddress(address);
   
     
     
@@ -127,10 +140,13 @@ const DoctorDetails: React.FC = () => {
         <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-center">
             <p className="text-gray-700">
-              <strong>Clinic Address:</strong> {doctor?.hospitalName || "Not Available"}
-             <br /> {doctor?.street || "Not Available"}
-             <br /> {doctor?.city || "Not Available"}
-             <br /> {doctor?.state || "Not Available"}
+              <strong>Clinic Address:</strong>
+              <br></br> {doctor?.hospitalName || "Not Available"}
+             <br /> {result?.street || "Not Available"}
+             <br /> {result?.city || "Not Available"}
+             <br /> {result?.state || "Not Available"}
+              <br /> {result?.pincode || "Not Available"}
+               <br /> {result?.country || "Not Available"}
             </p>
             <p className="text-teal-700 font-bold text-lg">
               Consulting Fee: ₹{doctor?.fees || "0"}

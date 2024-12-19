@@ -15,6 +15,7 @@ interface Doctor {
   hospitalName: string;
   phone: number;
   profilePic: string;
+  location:any
 }
 
 const App: React.FC = () => {
