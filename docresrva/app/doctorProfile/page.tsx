@@ -99,7 +99,7 @@ const DoctorProfile: React.FC = () => {
     fetchDoctorProfile();
 }, []);
 
-console.log(user?.profilePic)
+
 
 const getWeekStart = () => {
   const today = new Date();

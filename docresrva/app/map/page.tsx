@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import Icon from '../../public/png-transparent-computer-icons-map-map-cdr-map-vector-map.png'
 import '../../public/olamap/OlaMapsWebSDK/dist/style.css';
 import Image from 'next/image';
+
 interface PlacePrediction {
     place_id: string;
     description: string;
@@ -89,7 +90,6 @@ const MapComponent: React.FC<Props> = ({ onLocationSelect }) => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log(data)
                 if (data?.results?.length > 0) {
                     const formattedAddress = data.results[0]?.formatted_address || 'Address not found';
                     setAddress(formattedAddress);
@@ -248,20 +248,20 @@ const MapComponent: React.FC<Props> = ({ onLocationSelect }) => {
                 style={{ width: '100%', height: '500px', borderRadius: '8px' }}
             />
 
-<div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-{address && (
-  <>
-    <Image 
-      src={Icon} 
-      alt="Map Icon" 
-      style={{ width: '24px', height: '24px', cursor: 'pointer' }} 
-    />
-    <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#555' }}>
-      Selected Location: {address}
-    </p>
-  </>
-)}
-</div>
+            <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {address && (
+                    <>
+                        <Image 
+                            src={Icon} 
+                            alt="Map Icon" 
+                            style={{ width: '24px', height: '24px', cursor: 'pointer' }} 
+                        />
+                        <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#555' }}>
+                            Selected Location: {address}
+                        </p>
+                    </>
+                )}
+            </div>
 
         </div>
     );

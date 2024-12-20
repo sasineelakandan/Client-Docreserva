@@ -64,7 +64,7 @@ const App: React.FC = () => {
     return (
       (!filters.name || doctor.name.toLowerCase().includes(filters.name.toLowerCase())) &&
       (!filters.location ||
-        doctor.hospitalName?.toLowerCase().includes(filters.location.toLowerCase())) &&
+        doctor?.location?.address?.toLowerCase().includes(filters.location.toLowerCase())) &&
       (!filters.specialization ||
         doctor.specialization?.toLowerCase().includes(filters.specialization.toLowerCase())) &&
       (!filters.experience || doctor.experience >= parseInt(filters.experience || "0", 10)) &&
@@ -189,7 +189,7 @@ const App: React.FC = () => {
                   <p className="text-gray-600">{doctor.specialization}</p>
                   <p className="text-gray-500">Experience: {doctor.experience} years</p>
                   <p className="text-gray-500">Fees: ₹{doctor.fees}</p>
-                  <p className="text-gray-500">Location: {doctor.hospitalName}</p>
+                  <p className="text-gray-500">Location: {doctor?.hospitalName}</p>
                 </div>
               </div>
             ))}

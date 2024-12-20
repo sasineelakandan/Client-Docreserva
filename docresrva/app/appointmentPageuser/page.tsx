@@ -180,12 +180,12 @@ const AppointmentsList = () => {
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={appt.doctorId.profilePic}
+                    src={appt?.doctorId?.profilePic}
                     alt={`${appt.patientId.name} ${appt.patientId.lastName}`}
                     className="w-16 h-16 rounded-full object-cover shadow-md"
                   />
                   <div>
-                    <p className="text-lg font-semibold text-gray-800">{appt.doctorId.name}</p>
+                    <p className="text-lg font-semibold text-gray-800">{appt?.doctorId?.name}</p>
                     <p className="text-sm text-gray-500">
                       Date: {new Date(appt.slotId.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
