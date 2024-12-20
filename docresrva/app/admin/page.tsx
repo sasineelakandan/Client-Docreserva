@@ -1,88 +1,165 @@
-import React from 'react';
-import AdminSidebar from '@/components/utils/Sidebar';
-const AdminHome: React.FC = () => {
+'use client';
+import React, { useState, useEffect } from 'react';
+import AdminNavbar from '../../components/utils/Sidebar';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
+// Registering the chart elements
+ChartJS.register(CategoryScale, LinearScale, ArcElement, Title, Tooltip, Legend);
+
+const AdminDashboard: React.FC = () => {
+  const [timePeriod, setTimePeriod] = useState<'weekly' | 'monthly' | 'yearly' | 'today'>('weekly');
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:8001/api/admin/patients", { withCredentials: true });
+        setPatients(data);
+      } catch (err) {
+        Swal.fire("Empty!", "No data available for patients.", "warning");
+      }
+    };
+    fetchPatients();
+  }, []);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await axios.get("http://localhost:8001/api/admin/verifieddoctors", { withCredentials: true });
+        setDoctors(response.data);
+      } catch (err) {
+        Swal.fire("Error!", "Failed to fetch verified doctors.", "error");
+      }
+    };
+
+    const fetchAppointments = async () => {
+      try {
+        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/appointments`, { withCredentials: true });
+        setAppointments(data);
+      } catch (err) {
+        console.log(err)
+      }
+    };
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await Promise.all([fetchDoctors(), fetchAppointments()]);
+      } catch (err) {
+        setError("Error loading data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Helper function to calculate revenue for a given date range
+  const calculateRevenue = (startDate: Date, endDate: Date) => {
+    return appointments
+      .filter((appt) => {
+        const transactionDate = new Date(appt.paymentId?.transactionDate || '');
+        return transactionDate >= startDate && transactionDate <= endDate;
+      })
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
+  };
+
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const startOfYear = new Date(today.getFullYear(), 0, 1);
+
+  const stats = {
+    totalDoctors: doctors.length,
+    totalPatients: patients.length,
+    totalAppointments: appointments.length,
+    totalEarnings: appointments.reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
+    todayRevenue: calculateRevenue(new Date(today.setHours(0, 0, 0, 0)), today),
+    weeklyRevenue: calculateRevenue(startOfWeek, today),
+    monthlyRevenue: calculateRevenue(startOfMonth, today),
+    yearlyRevenue: calculateRevenue(startOfYear, today),
+  };
+
+  const chartData = {
+    labels: ['todayRevenue', 'weeklyRevenue ', 'monthlyRevenue', 'yearlyRevenue'],
+    datasets: [
+      {
+        data: [stats.todayRevenue, stats.weeklyRevenue, stats.monthlyRevenue, stats.yearlyRevenue],
+        backgroundColor: ['#FF6384', '#36A2EB', '#4BC0C0', '#FFCD56'],
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function (tooltipItem: any) {
+            const value = tooltipItem.raw as number;
+            return tooltipItem.label === 'Total Earnings'
+              ? `₹${value.toLocaleString()}`
+              : value.toLocaleString();
+          },
+        },
+      },
+    },
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">Error: {error}</div>;
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
-     <AdminSidebar/>
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <AdminNavbar />
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
-        {/* Top Bar */}
-        <header className="flex justify-between items-center bg-white p-4 shadow-md">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <div>
-            <button className="mx-2">🔔</button>
-            <button className="mx-2">👤</button>
-          </div>
-        </header>
+      <div className="flex-1 p-6 bg-gray-100">
+       
 
-        {/* Dashboard Content */}
-        <section className="mt-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded shadow-md">
-              <h2 className="text-xl">Total Doctors</h2>
-              <p className="text-2xl font-bold">45</p>
+        {/* Stats Cards */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[
+            { label: 'Total Doctors', value: stats.totalDoctors, gradient: 'from-blue-400 to-blue-600' },
+            { label: 'Total Patients', value: stats.totalPatients, gradient: 'from-teal-400 to-teal-600' },
+            { label: 'Total Appointments', value: stats.totalAppointments, gradient: 'from-green-400 to-green-600' },
+            { label: 'Total Earnings', value: `₹${stats.totalEarnings.toLocaleString()}`, gradient: 'from-purple-400 to-purple-600' },
+            { label: 'Today Revenue', value: `₹${stats.todayRevenue.toLocaleString()}`, gradient: 'from-pink-400 to-pink-600' },
+            { label: 'Weekly Revenue', value: `₹${stats.weeklyRevenue.toLocaleString()}`, gradient: 'from-orange-400 to-orange-600' },
+            { label: 'Monthly Revenue', value: `₹${stats.monthlyRevenue.toLocaleString()}`, gradient: 'from-indigo-400 to-indigo-600' },
+            { label: 'Yearly Revenue', value: `₹${stats.yearlyRevenue.toLocaleString()}`, gradient: 'from-yellow-400 to-yellow-600' },
+          ].map((card, index) => (
+            <div
+              key={index}
+              className={`bg-gradient-to-r ${card.gradient} p-4 shadow-lg rounded-lg text-center`}
+            >
+              <h3 className="text-xl font-semibold text-white">{card.label}</h3>
+              <p className="mt-2 text-3xl font-bold text-white">{card.value}</p>
             </div>
-            <div className="bg-white p-4 rounded shadow-md">
-              <h2 className="text-xl">Total Patients</h2>
-              <p className="text-2xl font-bold">200</p>
-            </div>
-            <div className="bg-white p-4 rounded shadow-md">
-              <h2 className="text-xl">Appointments Today</h2>
-              <p className="text-2xl font-bold">25</p>
-            </div>
-            <div className="bg-white p-4 rounded shadow-md">
-              <h2 className="text-xl">Daily Revenue</h2>
-              <p className="text-2xl font-bold">$1200</p>
-            </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Charts Section */}
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow-md">
-              <h3 className="text-xl mb-4">Appointments by Week</h3>
-              {/* Chart Component Placeholder */}
-              <div>Chart Goes Here</div>
-            </div>
-            <div className="bg-white p-4 rounded shadow-md">
-              <h3 className="text-xl mb-4">Revenue Breakdown</h3>
-              {/* Chart Component Placeholder */}
-              <div>Chart Goes Here</div>
-            </div>
+        <div className="mt-8 flex justify-center items-center">
+          {/* Doughnut Chart */}
+          <div className="w-full md:w-1/2" style={{ height: '400px' }}>
+            <Doughnut data={chartData} options={chartOptions} />
           </div>
-
-          {/* Recent Activity */}
-          <div className="mt-6 bg-white p-4 rounded shadow-md">
-            <h3 className="text-xl mb-4">Recent Appointments</h3>
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>John Doe</td>
-                  <td>Dr. Smith</td>
-                  <td>10:30 AM</td>
-                  <td>Confirmed</td>
-                  <td>
-                    <button className="text-blue-500">Reschedule</button>
-                  </td>
-                </tr>
-                {/* Add more rows as needed */}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AdminHome;
+export default AdminDashboard;
