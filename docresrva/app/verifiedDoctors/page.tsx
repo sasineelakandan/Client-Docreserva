@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaLock, FaUnlock, FaTrash } from "react-icons/fa"; // Import FaTrash for the delete icon
+import { FaSearch, FaLock, FaUnlock, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
@@ -21,11 +21,13 @@ type Doctor = {
 const DoctorManagement: React.FC = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [doctorsPerPage] = useState(5); // Number of doctors per page
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://localhost:8001/api/admin/verifieddoctors", { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`, { withCredentials: true });
         setDoctors(response.data);
       } catch (error) {
         Swal.fire("Empty!", "No data available in verified Doctors.", "warning");
@@ -47,11 +49,11 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:8001/api/admin/verifieddoctors?doctorId=${_id}`, {
+          await axios.delete(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors?doctorId=${_id}`, {
             withCredentials: true,
           });
           Swal.fire("Deleted!", "Doctor deleted successfully.", "success");
-          window.location.reload()
+          setDoctors((prev) => prev.filter((doctor) => doctor._id !== _id));
         } catch (err) {
           console.error("Failed to delete doctor:", err);
           Swal.fire("Error!", "Could not delete doctor.", "error");
@@ -76,12 +78,11 @@ const DoctorManagement: React.FC = () => {
       if (result.isConfirmed) {
         try {
           await axios.patch(
-            `http://localhost:8001/api/admin/verifieddoctors`,
-            { doctorId:_id }, 
+            `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`,
+            { doctorId: _id },
             { withCredentials: true }
           );
 
-          // Update local state to reflect the change
           setDoctors((prev) =>
             prev.map((doc) =>
               doc._id === _id ? { ...doc, isBlocked: updatedStatus } : doc
@@ -102,8 +103,16 @@ const DoctorManagement: React.FC = () => {
   };
 
   const filteredDoctors = doctors.filter((doctor) =>
-    doctor?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    doctor.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const indexOfLastDoctor = currentPage * doctorsPerPage;
+  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
+  const currentDoctors = filteredDoctors.slice(indexOfFirstDoctor, indexOfLastDoctor);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const totalPages = Math.ceil(filteredDoctors.length / doctorsPerPage);
 
   return (
     <div className="flex">
@@ -118,7 +127,7 @@ const DoctorManagement: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          < button className="bg-blue-500 text-white px-4 py-2 rounded">
+          <button className="bg-blue-500 text-white px-4 py-2 rounded">
             <FaSearch />
           </button>
         </div>
@@ -135,7 +144,7 @@ const DoctorManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredDoctors.map((doctor) => (
+            {currentDoctors.map((doctor) => (
               <tr key={doctor._id}>
                 <td className="border px-4 py-2">
                   <img
@@ -144,13 +153,13 @@ const DoctorManagement: React.FC = () => {
                     className="h-10 w-10 rounded-full"
                   />
                 </td>
-                <td className="border px-4 py-2">{doctor?.name}</td>
-                <td className="border px-4 py-2">{doctor?.email}</td>
-                <td className="border px-4 py-2">{doctor?.licenseNumber}</td>
-                <td className="border px-4 py-2">{doctor?.phone}</td>
+                <td className="border px-4 py-2">{doctor.name}</td>
+                <td className="border px-4 py-2">{doctor.email}</td>
+                <td className="border px-4 py-2">{doctor.licenseNumber}</td>
+                <td className="border px-4 py-2">{doctor.phone}</td>
                 <td className="border px-4 py-2">
                   <img
-                    src={doctor?.licenseImage || "/default-avatar.png"}
+                    src={doctor.licenseImage || "/default-avatar.png"}
                     alt="License"
                     className="h-10 w-20 rounded-full"
                   />
@@ -181,6 +190,17 @@ const DoctorManagement: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="mt-4 flex justify-center">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              className={`px-4 py-2 mx-1 rounded ${currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300"}`}
+              onClick={() => paginate(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

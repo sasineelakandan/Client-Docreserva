@@ -18,26 +18,26 @@ type Patient = {
 const PatientManagement: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:8001/api/admin/patients",
+          `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`,
           { withCredentials: true }
         );
-        
         setPatients(data);
       } catch (err) {
-        Swal.fire("Empty!", " No data availaple in Patients.", "warning");
+        Swal.fire("Empty!", "No data available in Patients.", "warning");
       }
     };
     fetchPatients();
   }, []);
- console.log(patients)
+
   // Handle delete
-  const handleDelete = (_id: string) => {
+  const handleDelete = async (_id: string) => {
     Swal.fire({
       title: "Are you sure?",
       text: "This action cannot be undone!",
@@ -49,14 +49,13 @@ const PatientManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const { data } =  await axios.delete(`http://localhost:8001/api/admin/patients?userId=${_id}`, {
-            withCredentials: true,
-          });
-          
+          await axios.delete(
+            `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients?userId=${_id}`,
+            { withCredentials: true }
+          );
           Swal.fire("Deleted!", "Patient deleted successfully.", "success");
-          window.location.reload()
+          setPatients((prev) => prev.filter((patient) => patient._id !== _id));
         } catch (err) {
-          console.error("Failed to delete patient:", err);
           Swal.fire("Error!", "Could not delete patient.", "error");
         }
       }
@@ -82,8 +81,8 @@ const PatientManagement: React.FC = () => {
       if (result.isConfirmed) {
         try {
           await axios.patch(
-            `http://localhost:8001/api/admin/patients`,
-            { userId:_id },
+            `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`,
+            { userId: _id },
             { withCredentials: true }
           );
           setPatients((prev) =>
@@ -99,17 +98,27 @@ const PatientManagement: React.FC = () => {
             "success"
           );
         } catch (err) {
-          console.error("Failed to update block status:", err);
           Swal.fire("Error!", "Could not update block status.", "error");
         }
       }
     });
   };
 
-  
+  // Pagination logic
   const filteredPatients = patients.filter((patient) =>
     patient.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+  const paginatedPatients = filteredPatients.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <div className="flex">
@@ -139,7 +148,7 @@ const PatientManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredPatients.map((patient) => (
+            {paginatedPatients.map((patient) => (
               <tr key={patient._id}>
                 <td className="border px-4 py-2">
                   <img
@@ -179,6 +188,35 @@ const PatientManagement: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="mt-4 flex justify-center items-center space-x-2">
+          <button
+            className="bg-gray-300 px-3 py-1 rounded"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300"
+              }`}
+              onClick={() => handlePageChange(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            className="bg-gray-300 px-3 py-1 rounded"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
-        const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/profile`, { withCredentials: true });
         if (response.data) {
           setDoctorProfile(response.data); // Storing the doctor profile in state
         }
@@ -203,7 +203,7 @@ const Page: React.FC = () => {
               <div className="bg-gray-100 p-8 shadow-xl rounded-xl w-full md:w-96">
                 {doctorProfile?.isVerified ? (
                   <>
-                    <Image
+                    <img
                       src={doctorProfile?.profilePic}
                       alt="Doctor"
                       className="w-52 h-52 rounded-full border-8 border-blue-600"

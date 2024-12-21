@@ -75,7 +75,7 @@ function DoctorSignUp() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:8001/api/doctor/signup",
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/signup`,
         fullData,
         { withCredentials: true }
       );

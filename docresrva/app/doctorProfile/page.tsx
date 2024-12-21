@@ -60,7 +60,7 @@ const DoctorProfile: React.FC = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
-            const response = await axios.get('http://localhost:8001/api/doctor/profile', { withCredentials: true });
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
             if(response.data){
               console.log(response.data)
               setUser(response.data)
@@ -194,7 +194,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         toast.error("New password and confirmation do not match!");
         return;
       }
-      let response=await axios.patch("http://localhost:8001/api/doctor/profile",
+      let response=await axios.patch(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
         data,
         { withCredentials: true }
       );
@@ -212,7 +212,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleProfileUpdate = async (data: any) => {
     try {
-      let response=await axios.put("http://localhost:8001/api/doctor/profile",
+      let response=await axios.put(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
           data,
           { withCredentials: true }
         );

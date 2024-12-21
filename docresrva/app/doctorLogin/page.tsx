@@ -30,7 +30,7 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     try {
-      const response = await axios.post("http://localhost:8001/api/doctor/login", data, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/login`, data, {
         withCredentials: true,
       });
       if (response.data) {
