@@ -19,7 +19,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/profile`, { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
         if (response.data) {
           setDoctorProfile(response.data); // Storing the doctor profile in state
         }

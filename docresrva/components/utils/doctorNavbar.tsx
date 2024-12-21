@@ -102,7 +102,7 @@ const doctorNavbar: React.FC = () => {
       {/* Center Section: Navigation Icons */}
       <div className="hidden md:flex items-center space-x-8 text-gray-600">
         <a
-          href="#"
+          href="/doctorHome"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Home className="text-2xl" />
@@ -133,8 +133,8 @@ const doctorNavbar: React.FC = () => {
           href="#"
           className="relative text-gray-600 hover:text-teal-700 transition duration-200"
         >
-          <Notifications className="text-2xl" />
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+          
+          
         </a>
 
         {user ? (
