@@ -65,7 +65,7 @@ function OTPVerification() {
     try {
       const otpString = otp.join('');
       const response = await axios.post(
-        'http://localhost:8001/api/doctor/verifyotp',
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/verifyotp`,
         { otp: otpString, userId },
         { withCredentials: true }
       );
@@ -89,7 +89,7 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await axios.post('http://localhost:8001/api/doctor/resendotp', { userId }, { withCredentials: true });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/resendotp`, { userId }, { withCredentials: true });
       if (response.data) {
         toast.success('resend Otp Success')
         setOtp(new Array(6).fill(""));

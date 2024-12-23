@@ -70,7 +70,7 @@ function OTPVerification() {
     try {
       const otpString = otp.join('');
       const response = await axios.put(
-        'http://localhost:8001/api/doctor/forgotpassword',
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/forgotpassword`,
         { otp: otpString, userId, password },
         { withCredentials: true }
       );
@@ -93,7 +93,7 @@ function OTPVerification() {
   const handleResend = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:8001/api/doctor/resendotp',
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/resendotp`,
         { userId },
         { withCredentials: true }
       );

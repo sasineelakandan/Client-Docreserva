@@ -67,7 +67,7 @@ function OTPVerification() {
     try {
       const otpString = otp.join('');
       const response = await axios.post(
-        'http://localhost:8001/api/user/verifyotp',
+        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/verifyotp`,
         { otp: otpString, userId },
         { withCredentials: true }
       );
@@ -92,7 +92,7 @@ function OTPVerification() {
   const handleResend = async () => {
     try {
       const response = await axios.post(
-        'http://localhost:8001/api/user/resendotp',
+        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/resendotp`,
         { userId },
         { withCredentials: true }
       );
