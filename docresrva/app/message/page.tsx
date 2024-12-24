@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -91,10 +91,11 @@ const ChatRoom = () => {
             }
         };
     }, [activeUser]);
+
     useEffect(() => {
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-        socket.on('receiveMessage', (msg:any) => {
+        socket.on('receiveMessage', (msg: any) => {
             const messageWithTimestamp = {
                 ...msg,
                 timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
@@ -139,7 +140,7 @@ const ChatRoom = () => {
                 { withCredentials: true }
             );
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     };
 
@@ -153,8 +154,9 @@ const ChatRoom = () => {
         setActiveUser(user._id);
         setSelectedUserProfile(user);
     };
-    const key=Object.keys(onlineUsers)
-    const isOnline=key.includes(selectedUserProfile?.doctor?._id)
+
+    const key = Object.keys(onlineUsers);
+    const isOnline = key.includes(selectedUserProfile?.doctor?._id);
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -165,43 +167,42 @@ const ChatRoom = () => {
                     <p>Loading users...</p>
                 ) : users.length > 0 ? (
                     <ul>
-                    {users.map((user: any) => {
-                        const keys = Object.keys(onlineUsers);
-                        const isUserOnline = keys.includes(user?.doctor?._id);
-                        return (
-                            <li
-                                key={user._id}
-                                className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${activeUser === user._id ? 'bg-gray-300' : ''}`}
-                                onClick={() => handleUserSelect(user)}
-                            >
-                                <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
-                                    {user?.doctor?.profilePic ? (
-                                        <>
-                                            <img
-                                                src={user?.doctor?.profilePic}
-                                                alt="Profile"
-                                                className="w-full h-full object-cover rounded-full"
-                                            />
-                                            <span
-                                                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isUserOnline ? 'bg-green-500' : 'bg-gray-400'}`}
-                                            ></span>
-                                        </>
-                                    ) : (
-                                        user?.doctor?.name?.charAt(0)
-                                    )}
-                                </div>
-                
-                                <div className="flex-1">
-                                    <span className="font-bold">{user?.doctor?.name}</span>
-                                    <p className="text-sm text-black-500 truncate">
-                                        {user?.lastMessage || 'No messages yet'}
-                                    </p>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
-                
+                        {users.map((user: any) => {
+                            const keys = Object.keys(onlineUsers);
+                            const isUserOnline = keys.includes(user?.doctor?._id);
+                            return (
+                                <li
+                                    key={user._id}
+                                    className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${activeUser === user._id ? 'bg-gray-300' : ''}`}
+                                    onClick={() => handleUserSelect(user)}
+                                >
+                                    <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
+                                        {user?.doctor?.profilePic ? (
+                                            <>
+                                                <img
+                                                    src={user?.doctor?.profilePic}
+                                                    alt="Profile"
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                                <span
+                                                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isUserOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                                                ></span>
+                                            </>
+                                        ) : (
+                                            user?.doctor?.name?.charAt(0)
+                                        )}
+                                    </div>
+
+                                    <div className="flex-1">
+                                        <span className="font-bold">{user?.doctor?.name}</span>
+                                        <p className="text-sm text-black-500 truncate">
+                                            {user?.lastMessage || 'No messages yet'}
+                                        </p>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 ) : (
                     <p>No users available.</p>
                 )}
@@ -271,7 +272,7 @@ const ChatRoom = () => {
                     />
                     <button
                         onClick={sendMessage}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                        className="bg-blue-500 text-white p-2 rounded-lg"
                     >
                         Send
                     </button>
@@ -281,4 +282,10 @@ const ChatRoom = () => {
     );
 };
 
-export default ChatRoom;
+export default function ChatRoomWithSuspense() {
+    return (
+        <Suspense fallback={<div>Loading chat room...</div>}>
+            <ChatRoom />
+        </Suspense>
+    );
+}

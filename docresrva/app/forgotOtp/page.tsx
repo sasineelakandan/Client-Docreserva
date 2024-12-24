@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 
-function OTPVerification() {
-  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+const OTPVerification = () => {
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
   const [timer, setTimer] = useState<number>(59);
   const [isExpired, setIsExpired] = useState<boolean>(false);
 
@@ -21,7 +21,7 @@ function OTPVerification() {
 
   useEffect(() => {
     if (!userId) {
-      toast.error("User ID is missing.");
+      toast.error('User ID is missing.');
       return;
     }
 
@@ -77,7 +77,7 @@ function OTPVerification() {
 
       if (response.data) {
         toast.success('OTP Verified');
-        toast.success('password change successfully')
+        toast.success('Password changed successfully');
         setTimeout(() => {
           router.replace('/doctorLogin');
         }, 2000);
@@ -100,7 +100,7 @@ function OTPVerification() {
 
       if (response.data) {
         toast.success('OTP Resent Successfully');
-        setOtp(new Array(6).fill(""));
+        setOtp(new Array(6).fill(''));
         setTimer(59);
         setIsExpired(false);
 
@@ -115,6 +115,10 @@ function OTPVerification() {
       toast.error(errorMessage);
     }
   };
+
+  if (!userId) {
+    return null; // Return null if the user ID is missing (which will prevent rendering until the necessary data is available)
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -144,7 +148,7 @@ function OTPVerification() {
         </div>
 
         <div className="text-right text-red-500 text-sm mb-6">
-          {timer > 0 ? `0:${timer.toString().padStart(2, '0')}s` : "Time expired"}
+          {timer > 0 ? `0:${timer.toString().padStart(2, '0')}s` : 'Time expired'}
         </div>
 
         {isExpired ? (
@@ -158,7 +162,7 @@ function OTPVerification() {
           <button
             onClick={handleSubmit}
             className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded"
-            disabled={otp.includes("") || timer <= 0}
+            disabled={otp.includes('') || timer <= 0}
           >
             Verify
           </button>
@@ -166,6 +170,14 @@ function OTPVerification() {
       </div>
     </div>
   );
-}
+};
 
-export default OTPVerification;
+const OTPVerificationPage = () => {
+  return (
+    <React.Suspense fallback={<div>Loading OTP Verification...</div>}>
+      <OTPVerification />
+    </React.Suspense>
+  );
+};
+
+export default OTPVerificationPage;

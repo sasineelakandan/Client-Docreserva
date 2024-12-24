@@ -57,19 +57,7 @@ function DoctorSignUp() {
 
   const onSubmit: SubmitHandler<DoctorSignUpFormValues> = async (data) => {
     try {
-      if (!location.latitude || !location.longitude) {
-        Swal.fire({
-          icon: "error",
-          title: "Location Missing",
-          text: "Please select a location before submitting the form.",
-         
-          imageWidth: 40,
-          imageHeight: 40,
-          confirmButtonText: "Okay",
-          confirmButtonColor: "#4CAF50",
-        });
-        return;
-      }
+      
 
       const fullData = { ...data, location };
       setLoading(true);

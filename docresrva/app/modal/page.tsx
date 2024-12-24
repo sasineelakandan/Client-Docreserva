@@ -27,7 +27,7 @@ const schema = yup.object({
     .typeError('Fees must be a valid number'),
 }).required();
 
-const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, userId }) => {
+const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
   const {
     control,
     handleSubmit,

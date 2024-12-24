@@ -1,13 +1,11 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
-interface AppointmentBookingProps {
-  doctorId: string;
-  isModalOpen: boolean;
-  setIsModalOpen: (open: boolean) => void;
-}
+
 
 const generateSlotsForDay = (date: Date, doctorId: string) => {
   const slots = [];
@@ -49,7 +47,7 @@ const generateSlots = (doctorId: string) => {
   return slots;
 };
 
-const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
+const AppointmentBooking: React.FC<any> = ({
   doctorId,
   isModalOpen,
   setIsModalOpen,

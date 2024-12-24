@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
@@ -30,20 +30,22 @@ const DoctorChatRoom = () => {
     const messageEndRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        // Initialize the socket connection
-        socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+        if (typeof window !== 'undefined') {
+            // Initialize the socket connection only on the client side
+            socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-        if (userId) {
-            socket.emit('userOnline', userId); // Mark doctor as online
+            if (userId) {
+                socket.emit('userOnline', userId); // Mark doctor as online
+            }
+
+            socket.on('updateUserStatus', (users: any) => {
+                setOnlineUsers(users);
+            });
+
+            return () => {
+                socket.disconnect();
+            };
         }
-
-        socket.on('updateUserStatus', (users: any) => {
-            setOnlineUsers(users);
-        });
-
-        return () => {
-            socket.disconnect();
-        };
     }, [userId]);
 
     useEffect(() => {
@@ -70,32 +72,36 @@ const DoctorChatRoom = () => {
         };
         fetchUsers();
     }, []);
+
     useEffect(() => {
-        socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
+        if (typeof window !== 'undefined') {
+            socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
-        socket.on('receiveMessage', (msg:any) => {
-            const messageWithTimestamp = {
-                ...msg,
-                timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-            };
-            setMessages((prevMessages) => {
-                if (
-                    !prevMessages.some(
-                        (m) =>
-                            m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() &&
-                            m.sender === messageWithTimestamp.sender
-                    )
-                ) {
-                    return [...prevMessages, messageWithTimestamp];
-                }
-                return prevMessages;
+            socket.on('receiveMessage', (msg: any) => {
+                const messageWithTimestamp = {
+                    ...msg,
+                    timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+                };
+                setMessages((prevMessages) => {
+                    if (
+                        !prevMessages.some(
+                            (m) =>
+                                m.timestamp.getTime() === messageWithTimestamp.timestamp.getTime() &&
+                                m.sender === messageWithTimestamp.sender
+                        )
+                    ) {
+                        return [...prevMessages, messageWithTimestamp];
+                    }
+                    return prevMessages;
+                });
             });
-        });
 
-        return () => {
-            socket.disconnect();
-        };
+            return () => {
+                socket.disconnect();
+            };
+        }
     }, []);
+
     // Fetch messages for the active chatroom
     useEffect(() => {
         const fetchMessages = async () => {
@@ -133,8 +139,8 @@ const DoctorChatRoom = () => {
         if (!message.trim() || !activeUser) return;
 
         const newMessage: Message = {
-            sender:'Doctor',
-            receiver:'patient',
+            sender: 'Doctor',
+            receiver: 'patient',
             content: message,
             timestamp: new Date(),
         };
@@ -280,17 +286,17 @@ const DoctorChatRoom = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center mt-4">
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Type your message..."
-                        className="w-full p-2 border border-gray-300 rounded-lg"
+                        className="flex-1 p-2 border border-gray-300 rounded-lg"
+                        placeholder="Type a message..."
                     />
                     <button
                         onClick={sendMessage}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                        className="ml-2 p-2 bg-blue-500 text-white rounded-lg"
                     >
                         Send
                     </button>
@@ -300,4 +306,10 @@ const DoctorChatRoom = () => {
     );
 };
 
-export default DoctorChatRoom;
+const ChatRoomWithSuspense = () => (
+    <Suspense fallback={<div>Loading...</div>}>
+        <DoctorChatRoom />
+    </Suspense>
+);
+
+export default ChatRoomWithSuspense;

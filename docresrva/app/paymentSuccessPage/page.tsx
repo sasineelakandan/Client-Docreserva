@@ -1,8 +1,9 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 
-const PaymentSuccessPage = () => {
+const PaymentSuccessPageContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -39,6 +40,14 @@ const PaymentSuccessPage = () => {
                 </button>
             </div>
         </div>
+    );
+};
+
+const PaymentSuccessPage = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PaymentSuccessPageContent />
+        </Suspense>
     );
 };
 

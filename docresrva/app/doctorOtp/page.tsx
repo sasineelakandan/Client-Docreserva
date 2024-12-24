@@ -1,12 +1,19 @@
 'use client'
 
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, Suspense } from 'react';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter, useSearchParams } from "next/navigation";
+
+// Loading Spinner Fallback Component
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center min-h-screen">
+    <div className="loader">Loading...</div> {/* You can replace this with any custom loading spinner */}
+  </div>
+);
 
 function OTPVerification() {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
@@ -44,11 +51,11 @@ function OTPVerification() {
         });
       }, 1000);
 
-      return () => clearInterval(countdown);
+      return () => clearInterval(countdown);  // Clear interval on cleanup
     } else {
       setIsExpired(true);
     }
-  }, [timer, userId]);
+  }, [timer, userId]);  // Depend on timer and userId for cleanup
 
   const handleChange = (element: HTMLInputElement, index: number) => {
     if (isNaN(Number(element.value))) return;
@@ -71,11 +78,10 @@ function OTPVerification() {
       );
 
       if (response.data) {
-        toast.success('Otp Verified')
-        setTimeout(()=>{
+        toast.success('OTP Verified');
+        setTimeout(() => {
           router.replace('/doctorHome');
-        },2000)
-        
+        }, 2000);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -89,9 +95,14 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/resendotp`, { userId }, { withCredentials: true });
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/resendotp`,
+        { userId },
+        { withCredentials: true }
+      );
+
       if (response.data) {
-        toast.success('resend Otp Success')
+        toast.success('Resend OTP Success');
         setOtp(new Array(6).fill(""));
         setTimer(59);
         setIsExpired(false);
@@ -161,4 +172,10 @@ function OTPVerification() {
   );
 }
 
-export default OTPVerification;
+export default function OTPVerificationPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <OTPVerification />
+    </Suspense>
+  );
+}

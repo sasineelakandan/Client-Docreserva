@@ -1,15 +1,13 @@
-
-'use client'
+'use client';
 import Navbar from "@/components/utils/Navbar";
-import React from "react";
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { FaHome, FaBell, FaUserAlt, FaUsers } from "react-icons/fa";
-import { useEffect ,useState} from "react";
+import React, { Suspense, useState, useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useDispatch } from 'react-redux';
 import { setPatientDetails } from "@/Store/slices/patientDetails";
 import { useRouter } from "next/navigation";
+
 // Define a type for the form data
 interface FormData {
   firstName: string;
@@ -23,40 +21,44 @@ interface FormData {
   age: number; // Added
   gender: string; // Added
 }
+
 interface Doctor {
-    _id: string;
-    name: string;
-    email: string;
-    password: string;
-    specialization: string;
-    experience: number;
-    phone: string;
-    isVerified: boolean;
-    isOtpVerified: boolean;
-    isBlocked: boolean;
-    isDeleted: boolean;
-    hospitalName: string;
-    licenseNumber: string;
-    street: string;
-    city: string;
-    state: string;
-    licenseImage: string;
-    createdAt: string;
-    updatedAt: string;
-    profilePic?: string; // Optional field
-    fees: number;
-    isAuthenticated: boolean;
-  }
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  specialization: string;
+  experience: number;
+  phone: string;
+  isVerified: boolean;
+  isOtpVerified: boolean;
+  isBlocked: boolean;
+  isDeleted: boolean;
+  hospitalName: string;
+  licenseNumber: string;
+  street: string;
+  city: string;
+  state: string;
+  licenseImage: string;
+  createdAt: string;
+  updatedAt: string;
+  profilePic?: string; // Optional field
+  fees: number;
+  isAuthenticated: boolean;
+}
+
 const DoctorPage: React.FC = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    control,
   } = useForm<FormData>(); // Pass the FormData type to useForm
-  const [doctor, setDoctor] = useState<Doctor| null>(null);
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const searchParams = useSearchParams();
   const slotId = searchParams.get('id');
+  const router = useRouter();
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const savedUserDetails = localStorage.getItem('Doctor');
     if (savedUserDetails) {
@@ -64,45 +66,43 @@ const DoctorPage: React.FC = () => {
       setDoctor(parsedDetails);
     }
   }, []);
-  const router=useRouter()
-  const dispatch = useDispatch();
 
-const onSubmit: SubmitHandler<FormData> = async (data: any) => {
-  data.slotId = slotId;
-  data.doctorId = doctor?._id;
+  const onSubmit: SubmitHandler<FormData> = async (data: any) => {
+    data.slotId = slotId;
+    data.doctorId = doctor?._id;
 
-  try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, {withCredentials:true});
-const patientData=response.data
-    if(response.data){
-      dispatch(
-        setPatientDetails({
-          _id: patientData._id,
-          userId: patientData.userId,
-          doctorId: patientData.doctorId,
-          firstName: patientData.firstName.trim(), 
-          lastName: patientData.lastName.trim(),  
-          age: patientData.age,
-          gender: patientData.gender,
-          reason: patientData.reason,
-          slotId: patientData.slotId,
-        })
-      )
-      router.push(`/confirmBooking?id=${slotId}`)
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, { withCredentials: true });
+      const patientData = response.data;
+
+      if (response.data) {
+        dispatch(
+          setPatientDetails({
+            _id: patientData._id,
+            userId: patientData.userId,
+            doctorId: patientData.doctorId,
+            firstName: patientData.firstName.trim(),
+            lastName: patientData.lastName.trim(),
+            age: patientData.age,
+            gender: patientData.gender,
+            reason: patientData.reason,
+            slotId: patientData.slotId,
+          })
+        );
+        router.push(`/confirmBooking?id=${slotId}`);
+      }
+    } catch (error: any) {
+      console.error('Error submitting data:', error);
+      if (axios.isAxiosError(error)) {
+        console.log('Axios error response:', error.response?.data);
+      }
     }
-  } catch (error:any) {
-    console.error('Error submitting data:', error);
-    if (axios.isAxiosError(error)) {
-      console.log('Axios error response:', error.response?.data);
-    }
-  }
-};
-
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Header */}
-      <Navbar/>
+      <Navbar />
 
       {/* Content */}
       <main className="container mx-auto px-4 py-6">
@@ -119,16 +119,16 @@ const patientData=response.data
             <p className="text-gray-600">{doctor?.specialization}</p>
             <p className="text-gray-600">{doctor?.experience}, Years' Experience</p>
             <p className="text-gray-600">
-             {doctor?.hospitalName}
+              {doctor?.hospitalName}
             </p>
             <p className="text-gray-600">
-             {doctor?.street}
+              {doctor?.street}
             </p>
             <p className="text-gray-600">
-             {doctor?.city}
+              {doctor?.city}
             </p>
             <p className="text-gray-600">
-             {doctor?.state}
+              {doctor?.state}
             </p>
             <p className="text-teal-600 font-bold text-lg mt-4">
               Consulting Fee: ₹ {doctor?.fees}
@@ -169,45 +169,43 @@ const patientData=response.data
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
-              <div>
-  <label htmlFor="age" className="block text-sm font-medium">
-    Age
-  </label>
-  <input
-    type="number"
-    id="age"
-    className="w-full p-2 border border-gray-300 rounded-md"
-    placeholder="Enter Age"
-    {...register("age", {
-      required: "Age is required",
-      min: { value: 0, message: "Age cannot be negative" },
-      max: { value: 120, message: "Please enter a realistic age" },
-    })}
-  />
-  {errors.age && (
-    <p className="text-red-500 text-sm">{errors.age.message}</p>
-  )}
-</div>
-<div>
-  <label htmlFor="gender" className="block text-sm font-medium">
-    Gender
-  </label>
-  <select
-    id="gender"
-    className="w-full p-2 border border-gray-300 rounded-md"
-    {...register("gender", { required: "Gender is required" })}
-  >
-    <option value="">Select Gender</option>
-    <option value="male">Male</option>
-    <option value="female">Female</option>
-    <option value="other">Other</option>
-  </select>
-  {errors.gender && (
-    <p className="text-red-500 text-sm">{errors.gender.message}</p>
-  )}
-</div>
-                
-               
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium">
+                    Age
+                  </label>
+                  <input
+                    type="number"
+                    id="age"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="Enter Age"
+                    {...register("age", {
+                      required: "Age is required",
+                      min: { value: 0, message: "Age cannot be negative" },
+                      max: { value: 120, message: "Please enter a realistic age" },
+                    })}
+                  />
+                  {errors.age && (
+                    <p className="text-red-500 text-sm">{errors.age.message}</p>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="gender" className="block text-sm font-medium">
+                    Gender
+                  </label>
+                  <select
+                    id="gender"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    {...register("gender", { required: "Gender is required" })}
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                  {errors.gender && (
+                    <p className="text-red-500 text-sm">{errors.gender.message}</p>
+                  )}
+                </div>
               </div>
               <div>
                 <label htmlFor="reason" className="block text-sm font-medium">
@@ -248,11 +246,16 @@ const patientData=response.data
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      
     </div>
   );
 };
 
-export default DoctorPage;
+const DoctorPageWithSuspense: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DoctorPage />
+    </Suspense>
+  );
+};
+
+export default DoctorPageWithSuspense;

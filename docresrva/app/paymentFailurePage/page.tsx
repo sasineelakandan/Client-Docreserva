@@ -1,4 +1,5 @@
 'use client';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
@@ -42,4 +43,12 @@ const PaymentFailurePage = () => {
     );
 };
 
-export default PaymentFailurePage;
+const PaymentFailurePageWrapper = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PaymentFailurePage />
+        </Suspense>
+    );
+};
+
+export default PaymentFailurePageWrapper;

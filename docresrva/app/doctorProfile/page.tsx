@@ -51,8 +51,8 @@ const DoctorProfile: React.FC = () => {
       phone: "",
       hospitalName: "",
       fees: "",
-      location,
-      experience: "", 
+      location:'',
+      experience: "" 
     },
   });
   
@@ -61,17 +61,17 @@ const DoctorProfile: React.FC = () => {
     const fetchDoctorProfile = async () => {
         try {
             const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
-            if(response.data){
-              console.log(response.data)
-              setUser(response.data)
-              setAddress(response.data.location.address)
+            if(response?.data){
+              console.log(response?.data)
+              setUser(response?.data)
+              setAddress(response?.data?.location?.address)
               profileForm.reset({
-                name: response.data.name || "",
-                phone: response.data.phone || "", 
-                hospitalName: response.data.hospitalName || "", 
-                fees: response.data.fees || "",
-                location:response.data.location, 
-                experience: response.data.experience || "", 
+                name: response?.data?.name || "",
+                phone: response?.data?.phone || "", 
+                hospitalName: response?.data?.hospitalName || "", 
+                fees: response?.data?.fees || "",
+                location:response?.data?.location||'', 
+                experience: response?.data?.experience || "", 
               });
             }
             
@@ -82,7 +82,7 @@ const DoctorProfile: React.FC = () => {
 
               if(message=='Internal server error.'){
                 deleteCookie('accessToken')
-                window.location.reload()
+               
               }
              
         

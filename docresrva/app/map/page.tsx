@@ -1,5 +1,8 @@
 'use client';
 
+
+
+
 import { OlaMaps } from '../../public/olamap/OlaMapsWebSDK/dist/olamaps-js-sdk.es';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../../public/png-transparent-computer-icons-map-map-cdr-map-vector-map.png'
@@ -22,7 +25,7 @@ interface Props {
     onLocationSelect: (locationData: { latitude: number; longitude: number; address: string }) => void;
 }
 
-const MapComponent: React.FC<Props> = ({ onLocationSelect }) => {
+const MapComponent: React.FC<any> = ({ onLocationSelect }) => {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<any>(null);
     const markerRef = useRef<any>(null);
