@@ -74,6 +74,7 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
   }
 
   const secret = process.env.JWT_SECRET;
+  console.log('secret',secret)
   if (!secret) {
     console.error("JWT_SECRET is not defined in environment variables");
     return { role: null };
