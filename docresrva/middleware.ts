@@ -35,7 +35,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Verify token to get role
-  const tokenData = await verifyToken("accessToken", req);
+  const tokenData = await verifyToken("refreshToken", req);
   const role = tokenData?.role;
 
   if (!role) {
@@ -67,7 +67,7 @@ export async function middleware(req: NextRequest) {
 async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   const token = req.cookies.get(tokenName);
   console.log(req.cookies)
-  console.log(token,'------------------------------------------');
+  console.log(token?.value,'------------------------------------------');
   
   if (!token?.value) {
     console.error("Token not found in cookies");
