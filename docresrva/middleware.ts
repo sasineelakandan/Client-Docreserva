@@ -65,8 +65,9 @@ export async function middleware(req: NextRequest) {
 }
 
 
+
 async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
-  const token = req.cookies.get(tokenName); // Get the token from cookies
+  const token = req.cookies.get(tokenName);  // Get token from cookies
   console.log(req.cookies);
   console.log(token?.value, '------------------------------------------');
   
@@ -75,7 +76,7 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
     return { role: null };
   }
 
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET;  // Retrieve the secret from environment variables
   console.log('secret', secret);
   if (!secret) {
     console.error("JWT_SECRET is not defined in environment variables");
@@ -83,21 +84,22 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
   }
 
   try {
-    // Synchronously verify the token and decode it
-    const decoded = jwt.verify(token.value, secret) as { role: string }; // Specify role as part of the decoded payload
-    console.log('decoded', decoded);
+    // Verify the token using jose's jwtVerify function
+    const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
+    console.log('decoded payload', payload);
 
-    const role = decoded?.role;
-    console.log(role)
+  
+    const role = payload?.role as string | undefined;  // Type assertion to string
+
     if (!role) {
       console.error("Role not found in token payload");
       return { role: null };
     }
 
     console.log(`Verified role: ${role}`);
-    return { role }; // Return the role
+    return { role };  // Return the role
   } catch (err: any) {
     console.error(`Failed to verify token: ${err.message}`);
-    return { role: null }; // Return null if token verification fails
+    return { role: null };  // Return null if token verification fails
   }
 }
