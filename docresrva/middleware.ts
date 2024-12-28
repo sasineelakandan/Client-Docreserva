@@ -66,6 +66,7 @@ export async function middleware(req: NextRequest) {
 
 async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   const token = req.cookies.get(tokenName);
+  console.log(req.cookies)
   console.log(token,'------------------------------------------');
   
   if (!token?.value) {
