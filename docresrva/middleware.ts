@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import jwt, { JwtPayload } from 'jsonwebtoken';
-
+import jwt,{JwtPayload} from 'jsonwebtoken';
+import { log } from "console";
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor']);
@@ -65,13 +65,11 @@ export async function middleware(req: NextRequest) {
 }
 
 
-
-
-export async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
-  const token = req.cookies.get(tokenName);
+async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
+  const token = req.cookies.get(tokenName); // Get the token from cookies
   console.log(req.cookies);
   console.log(token?.value, '------------------------------------------');
-
+  
   if (!token?.value) {
     console.error("Token not found in cookies");
     return { role: null };
@@ -85,25 +83,21 @@ export async function verifyToken(tokenName: string, req: NextRequest): Promise<
   }
 
   try {
-    console.log('Verifying token...');
+    // Synchronously verify the token and decode it
+    const decoded = jwt.verify(token.value, secret) as { role: string }; // Specify role as part of the decoded payload
+    console.log('decoded', decoded);
 
-    // Verify the token and decode it
-    const decode = jwt.verify(token.value, secret) as JwtPayload;
-    console.log('Decoded token:', decode);
-
-    // Check if the token contains the role
-    const role = typeof decode === 'object' && 'role' in decode ? decode.role as string : null;
-
+    const role = decoded?.role;
+    console.log(role)
     if (!role) {
       console.error("Role not found in token payload");
       return { role: null };
     }
 
     console.log(`Verified role: ${role}`);
-    return { role };
+    return { role }; // Return the role
   } catch (err: any) {
     console.error(`Failed to verify token: ${err.message}`);
-    return { role: null };
+    return { role: null }; // Return null if token verification fails
   }
 }
-
