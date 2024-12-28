@@ -15,7 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ product
   });
   
 
-  let response = await axios.patch('http://localhost:8001/api/booking/bookings', data, {
+  let response = await axios.patch(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, {
     headers: {
       'Content-Type': 'application/json'
     },
