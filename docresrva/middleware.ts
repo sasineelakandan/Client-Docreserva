@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-
+import jwt from 'jsonwebtoken';
+import { log } from "console";
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor']);
@@ -85,6 +86,9 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
     console.log('haii')
     const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
     console.log('pay',payload)
+    const decode = await jwt.verify(token.value, secret);
+    console.log('decode' )
+    console.log(decode)
     const role = payload?.role as string | undefined;
 
     if (!role) {
