@@ -145,7 +145,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
     // Upload file to backend
     const response = await axios.post<{ url: string }>(
-      "http://localhost:3000/api/upload",
+      "https://www.docreserva.site/api/upload",
       formData,
       {
         headers: {
