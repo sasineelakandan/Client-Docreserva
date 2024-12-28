@@ -161,7 +161,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
   const onSubmit = async (data: any) => {
     try {
       const response = await axios.post(
-        'http://localhost:8001/api/doctor/verifyprofile',
+        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/verifyprofile`,
         data,
         { withCredentials: true }
       );
