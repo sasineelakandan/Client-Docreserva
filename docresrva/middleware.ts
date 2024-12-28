@@ -82,7 +82,7 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
   }
 
   try {
-    console.log('hai')
+    console.log('haii')
     const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
     console.log('pay',payload)
     const role = payload?.role as string | undefined;
