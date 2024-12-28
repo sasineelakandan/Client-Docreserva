@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import jwt from 'jsonwebtoken';
-import { log } from "console";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor']);
@@ -65,31 +65,34 @@ export async function middleware(req: NextRequest) {
 }
 
 
-async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
+
+
+export async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   const token = req.cookies.get(tokenName);
-  console.log(req.cookies)
-  console.log(token?.value,'------------------------------------------');
-  
+  console.log(req.cookies);
+  console.log(token?.value, '------------------------------------------');
+
   if (!token?.value) {
     console.error("Token not found in cookies");
     return { role: null };
   }
 
   const secret = process.env.JWT_SECRET;
-  console.log('secret',secret)
+  console.log('secret', secret);
   if (!secret) {
     console.error("JWT_SECRET is not defined in environment variables");
     return { role: null };
   }
 
   try {
-    console.log('haii')
-    const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
-    console.log('pay',payload)
-    const decode = await jwt.verify(token.value, secret);
-    console.log('decode' )
-    console.log(decode)
-    const role = payload?.role as string | undefined;
+    console.log('Verifying token...');
+
+    // Verify the token and decode it
+    const decode = jwt.verify(token.value, secret) as JwtPayload;
+    console.log('Decoded token:', decode);
+
+    // Check if the token contains the role
+    const role = typeof decode === 'object' && 'role' in decode ? decode.role as string : null;
 
     if (!role) {
       console.error("Role not found in token payload");
@@ -103,3 +106,4 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
     return { role: null };
   }
 }
+
