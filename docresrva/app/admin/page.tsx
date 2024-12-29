@@ -20,7 +20,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const { data } = await axios.get("http://localhost:8001/api/admin/patients", { withCredentials: true });
+        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`, { withCredentials: true });
         setPatients(data);
       } catch (err) {
         Swal.fire("Empty!", "No data available for patients.", "warning");
@@ -32,7 +32,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://localhost:8001/api/admin/verifieddoctors", { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`, { withCredentials: true });
         setDoctors(response.data);
       } catch (err) {
         Swal.fire("Error!", "Failed to fetch verified doctors.", "error");
