@@ -42,7 +42,7 @@ const MapComponent: React.FC<any> = ({ onLocationSelect }) => {
     useEffect(() => {
         if (mapContainerRef.current) {
             const olaMaps = new OlaMaps({
-                apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
+                apiKey: 'BGnfCGHD0Ouoj1Dm4YKKoSc2liM9tlI9JlRZFrKb' ,
             });
 
             const map = olaMaps.init({
@@ -83,7 +83,7 @@ const MapComponent: React.FC<any> = ({ onLocationSelect }) => {
     const fetchAddress = async (lat: number, lng: number) => {
         try {
             const response = await fetch(
-                `https://api.olamaps.io/places/v1/reverse-geocode?latlng=${lat},${lng}&api_key=${process.env.NEXT_PUBLIC_API_KEY}`,
+                `https://api.olamaps.io/places/v1/reverse-geocode?latlng=${lat},${lng}&api_key=${'BGnfCGHD0Ouoj1Dm4YKKoSc2liM9tlI9JlRZFrKb'}`,
                 {
                     headers: {
                         'X-Request-Id': 'unique-request-id',
@@ -117,7 +117,7 @@ const MapComponent: React.FC<any> = ({ onLocationSelect }) => {
 
         try {
             const response = await fetch(
-                `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(searchQuery)}&api_key=${process.env.NEXT_PUBLIC_API_KEY}`,
+                `https://api.olamaps.io/places/v1/autocomplete?input=${encodeURIComponent(searchQuery)}&api_key=${'BGnfCGHD0Ouoj1Dm4YKKoSc2liM9tlI9JlRZFrKb'}`,
                 { headers: { 'X-Request-Id': 'request-123' } }
             );
 
@@ -144,7 +144,7 @@ const MapComponent: React.FC<any> = ({ onLocationSelect }) => {
     const fetchPlaceDetails = async (placeId: string) => {
         try {
             const response = await fetch(
-                `https://api.olamaps.io/places/v1/details?place_id=${placeId}&api_key=${process.env.NEXT_PUBLIC_API_KEY}`,
+                `https://api.olamaps.io/places/v1/details?place_id=${placeId}&api_key=${'BGnfCGHD0Ouoj1Dm4YKKoSc2liM9tlI9JlRZFrKb'}`,
                 { headers: { 'X-Request-Id': 'request-123' } }
             );
 
