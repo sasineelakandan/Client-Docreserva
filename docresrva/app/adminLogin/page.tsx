@@ -29,7 +29,7 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> =async (data) => {
     try{
-      const response= await axios.post('http://localhost:8001/api/admin/adminlogin', data, { withCredentials: true })
+      const response= await axios.post(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/adminlogin`, data, { withCredentials: true })
       if(response.data){
         
        
