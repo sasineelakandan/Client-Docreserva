@@ -19,7 +19,10 @@ const s3 = new S3Client({
     secretAccessKey: AWS_SECRET_ACCESS_KEY || '',
   },
 });
-
+console.log(AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  AWS_REGION,
+  S3_BUCKET_NAME,)
 // Disable Next.js's default body parsing
 export const config = {
   api: {
