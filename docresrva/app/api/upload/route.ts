@@ -45,10 +45,10 @@ function toIncomingMessage(req: Request): Readable {
 }
 
 // Buffer the stream before passing it to formidable
-async function bufferStream(stream: Readable): Promise<Buffer> {
+async function bufferStream(stream: any): Promise<any> {
   return new Promise((resolve, reject) => {
     const chunks: Uint8Array[] = [];
-    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('data', (chunk:any) => chunks.push(chunk));
     stream.on('end', () => resolve(Buffer.concat(chunks)));
     stream.on('error', reject);
   });
