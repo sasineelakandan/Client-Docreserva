@@ -45,12 +45,25 @@ function toIncomingMessage(req: Request): Readable {
 }
 
 // Buffer the stream before passing it to formidable
+
 async function bufferStream(stream: Readable): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Uint8Array[] = [];
-    stream.on('data', (chunk) => chunks.push(chunk));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-    stream.on('error', reject);
+
+    // Listening for 'data' event to collect the chunks
+    stream.on('data', (chunk: Uint8Array) => {
+      chunks.push(chunk); // Push each chunk into the array
+    });
+
+    // Once the stream ends, concatenate the chunks into a single buffer
+    stream.on('end', () => {
+      resolve(Buffer.concat(chunks)); // Combine all chunks into a single Buffer
+    });
+
+    // Handle errors during the stream process
+    stream.on('error', (err: Error) => {
+      reject(err); // Reject the promise if there is an error
+    });
   });
 }
 
@@ -69,7 +82,7 @@ export async function POST(req: Request) {
 
   try {
     console.log('step 1')
-    const stream = toIncomingMessage(req); // Convert the Fetch API Request to a compatible stream
+    const stream = await toIncomingMessage(req); // Convert the Fetch API Request to a compatible stream
     console.log('step 2')
     const buffer = await bufferStream(stream); // Buffer the stream
     console.log('step 3')
