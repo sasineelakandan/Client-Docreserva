@@ -1,15 +1,10 @@
 import { Readable } from 'stream';
-import formidable, { IncomingForm } from 'formidable';
-import fs from 'fs';
+import formidable, { IncomingForm, Fields, Files } from 'formidable';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
-import {
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AWS_REGION,
-  S3_BUCKET_NAME,
-} from '../../../components/utils/constant';
+import fs from 'fs';
+import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME } from '../../../components/utils/constant';
 
 // Initialize the S3 client
 const s3 = new S3Client({
@@ -19,10 +14,7 @@ const s3 = new S3Client({
     secretAccessKey: AWS_SECRET_ACCESS_KEY || '',
   },
 });
-console.log(AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AWS_REGION,
-  S3_BUCKET_NAME,)
+
 // Disable Next.js's default body parsing
 export const config = {
   api: {
@@ -31,7 +23,7 @@ export const config = {
 };
 
 // Helper: Convert `Request` to a Node.js `IncomingMessage`-like stream
-function toIncomingMessage(req: Request): any {
+function toIncomingMessage(req: Request): Readable {
   const readable:any = new Readable({
     read() {
       req.body?.getReader().read().then(({ done, value }) => {
@@ -52,41 +44,57 @@ function toIncomingMessage(req: Request): any {
   return readable;
 }
 
+// Buffer the stream before passing it to formidable
+async function bufferStream(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Uint8Array[] = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}
+
 // Export the POST method
 export async function POST(req: Request) {
   const form = new IncomingForm();
-  console.log('step 1')
+
   // Wrap formidable's parse method in a Promise
-  const parseForm = (stream: any): Promise<{ fields: any; files: any}> =>
+  const parseForm = (buffer: Buffer): Promise<{ fields: Fields; files: Files }> =>
     new Promise((resolve, reject) => {
-      form.parse(stream, (err, fields, files) => {
+      form.parse(buffer as any, (err, fields, files) => {
         if (err) reject(err);
         resolve({ fields, files });
       });
     });
-    console.log('step 2')
+
   try {
+    console.log('step 1')
     const stream = toIncomingMessage(req); // Convert the Fetch API Request to a compatible stream
-    const { fields, files } = await parseForm(stream);
+    console.log('step 2')
+    const buffer = await bufferStream(stream); // Buffer the stream
     console.log('step 3')
+    const { fields, files } = await parseForm(buffer);
+    console.log('step 4')
+
     const file = (files as any)?.file?.[0]; // Ensure the file is retrieved
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
     }
-    console.log('step 4')
+
     // Generate a unique file name
     const fileName = `${uuidv4()}-${file.originalFilename}`;
     const bucketName = S3_BUCKET_NAME;
+
+    // Read file into buffer
+    const fileBuffer = await fs.promises.readFile(file.filepath);
 
     // Upload file to S3
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileName,
-      Body: fs.createReadStream(file.filepath), // File stream for S3 upload
+      Body: fileBuffer, // Use the buffer instead of the file stream
       ContentType: file.mimetype, // Set correct MIME type
     });
-
-    console.log('step 5')
 
     await s3.send(command);
 
