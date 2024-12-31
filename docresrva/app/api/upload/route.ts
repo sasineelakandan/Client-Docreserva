@@ -49,7 +49,7 @@ function toIncomingMessage(req: Request): any {
   readable.headers = Object.fromEntries(req.headers.entries());
   readable.method = req.method;
   readable.url = req.url;
-
+  console.log(readable)
   return readable;
 }
 
@@ -68,7 +68,8 @@ export async function POST(req: Request) {
     });
 
   try {
-    const stream = toIncomingMessage(req); // Convert the Fetch API Request to a compatible stream
+    const stream = toIncomingMessage(req);
+    console.log(stream)
     const { fields, files } = await parseForm(stream);
 
     const file = (files as any)?.file?.[0]; // Ensure the file is retrieved
