@@ -19,10 +19,7 @@ const s3 = new S3Client({
     secretAccessKey: AWS_SECRET_ACCESS_KEY || '',
   },
 });
-console.log(AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AWS_REGION,
-  S3_BUCKET_NAME,)
+
 // Disable Next.js's default body parsing
 export const config = {
   api: {
@@ -32,7 +29,6 @@ export const config = {
 
 // Helper: Convert `Request` to a Node.js `IncomingMessage`-like stream
 function toIncomingMessage(req: Request): any {
-  console.log('step1',req.body)
   const readable:any = new Readable({
     read() {
       req.body?.getReader().read().then(({ done, value }) => {
@@ -49,32 +45,28 @@ function toIncomingMessage(req: Request): any {
   readable.headers = Object.fromEntries(req.headers.entries());
   readable.method = req.method;
   readable.url = req.url;
-  console.log('red',readable)
+  console.log(readable)
   return readable;
 }
 
 // Export the POST method
 export async function POST(req: Request) {
-  
   const form = new IncomingForm();
 
   // Wrap formidable's parse method in a Promise
   const parseForm = (stream: any): Promise<{ fields: formidable.Fields; files: formidable.Files }> =>
-    
     new Promise((resolve, reject) => {
-      console.log('hai')
       form.parse(stream, (err, fields, files) => {
         if (err) reject(err);
-        console.log('1',fields,files)
+        console.log(fields,files)
         resolve({ fields, files });
       });
     });
 
   try {
-    const stream = toIncomingMessage(req);
-    console.log('hey',stream)
+    const stream = toIncomingMessage(req); // Convert the Fetch API Request to a compatible stream
     const { fields, files } = await parseForm(stream);
-  console.log('now',files)
+
     const file = (files as any)?.file?.[0]; // Ensure the file is retrieved
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
@@ -84,7 +76,7 @@ export async function POST(req: Request) {
     const fileName = `${uuidv4()}-${file.originalFilename}`;
     const bucketName = S3_BUCKET_NAME;
 
-    console.log('file',fileName)
+    // Upload file to S3
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileName,
