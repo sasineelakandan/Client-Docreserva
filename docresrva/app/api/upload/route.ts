@@ -32,6 +32,7 @@ export const config = {
 
 // Helper: Convert `Request` to a Node.js `IncomingMessage`-like stream
 function toIncomingMessage(req: Request): any {
+  console.log('step1',req)
   const readable:any = new Readable({
     read() {
       req.body?.getReader().read().then(({ done, value }) => {
@@ -54,6 +55,7 @@ function toIncomingMessage(req: Request): any {
 
 // Export the POST method
 export async function POST(req: Request) {
+  console.log(req)
   const form = new IncomingForm();
 
   // Wrap formidable's parse method in a Promise
