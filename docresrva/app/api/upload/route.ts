@@ -60,9 +60,12 @@ export async function POST(req: Request) {
 
   // Wrap formidable's parse method in a Promise
   const parseForm = (stream: any): Promise<{ fields: formidable.Fields; files: formidable.Files }> =>
+    
     new Promise((resolve, reject) => {
+      console.log('hai')
       form.parse(stream, (err, fields, files) => {
         if (err) reject(err);
+        console.log('hey')
         resolve({ fields, files });
       });
     });
