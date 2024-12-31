@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     const stream = toIncomingMessage(req);
     console.log('hey',stream)
     const { fields, files } = await parseForm(stream);
-
+  console.log('now',files)
     const file = (files as any)?.file?.[0]; // Ensure the file is retrieved
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
