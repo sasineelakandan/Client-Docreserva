@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     const fileName = `${uuidv4()}-${file.originalFilename}`;
     const bucketName = S3_BUCKET_NAME;
 
-    // Upload file to S3
+    console.log(fileName)
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileName,
