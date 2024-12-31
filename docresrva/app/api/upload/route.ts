@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       console.log('hai')
       form.parse(stream, (err, fields, files) => {
         if (err) reject(err);
-        console.log('hey')
+        console.log('1',fields,files)
         resolve({ fields, files });
       });
     });
