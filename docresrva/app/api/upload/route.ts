@@ -49,7 +49,7 @@ function toIncomingMessage(req: Request): any {
   readable.headers = Object.fromEntries(req.headers.entries());
   readable.method = req.method;
   readable.url = req.url;
-  console.log(readable)
+  console.log('red',readable)
   return readable;
 }
 
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
   try {
     const stream = toIncomingMessage(req);
-    console.log(stream)
+    console.log('hey',stream)
     const { fields, files } = await parseForm(stream);
 
     const file = (files as any)?.file?.[0]; // Ensure the file is retrieved
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     const fileName = `${uuidv4()}-${file.originalFilename}`;
     const bucketName = S3_BUCKET_NAME;
 
-    console.log(fileName)
+    console.log('file',fileName)
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: fileName,
