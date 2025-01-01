@@ -3,7 +3,7 @@ import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
-import { pipeline } from 'stream';
+import { Readable } from 'stream';
 import {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
@@ -26,8 +26,29 @@ export const config = {
   },
 };
 
-// Helper function to pipe request stream into formidable parser
-const parseForm = (reqStream: ReadableStream<Uint8Array>): Promise<{ fields: Fields; files: Files }> => {
+// Helper function to convert Request body to a Node.js Readable Stream
+function toIncomingMessage(req: Request): Readable {
+  const readable :any= new Readable({
+    read() {
+      req.body?.getReader().read().then(({ done, value }) => {
+        if (done) {
+          this.push(null); // End the stream
+        } else {
+          this.push(value); // Push the chunk
+        }
+      });
+    },
+  });
+
+  // Add necessary headers to the stream object
+  readable.headers = Object.fromEntries(req.headers.entries());
+  readable.method = req.method;
+  readable.url = req.url;
+  return readable;
+}
+
+// Helper function to parse the form data
+const parseForm = (reqStream: Readable): Promise<{ fields: Fields; files: Files }> => {
   return new Promise((resolve, reject) => {
     const form = new IncomingForm({
       uploadDir: './tmp',  // Temporary upload directory
@@ -45,26 +66,28 @@ const parseForm = (reqStream: ReadableStream<Uint8Array>): Promise<{ fields: Fie
   });
 };
 
-// Directly handle the file upload with formidable
+// Handle the file upload with formidable
 export async function POST(req: Request) {
   try {
-    // Create a stream from the incoming request body
-    const reqStream = req.body ? req.body.getReader() : null;
-    if (!reqStream) {
-      return NextResponse.json({ error: 'No body in the request' }, { status: 400 });
+    // Convert the request body to a readable stream
+    const reqStream = toIncomingMessage(req);
+
+    // Ensure the stream has a proper content-length
+    const contentLength = req.headers.get('content-length');
+    if (!contentLength) {
+      return NextResponse.json({ error: 'Missing Content-Length header' }, { status: 400 });
     }
 
-    // Use a Promise to handle the form parsing
-    const { fields, files } = await parseForm(reqStream as any);  // Parse the form data
+    // Parse the form data
+    const { fields, files } = await parseForm(reqStream);
 
-    // Access the file from the parsed files (ensure TypeScript knows the type)
-    const file = (files as Files).file?.[0];  // Ensure you have a file (use Files type)
+    const file = (files as Files).file?.[0]; // Access the uploaded file
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
     }
 
-    // Ensure mimetype is either a string or fallback to 'application/octet-stream'
-    const contentType = file.mimetype || 'application/octet-stream';  // Fallback to binary if null
+    // Ensure the content type is either a string or a fallback to 'application/octet-stream'
+    const contentType = file.mimetype || 'application/octet-stream';
 
     // Generate a unique file name
     const fileName = `${uuidv4()}-${file.originalFilename}`;
@@ -75,7 +98,7 @@ export async function POST(req: Request) {
       Bucket: bucketName,
       Key: fileName,
       Body: fs.createReadStream(file.filepath),  // File stream for S3 upload
-      ContentType: contentType,  // Ensure ContentType is a string (fallback to 'application/octet-stream')
+      ContentType: contentType,  // Set the correct MIME type
     });
 
     await s3.send(command);
@@ -90,4 +113,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Error uploading file.' }, { status: 500 });
   }
 }
- 
