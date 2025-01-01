@@ -95,7 +95,7 @@ const UserProfile: React.FC = () => {
       // Prepare FormData for upload
       const formData = new FormData();
       formData.append("file", file);
-  
+      console.log(formData)
       // Upload file to the backend
       const uploadResponse = await axios.post(
         "https://www.docreserva.site/api/upload",
