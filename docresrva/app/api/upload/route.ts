@@ -36,10 +36,10 @@ export async function POST(request: Request) {
   console.log(request,'Received POST request for file upload.');
 
   // Create an IncomingForm instance for parsing the form data
-  const form :any = new IncomingForm();
+  const form:any = new IncomingForm();
   form.keepExtensions = true; // Keep file extensions
 
-  return new Promise((resolve, reject) => {
+  return new Promise<NextResponse>((resolve, reject) => {
     // Parse the form using the request body
     form.parse(request.body as any, async (err:any, fields:any, files:any) => {
       if (err) {
