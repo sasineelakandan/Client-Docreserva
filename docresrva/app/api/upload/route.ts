@@ -6,7 +6,7 @@ import path from 'path';
 import { NextResponse } from 'next/server';
 import { Readable } from 'stream';
 import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME } from '../../../components/utils/constant';
-
+console.log(AWS_SECRET_ACCESS_KEY)
 // Initialize the S3 client
 const s3 = new S3Client({
   region: AWS_REGION,
