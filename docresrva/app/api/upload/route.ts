@@ -39,7 +39,7 @@ async function uploadFileToS3(fileBuffer: Buffer, fileName: string, contentType:
 }
 
 export async function POST(request:any): Promise<Response> {
-  console.log('Received POST request for file upload.');
+  console.log(request.body,'Received POST request for file upload.');
 
   // Use the multer upload middleware to handle the file upload
   const form = upload.single('file'); // 'file' is the name of the field in the form
