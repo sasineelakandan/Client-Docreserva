@@ -1,8 +1,9 @@
-import { IncomingForm } from 'formidable';
+import { IncomingForm, Fields, Files } from 'formidable'; // Import types from formidable
 import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
+import { pipeline } from 'stream';
 import {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
@@ -25,37 +26,45 @@ export const config = {
   },
 };
 
-// Directly handle the file upload with formidable
-export async function POST(req: Request) {
-  // Initialize formidable's IncomingForm to parse the form
-  const form = new IncomingForm({
-    uploadDir: './tmp',  // Temporary upload directory
-    keepExtensions: true,  // Preserve file extensions
-    multiples: true,  // Allow multiple files (if needed)
-  });
-
-  // Wrap formidable's parse method in a Promise
-  const parseForm = (stream: any): Promise<{ fields:any; files:any }> =>
-    new Promise((resolve, reject) => {
-      form.parse(stream, (err, fields, files) => {
-        if (err) {
-          console.error('Form parse error:', err);  // Log any parse errors
-          reject(err);
-        }
-        console.log('Parsed fields:', fields);  // Log parsed fields
-        console.log('Parsed files:', files);    // Log parsed files
-        resolve({ fields, files });
-      });
+// Helper function to pipe request stream into formidable parser
+const parseForm = (reqStream: ReadableStream<Uint8Array>): Promise<{ fields: Fields; files: Files }> => {
+  return new Promise((resolve, reject) => {
+    const form = new IncomingForm({
+      uploadDir: './tmp',  // Temporary upload directory
+      keepExtensions: true,  // Preserve file extensions
+      multiples: true,  // Allow multiple files (if needed)
     });
 
-  try {
-    // Directly pass the req to formidable
-    const { fields, files } = await parseForm(req);  // No need to convert to a stream manually
+    form.parse(reqStream as any, (err, fields, files) => {
+      if (err) {
+        console.error('Form parse error:', err);
+        return reject(err);
+      }
+      resolve({ fields, files });
+    });
+  });
+};
 
-    const file = (files as any)?.file?.[0];  // Ensure you have a file
+// Directly handle the file upload with formidable
+export async function POST(req: Request) {
+  try {
+    // Create a stream from the incoming request body
+    const reqStream = req.body ? req.body.getReader() : null;
+    if (!reqStream) {
+      return NextResponse.json({ error: 'No body in the request' }, { status: 400 });
+    }
+
+    // Use a Promise to handle the form parsing
+    const { fields, files } = await parseForm(reqStream as any);  // Parse the form data
+
+    // Access the file from the parsed files (ensure TypeScript knows the type)
+    const file = (files as Files).file?.[0];  // Ensure you have a file (use Files type)
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
     }
+
+    // Ensure mimetype is either a string or fallback to 'application/octet-stream'
+    const contentType = file.mimetype || 'application/octet-stream';  // Fallback to binary if null
 
     // Generate a unique file name
     const fileName = `${uuidv4()}-${file.originalFilename}`;
@@ -66,7 +75,7 @@ export async function POST(req: Request) {
       Bucket: bucketName,
       Key: fileName,
       Body: fs.createReadStream(file.filepath),  // File stream for S3 upload
-      ContentType: file.mimetype,  // Set correct MIME type
+      ContentType: contentType,  // Ensure ContentType is a string (fallback to 'application/octet-stream')
     });
 
     await s3.send(command);
@@ -81,3 +90,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Error uploading file.' }, { status: 500 });
   }
 }
+ 
