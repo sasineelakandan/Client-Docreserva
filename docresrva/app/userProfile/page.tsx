@@ -75,7 +75,7 @@ const UserProfile: React.FC = () => {
   
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    
+  
     // Validate file presence
     if (!file) {
       toast.error("Please select a file!");
@@ -95,22 +95,17 @@ const UserProfile: React.FC = () => {
       // Prepare FormData for upload
       const formData = new FormData();
       formData.append("file", file);
-      
+  
       // Log the FormData contents
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
       }
   
       // Upload file to the backend
       const uploadResponse = await axios.post(
-        "/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true, // Include credentials if needed
-        }
+        "/api/upload", 
+        formData, 
+        { withCredentials: true }
       );
   
       // Validate the response
@@ -122,7 +117,7 @@ const UserProfile: React.FC = () => {
         const profileResponse = await axios.post(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
           { uploadedUrl: uploadedFileName },
-          { withCredentials: true } // Include credentials if required
+          { withCredentials: true }
         );
   
         console.log("Profile update response:", profileResponse.data);
@@ -137,9 +132,6 @@ const UserProfile: React.FC = () => {
           draggable: true,
           theme: "colored",
         });
-  
-        // Update state or perform additional actions
-        // setProfilePic(uploadedFileName); // Update state with the file name or URL
       } else {
         throw new Error("Upload response did not contain the file name.");
       }
@@ -148,15 +140,12 @@ const UserProfile: React.FC = () => {
   
       // Handle axios-specific errors
       if (axios.isAxiosError(error)) {
-        toast.error(
-          `Upload failed: ${error.response?.data?.message || error.message}`
-        );
+        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
       } else {
         toast.error("Upload failed due to an unknown error.");
       }
     }
   };
-  
   
 
   
