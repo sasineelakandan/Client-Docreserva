@@ -2,6 +2,7 @@ import { IncomingForm } from 'formidable'; // Import formidable for handling for
 import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
+import { Readable } from 'stream';
 import {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
@@ -40,11 +41,14 @@ async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: st
 export async function POST(request: Request) {
   console.log('Received POST request for file upload.');
 
+  // Create a Readable stream from the request body
+  const stream = Readable.from(await request.body as any);
+
   const form = new IncomingForm();
   console.log('Parsing the form data...');
 
   return new Promise<NextResponse>((resolve, reject) => {
-    form.parse(request as any, async (err, fields, files) => {
+    form.parse(stream as any, async (err, fields, files) => {
       if (err) {
         console.error('Error parsing the form:', err.message);
         return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
