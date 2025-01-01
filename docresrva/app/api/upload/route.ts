@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   return new Promise<Response>((resolve, reject) => {
     // Create a dummy `req` object to handle the file upload via multer
     const req = { ...request } as any;
-
+    console.log('hai')
     // Call multer to handle file upload
     upload.single('file')(req, req, (err: any) => {
       if (err) {
