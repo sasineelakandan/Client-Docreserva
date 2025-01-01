@@ -2,13 +2,7 @@ import { IncomingForm } from 'formidable'; // Import formidable for handling for
 import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
-import { Readable } from 'stream';
-import {
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AWS_REGION,
-  S3_BUCKET_NAME,
-} from '../../../components/utils/constant';
+import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME } from '../../../components/utils/constant';
 
 const s3 = new S3Client({
   region: AWS_REGION,
@@ -41,61 +35,60 @@ async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: st
 export async function POST(request: Request) {
   console.log('Received POST request for file upload.');
 
-  // Create a Readable stream from the request body
-  const stream = Readable.from(await request.arrayBuffer() as any);
-
-  // Create a new IncomingForm instance
+  // Create an IncomingForm instance for parsing the form data
   const form :any = new IncomingForm();
-  form.keepExtensions = true; // Keeps file extensions
-  form.parse(stream, async (err:any, fields:any, files:any) => {
-    if (err) {
-      console.error('Error parsing the form:', err.message);
-      return NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 });
-    }
+  form.keepExtensions = true; // Keep file extensions
 
-    console.log('Form data parsed successfully:', { fields, files });
-
-    const file: any = files.file;
-
-    // Check if a file was provided
-    if (!file) {
-      console.warn('No file provided in the form.');
-      return NextResponse.json({ error: 'File is required.' }, { status: 400 });
-    }
-
-    try {
-      console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
-
-      // Read the file buffer
-      const fileBuffer = fs.readFileSync(file.filepath);
-
-      // Generate a unique file name
-      const fileName = `${Date.now()}-${file.originalFilename}`;
-      console.log(`Generated unique file name: ${fileName}`);
-
-      // Upload the file to S3
-      await uploadFileToS3(fileBuffer, fileName, file.mimetype);
-
-      console.log('File uploaded successfully to S3. Returning response.');
-
-      // Return success response with file name
-      return NextResponse.json({ success: true, fileName });
-    } catch (error: any) {
-      console.error('Error during file upload process:', error.message);
-      return NextResponse.json({ error: 'File upload failed.' }, { status: 500 });
-    } finally {
-      // Clean up temporary file
-      if (file?.filepath) {
-        fs.unlink(file.filepath, (unlinkErr) => {
-          if (unlinkErr) {
-            console.error('Error cleaning up temporary file:', unlinkErr.message);
-          } else {
-            console.log('Temporary file cleaned up successfully.');
-          }
-        });
+  return new Promise((resolve, reject) => {
+    // Parse the form using the request body
+    form.parse(request.body as any, async (err:any, fields:any, files:any) => {
+      if (err) {
+        console.error('Error parsing the form:', err.message);
+        return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
       }
-    }
-  });
 
-  return new NextResponse('Processing upload...', { status: 200 });
+      console.log('Form data parsed successfully:', { fields, files });
+
+      const file: any = files.file;
+
+      // Check if a file was provided
+      if (!file) {
+        console.warn('No file provided in the form.');
+        return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
+      }
+
+      try {
+        console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
+
+        // Read the file buffer
+        const fileBuffer = fs.readFileSync(file.filepath);
+
+        // Generate a unique file name
+        const fileName = `${Date.now()}-${file.originalFilename}`;
+        console.log(`Generated unique file name: ${fileName}`);
+
+        // Upload the file to S3
+        await uploadFileToS3(fileBuffer, fileName, file.mimetype);
+
+        console.log('File uploaded successfully to S3. Returning response.');
+
+        // Return success response with file name
+        return resolve(NextResponse.json({ success: true, fileName }));
+      } catch (error: any) {
+        console.error('Error during file upload process:', error.message);
+        return resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
+      } finally {
+        // Clean up temporary file
+        if (file?.filepath) {
+          fs.unlink(file.filepath, (unlinkErr) => {
+            if (unlinkErr) {
+              console.error('Error cleaning up temporary file:', unlinkErr.message);
+            } else {
+              console.log('Temporary file cleaned up successfully.');
+            }
+          });
+        }
+      }
+    });
+  });
 }
