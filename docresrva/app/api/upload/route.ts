@@ -2,7 +2,6 @@ import { IncomingForm } from 'formidable'; // Import formidable for handling for
 import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
-import { Readable } from 'stream';
 import {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
@@ -18,7 +17,7 @@ const s3 = new S3Client({
   },
 });
 
-async function uploadFileToS3(fileBuffer:any, fileName:any, contentType:any) {
+async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: string) {
   const params = {
     Bucket: S3_BUCKET_NAME,
     Key: fileName,
@@ -32,35 +31,33 @@ async function uploadFileToS3(fileBuffer:any, fileName:any, contentType:any) {
     await s3.send(command);
     console.log(`Successfully uploaded ${fileName} to S3.`);
     return fileName;
-  } catch (error:any) {
+  } catch (error: any) {
     console.error(`Error uploading file ${fileName} to S3:`, error.message);
     throw new Error('Error uploading file to S3');
   }
 }
 
-export async function POST(request:any) {
+export async function POST(request: Request) {
   console.log('Received POST request for file upload.');
 
-  return new Promise((resolve, reject) => {
-    const form = new IncomingForm();
-    console.log('Parsing the form data...');
+  const form = new IncomingForm();
+  console.log('Parsing the form data...');
 
-    form.parse(request, async (err, fields, files) => {
+  return new Promise<NextResponse>((resolve, reject) => {
+    form.parse(request as any, async (err, fields, files) => {
       if (err) {
         console.error('Error parsing the form:', err.message);
-        resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
-        return;
+        return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
       }
 
       console.log('Form data parsed successfully:', { fields, files });
 
-      const file:any = files.file;
+      const file: any = files.file;
 
       // Check if a file was provided
       if (!file) {
         console.warn('No file provided in the form.');
-        resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
-        return;
+        return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
       }
 
       try {
@@ -79,10 +76,10 @@ export async function POST(request:any) {
         console.log('File uploaded successfully to S3. Returning response.');
 
         // Return success response with file name
-        resolve(NextResponse.json({ success: true, fileName }));
-      } catch (error:any) {
+        return resolve(NextResponse.json({ success: true, fileName }));
+      } catch (error: any) {
         console.error('Error during file upload process:', error.message);
-        resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
+        return resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
       } finally {
         // Clean up temporary file
         if (file?.filepath) {
