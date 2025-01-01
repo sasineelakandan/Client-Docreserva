@@ -33,7 +33,7 @@ async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: st
 }
 
 export async function POST(request: Request) {
-  console.log('Received POST request for file upload.');
+  console.log(request,'Received POST request for file upload.');
 
   // Create an IncomingForm instance for parsing the form data
   const form :any = new IncomingForm();
