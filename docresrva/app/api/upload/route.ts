@@ -38,21 +38,22 @@ async function uploadFileToS3(fileBuffer: Buffer, fileName: string, contentType:
   }
 }
 
-// Wrapping multer upload handler for Next.js API
-const handleUpload = async (req:any, res: Response) => {
+export async function POST(request:any): Promise<Response> {
   console.log('Received POST request for file upload.');
-  // Use multer's single upload handler for 'file' field
+
+  // Use the multer upload middleware to handle the file upload
   const form = upload.single('file'); // 'file' is the name of the field in the form
 
-  // Wrapping multer's callback to make it compatible with Next.js API
-  return new Promise((resolve, reject) => {
-    form(req as any, res as any, async (err: any) => {
+  // Return a promise for the response
+  return new Promise<Response>((resolve, reject) => {
+    console.log('Processing form data...');
+    form(request as any, {} as any, async (err: any) => {
       if (err) {
         console.error('Error during file upload:', err.message);
         return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
       }
 
-      const file = req.file;
+      const file = request.file;
       if (!file) {
         console.warn('No file provided in the form.');
         return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
@@ -78,8 +79,4 @@ const handleUpload = async (req:any, res: Response) => {
       }
     });
   });
-};
-
-export async function POST(request: Request) {
-  return await handleUpload(request, NextResponse as any);
 }
