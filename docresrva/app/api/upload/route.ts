@@ -1,9 +1,13 @@
-import { IncomingForm } from 'formidable'; // Import formidable for handling form data
-import fs from 'fs';
+import multer from 'multer';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
 import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME } from '../../../components/utils/constant';
 
+// Configure Multer to store files in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// Initialize the S3 client
 const s3 = new S3Client({
   region: AWS_REGION,
   credentials: {
@@ -12,7 +16,9 @@ const s3 = new S3Client({
   },
 });
 
-async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: string) {
+async function uploadFileToS3(fileBuffer: Buffer, fileName: string, contentType: string) {
+  console.log(`Preparing to upload file: ${fileName} to S3`);
+
   const params = {
     Bucket: S3_BUCKET_NAME,
     Key: fileName,
@@ -32,39 +38,32 @@ async function uploadFileToS3(fileBuffer: any, fileName: string, contentType: st
   }
 }
 
-export async function POST(request: Request) {
-  console.log(request,'Received POST request for file upload.');
+export async function POST(request:any) {
+  console.log('Received POST request for file upload.');
 
-  // Create an IncomingForm instance for parsing the form data
-  const form:any = new IncomingForm();
-  form.keepExtensions = true; // Keep file extensions
+  // Use the multer upload middleware to handle the file upload
+  const form = upload.single('file'); // 'file' is the name of the field in the form
 
+  // Return a promise for the response
   return new Promise<NextResponse>((resolve, reject) => {
-    // Parse the form using the request body
-    form.parse(request.body as any, async (err:any, fields:any, files:any) => {
+    console.log('Processing form data...');
+    form(request as any, {} as any, async (err: any) => {
       if (err) {
-        console.error('Error parsing the form:', err.message);
+        console.error('Error during file upload:', err.message);
         return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
       }
 
-      console.log('Form data parsed successfully:', { fields, files });
-
-      const file: any = files.file;
-
-      // Check if a file was provided
+      const file = request.file;
       if (!file) {
         console.warn('No file provided in the form.');
         return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
       }
 
+      console.log(`Received file: ${file.originalname}, size: ${file.size} bytes`);
+
       try {
-        console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
-
-        // Read the file buffer
-        const fileBuffer = fs.readFileSync(file.filepath);
-
-        // Generate a unique file name
-        const fileName = `${Date.now()}-${file.originalFilename}`;
+        const fileBuffer = file.buffer;
+        const fileName = `${Date.now()}-${file.originalname}`;
         console.log(`Generated unique file name: ${fileName}`);
 
         // Upload the file to S3
@@ -77,17 +76,6 @@ export async function POST(request: Request) {
       } catch (error: any) {
         console.error('Error during file upload process:', error.message);
         return resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
-      } finally {
-        // Clean up temporary file
-        if (file?.filepath) {
-          fs.unlink(file.filepath, (unlinkErr) => {
-            if (unlinkErr) {
-              console.error('Error cleaning up temporary file:', unlinkErr.message);
-            } else {
-              console.log('Temporary file cleaned up successfully.');
-            }
-          });
-        }
       }
     });
   });
