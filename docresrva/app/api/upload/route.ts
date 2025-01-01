@@ -1,14 +1,14 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-// Set up multer for file upload
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
       const uploadPath = path.join(process.cwd(), 'public/uploads');
-      fs.existsSync(uploadPath) || fs.mkdirSync(uploadPath, { recursive: true });
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
       cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
@@ -17,24 +17,24 @@ const upload = multer({
   }),
 });
 
-// API handler function
-const handler = (req:any, res:any) => {
-  if (req.method === 'POST') {
-    upload.single('file')(req, res, (err: any) => {
+// POST handler for file upload
+export async function POST(request: Request) {
+  return new Promise<Response>((resolve, reject) => {
+    // Create a dummy `req` object to handle the file upload via multer
+    const req = { ...request } as any;
+
+    // Call multer to handle file upload
+    upload.single('file')(req, req, (err: any) => {
       if (err) {
-        return res.status(500).json({ error: 'Error during file upload', details: err.message });
+        return reject(new Response(JSON.stringify({ error: 'Error during file upload', details: err.message }), { status: 500 }));
       }
-      
-      // If file upload is successful, return the file name
+
+      // If file upload is successful
       if (req.file) {
-        return res.status(200).json({ fileName: req.file.filename });
+        return resolve(new Response(JSON.stringify({ fileName: req.file.filename }), { status: 200 }));
       }
 
-      return res.status(400).json({ error: 'No file uploaded' });
+      return resolve(new Response(JSON.stringify({ error: 'No file uploaded' }), { status: 400 }));
     });
-  } else {
-    res.status(405).json({ error: 'Method Not Allowed' });
-  }
-};
-
-export default handler;
+  });
+}
