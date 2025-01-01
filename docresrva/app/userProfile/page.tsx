@@ -70,71 +70,85 @@ const UserProfile: React.FC = () => {
     fetchUserProfile();
   }, [profileForm, profilePic, router]);
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      toast.error("Please select a file!");
-      return;
-    }
   
-    // File size validation (e.g., max size 5MB)
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    if (file.size > MAX_SIZE) {
-      toast.error("File is too large! Please upload a file smaller than 5MB.");
-      return;
-    }
-  
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-  
-      // Upload file to backend
-      const response = await axios.post<{ url: string }>(
-        "https://www.docreserva.site/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+
+const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+
+  // Validate file presence
+  if (!file) {
+    toast.error("Please select a file!");
+    return;
+  }
+
+  // File size validation (max size: 5MB)
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  if (file.size > MAX_SIZE) {
+    toast.error("File is too large! Please upload a file smaller than 5MB.");
+    return;
+  }
+
+  try {
+    // Prepare FormData for upload
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Upload file to the backend
+    const uploadResponse = await axios.post(
+      "https://www.docreserva.site/api/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true, // Include credentials if needed
+      }
+    );
+
+    // Validate the response
+    if (uploadResponse?.data?.fileName) {
+      const uploadedFileName = uploadResponse.data.fileName;
+      console.log("Uploaded file name:", uploadedFileName);
+
+      // Optionally send the file name to another endpoint for profile update
+      const profileResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
+        { uploadedUrl: uploadedFileName },
+        { withCredentials: true } // Include credentials if required
       );
-  
-      if (response.data) {
-        setProfilePic(response.data.url);
-        const uploadedUrl = response.data.url;
-        console.log(uploadedUrl);
-  
-        const getResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
-          { uploadedUrl },
-          { withCredentials: true }
-        );
-  
-        // Handle the response from the profile update
-        console.log("URL saved response:", getResponse.data);
-  
-        // Set the profile picture state
-        toast.success("Profile upload success!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast.error(
-          `Upload failed: ${error.response?.data?.message || error.message}`
-        );
-      } else {
-        toast.error("Upload failed due to an unknown error.");
-      }
+
+      console.log("Profile update response:", profileResponse.data);
+
+      // Show success notification
+      toast.success("Profile uploaded successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+
+      // Update state or perform additional actions
+      setProfilePic(uploadedFileName); // Update state with the file name or URL
+    } else {
+      throw new Error("Upload response did not contain the file name.");
     }
-  };
+  } catch (error:any) {
+    console.error("Error during file upload:", error);
+
+    // Handle axios-specific errors
+    if (axios.isAxiosError(error)) {
+      toast.error(
+        `Upload failed: ${error.response?.data?.message || error.message}`
+      );
+    } else {
+      toast.error("Upload failed due to an unknown error.");
+    }
+  }
+};
+
   
   
   const handleCameraClick = () => fileInputRef.current?.click();

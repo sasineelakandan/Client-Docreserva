@@ -1,7 +1,6 @@
-import { IncomingForm, Fields, Files } from 'formidable'; // Import types from formidable
+import { IncomingForm } from 'formidable'; // Import formidable for handling form data
 import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
 import { Readable } from 'stream';
 import {
@@ -19,97 +18,83 @@ const s3 = new S3Client({
   },
 });
 
-// Disable Next.js's default body parsing
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+async function uploadFileToS3(fileBuffer:any, fileName:any, contentType:any) {
+  const params = {
+    Bucket: S3_BUCKET_NAME,
+    Key: fileName,
+    Body: fileBuffer,
+    ContentType: contentType || 'application/octet-stream',
+  };
 
-// Helper function to convert Request body to a Node.js Readable Stream
-function toIncomingMessage(req: Request): Readable {
-  const readable :any= new Readable({
-    read() {
-      req.body?.getReader().read().then(({ done, value }) => {
-        if (done) {
-          this.push(null); // End the stream
-        } else {
-          this.push(value); // Push the chunk
-        }
-      });
-    },
-  });
-
-  // Add necessary headers to the stream object
-  readable.headers = Object.fromEntries(req.headers.entries());
-  readable.method = req.method;
-  readable.url = req.url;
-  return readable;
+  const command = new PutObjectCommand(params);
+  try {
+    console.log(`Uploading file: ${fileName} to bucket: ${S3_BUCKET_NAME}`);
+    await s3.send(command);
+    console.log(`Successfully uploaded ${fileName} to S3.`);
+    return fileName;
+  } catch (error:any) {
+    console.error(`Error uploading file ${fileName} to S3:`, error.message);
+    throw new Error('Error uploading file to S3');
+  }
 }
 
-// Helper function to parse the form data
-const parseForm = (reqStream: Readable): Promise<{ fields: Fields; files: Files }> => {
-  return new Promise((resolve, reject) => {
-    const form = new IncomingForm({
-      uploadDir: './tmp',  // Temporary upload directory
-      keepExtensions: true,  // Preserve file extensions
-      multiples: true,  // Allow multiple files (if needed)
-    });
+export async function POST(request:any) {
+  console.log('Received POST request for file upload.');
 
-    form.parse(reqStream as any, (err, fields, files) => {
+  return new Promise((resolve, reject) => {
+    const form = new IncomingForm();
+    console.log('Parsing the form data...');
+
+    form.parse(request, async (err, fields, files) => {
       if (err) {
-        console.error('Form parse error:', err);
-        return reject(err);
+        console.error('Error parsing the form:', err.message);
+        resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
+        return;
       }
-      resolve({ fields, files });
+
+      console.log('Form data parsed successfully:', { fields, files });
+
+      const file:any = files.file;
+
+      // Check if a file was provided
+      if (!file) {
+        console.warn('No file provided in the form.');
+        resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
+        return;
+      }
+
+      try {
+        console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
+
+        // Read the file buffer
+        const fileBuffer = fs.readFileSync(file.filepath);
+
+        // Generate a unique file name
+        const fileName = `${Date.now()}-${file.originalFilename}`;
+        console.log(`Generated unique file name: ${fileName}`);
+
+        // Upload the file to S3
+        await uploadFileToS3(fileBuffer, fileName, file.mimetype);
+
+        console.log('File uploaded successfully to S3. Returning response.');
+
+        // Return success response with file name
+        resolve(NextResponse.json({ success: true, fileName }));
+      } catch (error:any) {
+        console.error('Error during file upload process:', error.message);
+        resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
+      } finally {
+        // Clean up temporary file
+        if (file?.filepath) {
+          fs.unlink(file.filepath, (unlinkErr) => {
+            if (unlinkErr) {
+              console.error('Error cleaning up temporary file:', unlinkErr.message);
+            } else {
+              console.log('Temporary file cleaned up successfully.');
+            }
+          });
+        }
+      }
     });
   });
-};
-
-// Handle the file upload with formidable
-export async function POST(req: Request) {
-  try {
-    // Convert the request body to a readable stream
-    const reqStream = toIncomingMessage(req);
-
-    // Ensure the stream has a proper content-length
-    const contentLength = req.headers.get('content-length');
-    if (!contentLength) {
-      return NextResponse.json({ error: 'Missing Content-Length header' }, { status: 400 });
-    }
-
-    // Parse the form data
-    const { fields, files } = await parseForm(reqStream);
-
-    const file = (files as Files).file?.[0]; // Access the uploaded file
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded.' }, { status: 400 });
-    }
-
-    // Ensure the content type is either a string or a fallback to 'application/octet-stream'
-    const contentType = file.mimetype || 'application/octet-stream';
-
-    // Generate a unique file name
-    const fileName = `${uuidv4()}-${file.originalFilename}`;
-    const bucketName = S3_BUCKET_NAME;
-
-    // Upload file to S3
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: fileName,
-      Body: fs.createReadStream(file.filepath),  // File stream for S3 upload
-      ContentType: contentType,  // Set the correct MIME type
-    });
-
-    await s3.send(command);
-
-    // Generate the file URL
-    const fileUrl = `https://${bucketName}.s3.${AWS_REGION}.amazonaws.com/${fileName}`;
-
-    // Return the file URL as a JSON response
-    return NextResponse.json({ url: fileUrl }, { status: 200 });
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    return NextResponse.json({ error: 'Error uploading file.' }, { status: 500 });
-  }
 }
