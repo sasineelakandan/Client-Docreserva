@@ -42,60 +42,60 @@ export async function POST(request: Request) {
   console.log('Received POST request for file upload.');
 
   // Create a Readable stream from the request body
-  const stream = Readable.from(await request.body as any);
+  const stream = Readable.from(await request.arrayBuffer() as any);
 
-  const form = new IncomingForm();
-  console.log('Parsing the form data...');
+  // Create a new IncomingForm instance
+  const form :any = new IncomingForm();
+  form.keepExtensions = true; // Keeps file extensions
+  form.parse(stream, async (err:any, fields:any, files:any) => {
+    if (err) {
+      console.error('Error parsing the form:', err.message);
+      return NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 });
+    }
 
-  return new Promise<NextResponse>((resolve, reject) => {
-    form.parse(stream as any, async (err, fields, files) => {
-      if (err) {
-        console.error('Error parsing the form:', err.message);
-        return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
+    console.log('Form data parsed successfully:', { fields, files });
+
+    const file: any = files.file;
+
+    // Check if a file was provided
+    if (!file) {
+      console.warn('No file provided in the form.');
+      return NextResponse.json({ error: 'File is required.' }, { status: 400 });
+    }
+
+    try {
+      console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
+
+      // Read the file buffer
+      const fileBuffer = fs.readFileSync(file.filepath);
+
+      // Generate a unique file name
+      const fileName = `${Date.now()}-${file.originalFilename}`;
+      console.log(`Generated unique file name: ${fileName}`);
+
+      // Upload the file to S3
+      await uploadFileToS3(fileBuffer, fileName, file.mimetype);
+
+      console.log('File uploaded successfully to S3. Returning response.');
+
+      // Return success response with file name
+      return NextResponse.json({ success: true, fileName });
+    } catch (error: any) {
+      console.error('Error during file upload process:', error.message);
+      return NextResponse.json({ error: 'File upload failed.' }, { status: 500 });
+    } finally {
+      // Clean up temporary file
+      if (file?.filepath) {
+        fs.unlink(file.filepath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Error cleaning up temporary file:', unlinkErr.message);
+          } else {
+            console.log('Temporary file cleaned up successfully.');
+          }
+        });
       }
-
-      console.log('Form data parsed successfully:', { fields, files });
-
-      const file: any = files.file;
-
-      // Check if a file was provided
-      if (!file) {
-        console.warn('No file provided in the form.');
-        return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
-      }
-
-      try {
-        console.log(`Reading file: ${file.originalFilename} from ${file.filepath}`);
-
-        // Read the file buffer
-        const fileBuffer = fs.readFileSync(file.filepath);
-
-        // Generate a unique file name
-        const fileName = `${Date.now()}-${file.originalFilename}`;
-        console.log(`Generated unique file name: ${fileName}`);
-
-        // Upload the file to S3
-        await uploadFileToS3(fileBuffer, fileName, file.mimetype);
-
-        console.log('File uploaded successfully to S3. Returning response.');
-
-        // Return success response with file name
-        return resolve(NextResponse.json({ success: true, fileName }));
-      } catch (error: any) {
-        console.error('Error during file upload process:', error.message);
-        return resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
-      } finally {
-        // Clean up temporary file
-        if (file?.filepath) {
-          fs.unlink(file.filepath, (unlinkErr) => {
-            if (unlinkErr) {
-              console.error('Error cleaning up temporary file:', unlinkErr.message);
-            } else {
-              console.log('Temporary file cleaned up successfully.');
-            }
-          });
-        }
-      }
-    });
+    }
   });
+
+  return new NextResponse('Processing upload...', { status: 200 });
 }
