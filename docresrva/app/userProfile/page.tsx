@@ -77,6 +77,13 @@ const UserProfile: React.FC = () => {
       return;
     }
   
+    // File size validation (e.g., max size 5MB)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      toast.error("File is too large! Please upload a file smaller than 5MB.");
+      return;
+    }
+  
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -93,17 +100,21 @@ const UserProfile: React.FC = () => {
       );
   
       if (response.data) {
-        setProfilePic(response.data.url)
+        setProfilePic(response.data.url);
         const uploadedUrl = response.data.url;
-        console.log(uploadedUrl)
-        
-        const getResponse = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
+        console.log(uploadedUrl);
   
-        // Handle the response from the s
+        const getResponse = await axios.post(
+          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
+          { uploadedUrl },
+          { withCredentials: true }
+        );
+  
+        // Handle the response from the profile update
         console.log("URL saved response:", getResponse.data);
   
-        ; // Set the profile picture state
-        toast.success("Profile upload success message!", {
+        // Set the profile picture state
+        toast.success("Profile upload success!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -116,12 +127,15 @@ const UserProfile: React.FC = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
+        toast.error(
+          `Upload failed: ${error.response?.data?.message || error.message}`
+        );
       } else {
         toast.error("Upload failed due to an unknown error.");
       }
     }
   };
+  
   
   const handleCameraClick = () => fileInputRef.current?.click();
 
