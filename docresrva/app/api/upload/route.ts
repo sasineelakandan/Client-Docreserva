@@ -1,82 +1,40 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { NextResponse } from 'next/server';
-import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME } from '../../../components/utils/constant';
+import fs from 'fs';
+import path from 'path';
 
-// Configure Multer to store files in memory
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
-// Initialize the S3 client
-const s3 = new S3Client({
-  region: AWS_REGION,
-  credentials: {
-    accessKeyId: AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: AWS_SECRET_ACCESS_KEY || '',
-  },
+// Set up multer for file upload
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), 'public/uploads');
+      fs.existsSync(uploadPath) || fs.mkdirSync(uploadPath, { recursive: true });
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  }),
 });
 
-async function uploadFileToS3(fileBuffer: Buffer, fileName: string, contentType: string) {
-  console.log(`Preparing to upload file: ${fileName} to S3`);
-
-  const params = {
-    Bucket: S3_BUCKET_NAME,
-    Key: fileName,
-    Body: fileBuffer,
-    ContentType: contentType || 'application/octet-stream',
-  };
-
-  const command = new PutObjectCommand(params);
-  try {
-    console.log(`Uploading file: ${fileName} to bucket: ${S3_BUCKET_NAME}`);
-    await s3.send(command);
-    console.log(`Successfully uploaded ${fileName} to S3.`);
-    return fileName;
-  } catch (error: any) {
-    console.error(`Error uploading file ${fileName} to S3:`, error.message);
-    throw new Error('Error uploading file to S3');
-  }
-}
-
-export async function POST(request:any): Promise<Response> {
-  console.log(request.body,'Received POST request for file upload.');
-
-  // Use the multer upload middleware to handle the file upload
-  const form = upload.single('file'); // 'file' is the name of the field in the form
-
-  // Return a promise for the response
-  return new Promise<Response>((resolve, reject) => {
-    console.log('Processing form data...');
-    form(request as any, {} as any, async (err: any) => {
+// API handler function
+const handler = (req:any, res:any) => {
+  if (req.method === 'POST') {
+    upload.single('file')(req, res, (err: any) => {
       if (err) {
-        console.error('Error during file upload:', err.message);
-        return resolve(NextResponse.json({ error: 'Error parsing the form.' }, { status: 400 }));
+        return res.status(500).json({ error: 'Error during file upload', details: err.message });
+      }
+      
+      // If file upload is successful, return the file name
+      if (req.file) {
+        return res.status(200).json({ fileName: req.file.filename });
       }
 
-      const file = request.file;
-      if (!file) {
-        console.warn('No file provided in the form.');
-        return resolve(NextResponse.json({ error: 'File is required.' }, { status: 400 }));
-      }
-
-      console.log(`Received file: ${file.originalname}, size: ${file.size} bytes`);
-
-      try {
-        const fileBuffer = file.buffer;
-        const fileName = `${Date.now()}-${file.originalname}`;
-        console.log(`Generated unique file name: ${fileName}`);
-
-        // Upload the file to S3
-        await uploadFileToS3(fileBuffer, fileName, file.mimetype);
-
-        console.log('File uploaded successfully to S3. Returning response.');
-
-        // Return success response with file name
-        return resolve(NextResponse.json({ success: true, fileName }));
-      } catch (error: any) {
-        console.error('Error during file upload process:', error.message);
-        return resolve(NextResponse.json({ error: 'File upload failed.' }, { status: 500 }));
-      }
+      return res.status(400).json({ error: 'No file uploaded' });
     });
-  });
-}
+  } else {
+    res.status(405).json({ error: 'Method Not Allowed' });
+  }
+};
+
+export default handler;

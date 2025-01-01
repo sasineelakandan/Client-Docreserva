@@ -75,7 +75,7 @@ const UserProfile: React.FC = () => {
   
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-  
+    
     // Validate file presence
     if (!file) {
       toast.error("Please select a file!");
@@ -95,10 +95,15 @@ const UserProfile: React.FC = () => {
       // Prepare FormData for upload
       const formData = new FormData();
       formData.append("file", file);
-      console.log(formData)
+      
+      // Log the FormData contents
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
+      }
+  
       // Upload file to the backend
       const uploadResponse = await axios.post(
-        "https://www.docreserva.site/api/upload",
+        "/api/upload",
         formData,
         {
           headers: {
@@ -151,6 +156,7 @@ const UserProfile: React.FC = () => {
       }
     }
   };
+  
   
 
   
