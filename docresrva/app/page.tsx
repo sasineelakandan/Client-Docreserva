@@ -2,8 +2,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/utils/landingNavbar';
-
-
+import Img1 from '../public/DALL·E 2024-12-13 19.06.00 - A 30-year-old female doctor wearing a white lab coat and stethoscope, standing in a modern medical clinic. She has a professional yet friendly demeano.webp'
+import Img2 from '../public/DALL·E 2024-12-13 19.06.24 - A 30-year-old male doctor wearing a white lab coat and stethoscope, standing in a modern medical clinic. He has a professional yet friendly demeanor w.webp'
+import Img3 from '../public/DALL·E 2024-12-13 19.06.00 - A 30-year-old female doctor wearing a white lab coat and stethoscope, standing in a modern medical clinic. She has a professional yet friendly demeano.webp'
+import Image from 'next/image';
 export default function Home() {
   const steps = [
     { step: 'Search', description: 'Find doctors based on specialty or location.', icon: '🔍' },
@@ -16,19 +18,19 @@ export default function Home() {
       name: 'Dr. John Doe',
       specialty: 'Cardiologist',
       rating: '⭐⭐⭐⭐⭐',
-      image: 'kjdnckdnjc', // Placeholder for missing images
+      image: Img3, // Placeholder for missing images
     },
     {
       name: 'Dr. Jane Smith',
       specialty: 'Dermatologist',
       rating: '⭐⭐⭐⭐',
-      image: 'ncjsdjscdfc', // Placeholder for missing images
+      image: Img2, // Placeholder for missing images
     },
     {
       name: 'Dr. Emily White',
       specialty: 'Pediatrician',
       rating: '⭐⭐⭐⭐⭐',
-      image: 'djhckdj', // Placeholder for missing images
+      image:Img1 , // Placeholder for missing images
     },
   ];
 
@@ -100,7 +102,7 @@ export default function Home() {
                 key={doctor.name}
                 className="w-64 p-6 bg-gray-800 rounded-lg shadow-md text-center flex-shrink-0"
               >
-                <img
+                <Image
                   src={doctor.image}
                   alt={doctor.name}
                   className="w-24 h-24 rounded-full mx-auto mb-4"
