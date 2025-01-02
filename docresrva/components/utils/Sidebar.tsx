@@ -25,6 +25,7 @@ const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
 
   try {
     
+    deleteCookie('accessToken')
     Cookies.remove('accessToken');
     window.location.href = '/';
   } catch (error) {

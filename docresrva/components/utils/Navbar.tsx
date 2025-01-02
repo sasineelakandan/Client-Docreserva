@@ -74,10 +74,11 @@ const Navbar: React.FC = () => {
   const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
+      console.log()
       localStorage.removeItem('user');
       setUser(null);
       Cookies.remove('accessToken');
-     
+      deleteCookie('accessToken')
       window.location.href = '/';
     } catch (error) {
       console.error('Error during logout:', error);
