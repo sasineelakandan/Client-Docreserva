@@ -3,7 +3,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import cookie from 'cookie';
 
-export default function POST(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Clear the cookie by setting the expiration date in the past
     const cookies = cookie.parse(req.headers.cookie || '');
