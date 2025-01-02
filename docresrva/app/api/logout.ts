@@ -5,7 +5,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
-
+  console.log('hai')
   // Parse cookies from the request
   const cookies = parse(req.headers.cookie || '');
 
