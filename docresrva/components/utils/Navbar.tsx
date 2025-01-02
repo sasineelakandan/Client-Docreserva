@@ -71,20 +71,25 @@ const Navbar: React.FC = () => {
   }, []);
    console.log(unreadCount)
    
-   const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    try {
-      const response=await fetch('/api/logout', { method: 'POST' }); // Call your backend API
-      console.log(response)
-      localStorage.removeItem('user');
-      setUser(null);
-      Cookies.remove('accessToken');
-      deleteCookie('accessToken'); 
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
-  };
+  
+
+const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+  event.preventDefault();
+  try {
+    const response = await axios.post('/api/logout', null, {
+      withCredentials: true, // Send cookies with the request
+    });
+    console.log(response);
+    localStorage.removeItem('user');
+    setUser(null);
+    Cookies.remove('accessToken');
+    deleteCookie('accessToken'); 
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
+};
+
   
 
   return (
