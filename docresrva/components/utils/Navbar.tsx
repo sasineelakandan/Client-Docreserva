@@ -71,19 +71,18 @@ const Navbar: React.FC = () => {
   }, []);
    console.log(unreadCount)
    
-  const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
+   const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
-      console.log()
+      await fetch('/api/logout', { method: 'POST' }); // Call your backend API
       localStorage.removeItem('user');
       setUser(null);
-      Cookies.remove('accessToken');
-      deleteCookie('accessToken')
       window.location.href = '/';
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
+  
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
