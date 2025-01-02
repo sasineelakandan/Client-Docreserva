@@ -16,6 +16,7 @@ import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protectio
 import { deleteCookie } from './deleteCookie';
 import io from 'socket.io-client';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 let socket: ReturnType<typeof io>;
 
 const doctorNavbar: React.FC = () => {
@@ -73,6 +74,7 @@ const doctorNavbar: React.FC = () => {
     event.preventDefault();
     localStorage.removeItem('user'); 
     setUser(null); 
+    Cookies.remove('accessToken');
     deleteCookie('accessToken'); 
     window.location.href='/doctorLogin'
   };

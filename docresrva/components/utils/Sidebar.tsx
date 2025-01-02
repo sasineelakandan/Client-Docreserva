@@ -3,7 +3,7 @@
 import React from "react";
 import { FaHome, FaCalendarAlt, FaUserMd, FaUsers, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { deleteCookie } from './deleteCookie';
-
+import Cookies from 'js-cookie';
 // Define a type for the navigation link
 type NavLink = {
   label: string;
@@ -24,8 +24,8 @@ const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
   event.preventDefault(); 
 
   try {
-    deleteCookie('accessToken');
     
+    Cookies.remove('accessToken');
     window.location.href = '/';
   } catch (error) {
     console.error('Error during logout:', error);
