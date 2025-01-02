@@ -78,6 +78,8 @@ const Navbar: React.FC = () => {
       console.log(response)
       localStorage.removeItem('user');
       setUser(null);
+      Cookies.remove('accessToken');
+      deleteCookie('accessToken'); 
       window.location.href = '/';
     } catch (error) {
       console.error('Error during logout:', error);
