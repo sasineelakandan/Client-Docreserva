@@ -80,39 +80,13 @@ const UserHome: React.FC = () => {
         </div>
       </div>
 
-      {/* Appointments Section */}
-      <div className="py-10 bg-gray-900 text-white">
-        <h2 className="text-center text-3xl font-bold mb-6">Your Appointments</h2>
-        <div className="max-w-4xl mx-auto space-y-6">
-          {appointments.map((appointment, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow-md"
-            >
-              <div>
-                <h3 className="text-lg font-bold">{appointment.doctor}</h3>
-                <p className="text-sm">{appointment.specialty}</p>
-                <p className="text-sm">
-                  {appointment.date} at {appointment.time}
-                </p>
-              </div>
-              <span
-                className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                  appointment.status === 'Confirmed' ? 'bg-green-500' : 'bg-yellow-400 text-black'
-                }`}
-              >
-                {appointment.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+     
 
       {/* Call to Action */}
       <div className="py-10 bg-yellow-400 text-black text-center">
         <h2 className="text-2xl font-bold">Ready for Your Next Appointment?</h2>
         <p className="mt-2">Browse and book available slots with top doctors.</p>
-        <a href="/book">
+        <a href="/alldoctors">
           <motion.button
             className="mt-6 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:bg-teal-700 transition"
             whileHover={{ scale: 1.1 }}

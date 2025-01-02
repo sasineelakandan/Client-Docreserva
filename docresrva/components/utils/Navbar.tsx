@@ -5,6 +5,7 @@ import Img from '../../public/PngItem_93782.png';
 import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { deleteCookie } from './deleteCookie';
 
 interface Message {
   id: string;
@@ -74,6 +75,7 @@ const Navbar: React.FC = () => {
     try {
       localStorage.removeItem('user');
       setUser(null);
+      deleteCookie('accessToken')
       window.location.href = '/';
     } catch (error) {
       console.error('Error during logout:', error);
