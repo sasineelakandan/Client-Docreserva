@@ -76,10 +76,7 @@ const Navbar: React.FC = () => {
 const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
   event.preventDefault();
   try {
-    const response = await axios.post('/api/logout', null, {
-      withCredentials: true, // Send cookies with the request
-    });
-    console.log(response);
+    
     localStorage.removeItem('user');
     setUser(null);
     Cookies.remove('accessToken');
