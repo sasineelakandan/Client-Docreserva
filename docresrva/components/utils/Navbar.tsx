@@ -74,7 +74,8 @@ const Navbar: React.FC = () => {
    const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     try {
-      await fetch('/api/logout', { method: 'POST' }); // Call your backend API
+      const response=await fetch('/api/logout', { method: 'POST' }); // Call your backend API
+      console.log(response)
       localStorage.removeItem('user');
       setUser(null);
       window.location.href = '/';
