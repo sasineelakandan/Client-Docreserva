@@ -40,6 +40,7 @@ const handleSubmit2 = async (e:any) => {
 
   // Call backend API
   try {
+    console.log(slotData)
     const response = await fetch('/api/slots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
