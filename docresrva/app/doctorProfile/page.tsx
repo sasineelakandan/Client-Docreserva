@@ -33,21 +33,20 @@ const [toTime, setToTime] = useState("");
 const [workingDays, setWorkingDays] = useState([]);
 
 // Submit handler
-const handleSubmit2 = async (e:any) => {
+const handleSubmit2 = async (e: any) => {
   e.preventDefault();
 
   const slotData = { fromTime, toTime, workingDays };
 
-  // Call backend API
+  // Call backend API using axios with credentials
   try {
-    console.log(slotData)
-    const response = await fetch('/api/slots', {
-      method: 'POST',
+    console.log(slotData);
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslot`, slotData, {
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(slotData),
+      withCredentials: true, 
     });
 
-    if (response.ok) {
+    if (response.status === 200) {
       alert("Slot saved successfully!");
       handleCloseModal();
     } else {
@@ -58,7 +57,6 @@ const handleSubmit2 = async (e:any) => {
     alert("An error occurred.");
   }
 };
-
   // Handle open modal for slots
 
   const passwordForm = useForm({
@@ -241,7 +239,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleOpenModal2=()=>setIsModalOpen2(true)
-  
+  const handleCloseModal2 = () => setIsModalOpen(false);
   return (
     <div className="max-w-full">
       <Navbar />
@@ -371,7 +369,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
           <button
             className="mt-4 w-full text-center text-gray-300 underline hover:text-white transition-all duration-300"
-            onClick={handleCloseModal}
+            onClick={handleCloseModal2}
           >
             Close
           </button>
