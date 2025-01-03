@@ -24,7 +24,9 @@ const DoctorProfile: React.FC = () => {
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-  
+  const [fromTime, setFromTime] = useState("");
+const [toTime, setToTime] = useState("");
+const [workingDays, setWorkingDays] = useState([]);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
@@ -56,6 +58,30 @@ const DoctorProfile: React.FC = () => {
     },
   });
   
+  const handleSubmit2 = async (e:any) => {
+    e.preventDefault();
+  
+    const slotData = { fromTime, toTime, workingDays };
+  
+    // Call backend API
+    try {
+      const response = await axios.post('/api/slots', slotData, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true, // Include credentials in the request
+      });
+  
+      if (response.status === 200) {
+        alert("Slot saved successfully!");
+        handleCloseModal();
+      } else {
+        alert("Failed to save the slot.");
+      }
+     
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred.");
+    }
+  };
   
   useEffect(() => {
     const fetchDoctorProfile = async () => {
@@ -312,6 +338,89 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     
   </>
 )}
+{user?.isVerified && (
+  <>
+    <button
+      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+      onClick={handleOpenModal}
+    >
+      Create Slot
+    </button>
+
+    {isModalOpen && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h2 className="text-lg font-bold mb-4">Create Slot</h2>
+
+          <form onSubmit={handleSubmit2}>
+            {/* From Time Input */}
+            <label className="block mb-2">
+              From Time:
+              <input
+                type="time"
+                className="w-full px-3 py-2 border rounded-lg mt-1"
+                onChange={(e) => setFromTime(e.target.value)}
+                required
+              />
+            </label>
+
+            {/* To Time Input */}
+            <label className="block mb-2">
+              To Time:
+              <input
+                type="time"
+                className="w-full px-3 py-2 border rounded-lg mt-1"
+                onChange={(e) => setToTime(e.target.value)}
+                required
+              />
+            </label>
+
+            {/* Working Days Input */}
+            <label className="block mb-2">
+              Select Working Days:
+              <select
+                multiple
+                className="w-full px-3 py-2 border rounded-lg mt-1"
+                onChange={(e) => {
+                  const selectedDays:any = Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value
+                  );
+                  setWorkingDays(selectedDays);
+                }}
+              >
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </label>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+            >
+              Save Slot
+            </button>
+          </form>
+
+          <button
+            className="mt-2 text-gray-500 underline"
+            onClick={handleCloseModal}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+  </>
+)}
+
+
 
 
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
