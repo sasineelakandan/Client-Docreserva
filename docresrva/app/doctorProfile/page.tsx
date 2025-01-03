@@ -256,6 +256,8 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   };
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenModal2 = () => setIsModalOpen(true);
+  const handleCloseModal2 = () => setIsModalOpen(false);
   const onSubmit = async(data:any) => {
     try {
       let response=await axios.post("http://localhost:8001/api/doctor/createslots",
@@ -342,7 +344,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   <>
     <button
       className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-      onClick={handleOpenModal}
+      onClick={handleOpenModal2}
     >
       Create Slot
     </button>
@@ -410,7 +412,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
           <button
             className="mt-2 text-gray-500 underline"
-            onClick={handleCloseModal}
+            onClick={handleCloseModal2}
           >
             Close
           </button>
