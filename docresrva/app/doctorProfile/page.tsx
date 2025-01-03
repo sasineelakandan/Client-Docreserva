@@ -301,48 +301,48 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 {user?.isVerified && (
   <>
     <button
-      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+      className="px-6 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300 ease-in-out"
       onClick={handleOpenModal2}
     >
       Create Slot
     </button>
 
     {isModalOpen2 && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-lg font-bold mb-4">Create Slot</h2>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-gradient-to-br from-teal-500 via-blue-500 to-purple-500 p-8 rounded-lg shadow-xl w-full md:w-1/3">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">Create Slot</h2>
 
           <form onSubmit={handleSubmit2}>
             {/* From Time Input */}
-            <label className="block mb-2">
-              From Time:
+            <label className="block mb-4">
+              <span className="text-white">From Time:</span>
               <input
                 type="time"
-                className="w-full px-3 py-2 border rounded-lg mt-1"
+                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={(e) => setFromTime(e.target.value)}
                 required
               />
             </label>
 
             {/* To Time Input */}
-            <label className="block mb-2">
-              To Time:
+            <label className="block mb-4">
+              <span className="text-white">To Time:</span>
               <input
                 type="time"
-                className="w-full px-3 py-2 border rounded-lg mt-1"
+                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={(e) => setToTime(e.target.value)}
                 required
               />
             </label>
 
             {/* Working Days Input */}
-            <label className="block mb-2">
-              Select Working Days:
+            <label className="block mb-4">
+              <span className="text-white">Select Working Days:</span>
               <select
                 multiple
-                className="w-full px-3 py-2 border rounded-lg mt-1"
+                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={(e) => {
-                  const selectedDays:any = Array.from(
+                  const selectedDays: any = Array.from(
                     e.target.selectedOptions,
                     (option) => option.value
                   );
@@ -362,14 +362,14 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+              className="mt-6 w-full bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-green-600 transition-all duration-300 ease-in-out"
             >
               Save Slot
             </button>
           </form>
 
           <button
-            className="mt-2 text-gray-500 underline"
+            className="mt-4 w-full text-center text-gray-300 underline hover:text-white transition-all duration-300"
             onClick={handleCloseModal}
           >
             Close
@@ -379,6 +379,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     )}
   </>
 )}
+
 
 
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
