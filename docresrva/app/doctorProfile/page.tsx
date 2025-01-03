@@ -12,33 +12,54 @@ import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
-interface SlotFormData {
-  
-  date: string;
-  startTime: string;
-  endTime: string;
-}
+
 const DoctorProfile: React.FC = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [profilePic1, setProfilePic] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null)
-  const [fromTime, setFromTime] = useState("");
-const [toTime, setToTime] = useState("");
-const [workingDays, setWorkingDays] = useState([]);
+  
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const router=useRouter()
-  const [showSlots, setShowSlots] = useState(false);
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
   const [address,setAddress]=useState<string>('')
-  // React Hook Form setup
-  const { register,watch, handleSubmit, formState: { errors } } = useForm<SlotFormData>();
+  
+ 
+  const [fromTime, setFromTime] = useState("");
+const [toTime, setToTime] = useState("");
+const [workingDays, setWorkingDays] = useState([]);
+
+// Submit handler
+const handleSubmit2 = async (e:any) => {
+  e.preventDefault();
+
+  const slotData = { fromTime, toTime, workingDays };
+
+  // Call backend API
+  try {
+    const response = await fetch('/api/slots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(slotData),
+    });
+
+    if (response.ok) {
+      alert("Slot saved successfully!");
+      handleCloseModal();
+    } else {
+      alert("Failed to save the slot.");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An error occurred.");
+  }
+};
 
   // Handle open modal for slots
-  const handleOpenSlots = () => {
-    setShowSlots(true);
-  };
+
   const passwordForm = useForm({
     defaultValues: {
       oldPassword: "",
@@ -58,30 +79,6 @@ const [workingDays, setWorkingDays] = useState([]);
     },
   });
   
-  const handleSubmit2 = async (e:any) => {
-    e.preventDefault();
-  
-    const slotData = { fromTime, toTime, workingDays };
-  
-    // Call backend API
-    try {
-      const response = await axios.post('/api/slots', slotData, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true, // Include credentials in the request
-      });
-  
-      if (response.status === 200) {
-        alert("Slot saved successfully!");
-        handleCloseModal();
-      } else {
-        alert("Failed to save the slot.");
-      }
-     
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred.");
-    }
-  };
   
   useEffect(() => {
     const fetchDoctorProfile = async () => {
@@ -126,20 +123,6 @@ const [workingDays, setWorkingDays] = useState([]);
 }, []);
 
 
-
-const getWeekStart = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set time to 00:00:00
-  return today.toISOString().split("T")[0]; // Return date in YYYY-MM-DD format
-};
-
-// Function to get the last day of a 7-day period (including weekends)
-const getNext7Weekdays = () => {
-  const today = new Date();
-  const next7Days = new Date(today.setDate(today.getDate() + 7)); // Add 7 days
-  next7Days.setHours(0, 0, 0, 0); // Set time to 00:00:00
-  return next7Days.toISOString().split("T")[0]; // Return date in YYYY-MM-DD format
-};;
 
 
 function splitAddress(address:string) {
@@ -256,32 +239,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   };
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
-  const handleOpenModal2 = () => setIsModalOpen(true);
-  const handleCloseModal2 = () => setIsModalOpen(false);
-  const onSubmit = async(data:any) => {
-    try {
-      let response=await axios.post("http://localhost:8001/api/doctor/createslots",
-          data,
-          { withCredentials: true }
-        );
-        if (response.data) {
-          
-          toast.success("Slot updated successfully!");
-          setShowSlots(false)
-        }
-      
-      setShowProfileModal(false);
-      profileForm.reset()
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-      
-         toast.error(error.response?.data.error)
-      } else {
-        
-        console.error("An unexpected error occurred:", error.message);
-      }
-    }
-  };
+  const handleOpenModal2=()=>setIsModalOpen2(true)
   
   return (
     <div className="max-w-full">
@@ -349,7 +307,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       Create Slot
     </button>
 
-    {isModalOpen && (
+    {isModalOpen2 && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-lg font-bold mb-4">Create Slot</h2>
@@ -412,7 +370,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
           <button
             className="mt-2 text-gray-500 underline"
-            onClick={handleCloseModal2}
+            onClick={handleCloseModal}
           >
             Close
           </button>
@@ -421,8 +379,6 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     )}
   </>
 )}
-
-
 
 
           <DoctorModal isOpen={isModalOpen} onClose={handleCloseModal} userId={user?._id}/>
@@ -514,125 +470,6 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
             Cancel
           </button>
           <button
-            type="submit"
-            className="bg-teal-600 text-white px-4 py-2 rounded-lg"
-          >
-            Save
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
-{showSlots && user?.isVerified && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Select Your Slot</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Date Picker */}
-        <div>
-  <label htmlFor="date" className="block text-sm font-semibold">
-    Select Date:
-  </label>
-  <input
-    type="date"
-    id="date"
-    {...register("date", {
-      required: "Date is required",
-      validate: (value) => {
-        const selectedDate = new Date(value).setHours(0, 0, 0, 0);
-        const minDate = new Date(getWeekStart()).setHours(0, 0, 0, 0);
-        const maxDate = new Date(getNext7Weekdays()).setHours(0, 0, 0, 0);
-
-        if (selectedDate < minDate || selectedDate > maxDate) {
-          return `Date must be between ${getWeekStart()} and ${getNext7Weekdays()}.`;
-        }
-
-        return true;
-      },
-    })}
-    min={getWeekStart()} // Minimum date: start of the 7-day period
-    max={getNext7Weekdays()} // Maximum date: end of the 7-day period
-    className="w-full px-4 py-2 border rounded-lg"
-  />
-  {errors.date && (
-    <span className="text-red-500 text-sm">{errors.date.message}</span>
-  )}
-</div>
-
-        {/* Start Time Picker */}
-        {/* Start Time Picker */}
-<div>
-  <label htmlFor="startTime" className="block text-sm font-semibold">
-    Start Time (AM/PM):
-  </label>
-  <input
-    type="time"
-    id="startTime"
-    step="3600" // 3600 seconds = 1 hour
-    {...register("startTime", {
-      required: "Start time is required",
-      validate: (value) => {
-        const selectedDate = watch("date");
-        if (selectedDate) {
-          const currentDate = new Date();
-          const selectedDateTime = new Date(`${selectedDate}T${value}`);
-          return (
-            selectedDateTime > currentDate || "Start time must be in the future."
-          );
-        }
-        return true;
-      },
-    })}
-    className="w-full px-4 py-2 border rounded-lg"
-  />
-  {errors.startTime && (
-    <span className="text-red-500 text-sm">
-      {errors.startTime.message}
-    </span>
-  )}
-</div>
-
-{/* End Time Picker */}
-<div>
-  <label htmlFor="endTime" className="block text-sm font-semibold">
-    End Time (AM/PM):
-  </label>
-  <input
-    type="time"
-    id="endTime"
-    step="3600" // 3600 seconds = 1 hour
-    {...register("endTime", {
-      required: "End time is required",
-      validate: (value) => {
-        const startTime = watch("startTime");
-        if (startTime) {
-          return value > startTime || "End time must be after start time.";
-        }
-        return true;
-      },
-    })}
-    className="w-full px-4 py-2 border rounded-lg"
-  />
-  {errors.endTime && (
-    <span className="text-red-500 text-sm">
-      {errors.endTime.message}
-    </span>
-  )}
-</div>
-
-
-        {/* Submit Button */}
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={() => setShowSlots(false)}
-            type="button"
-            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-          >
-            Cancel
-          </button>
-          <button
-            
             type="submit"
             className="bg-teal-600 text-white px-4 py-2 rounded-lg"
           >
