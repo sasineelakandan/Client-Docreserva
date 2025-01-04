@@ -41,7 +41,7 @@ const handleSubmit2 = async (e: any) => {
   // Call backend API using axios with credentials
   try {
     console.log(slotData);
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslot`, slotData, {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`, slotData, {
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true, 
     });
