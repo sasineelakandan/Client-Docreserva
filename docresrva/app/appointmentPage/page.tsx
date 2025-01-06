@@ -14,8 +14,7 @@ interface Appointment {
   }
   slotId: {
     date: string;
-    startTime: string;
-    endTime: string;
+    slot:string
   };
   userId: {
     profilePic: string;
@@ -74,7 +73,7 @@ const AppointmentsList: React.FC = () => {
   const doctorsPerPage = 1;
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
-      const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
+      const appointmentDate = new Date(appt.slotId.date).toDateString();
       const matchesDate = !filterDate || appointmentDate === filterDate;
       const matchesPatient = !filterPatient || appt.patientId.firstName.toLowerCase().includes(filterPatient.toLowerCase());
       return matchesDate && matchesPatient;
@@ -324,8 +323,8 @@ const AppointmentsList: React.FC = () => {
       />
       <div>
         <p className="text-lg font-semibold text-gray-800">{appt.patientId.firstName} {appt.patientId.lastName}</p>
-        <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toLocaleDateString()}</p>
-        <p className="text-sm text-gray-500">Time: {appt.slotId.startTime} - {appt.slotId.endTime}</p>
+        <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toDateString()}</p>
+        <p className="text-sm text-gray-500">Time: {appt?.slotId?.slot}</p>
         <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
       </div>
     </div>

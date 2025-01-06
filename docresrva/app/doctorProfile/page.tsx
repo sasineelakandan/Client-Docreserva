@@ -46,11 +46,11 @@ const handleSubmit2 = async (e: any) => {
       withCredentials: true, 
     });
 
-    if (response.status === 200) {
-      alert("Slot saved successfully!");
-      handleCloseModal();
+    if (response.data) {
+      toast.success("Slots created successfully!");
+      handleCloseModal2();
     } else {
-      alert("Failed to save the slot.");
+      toast.error("Failed to save the slot.");
     }
   } catch (error) {
     console.error("Error:", error);
@@ -153,7 +153,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
     // Upload file to backend
     const response = await axios.post<{ url: string }>(
-      "https://www.docreserva.site/api/upload",
+      "/api/upload",
       formData,
       {
         headers: {
@@ -239,7 +239,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleOpenModal2=()=>setIsModalOpen2(true)
-  const handleCloseModal2 = () => setIsModalOpen(false);
+  const handleCloseModal2 = () => setIsModalOpen2(false);
   return (
     <div className="max-w-full">
       <Navbar />
@@ -300,75 +300,83 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 {user?.isVerified && (
   <>
     <button
-      className="px-6 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300 ease-in-out"
+      className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 ease-in-out"
       onClick={handleOpenModal2}
     >
       Create Slot
     </button>
 
     {isModalOpen2 && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-gradient-to-br from-teal-500 via-blue-500 to-purple-500 p-8 rounded-lg shadow-xl w-full md:w-1/3">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Create Slot</h2>
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform scale-95 transition-transform duration-300">
+        <h2 className="block text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-indigo-600 text-center mb-8 hover:bg-gradient-to-l hover:from-indigo-600 hover:to-blue-500">
+  Create Slots
+</h2>
 
-          <form onSubmit={handleSubmit2}>
-            {/* From Time Input */}
-            <label className="block mb-4">
-              <span className="text-white">From Time:</span>
+          <form onSubmit={handleSubmit2} className="space-y-8">
+          <label className="block text-xl font-semibold text-gray-800 mb-2">
+                Working Hours
+              </label>
+            <div>
+              <label className="block text-xl font-semibold text-gray-800 mb-2">
+                From Time
+              </label>
               <input
                 type="time"
-                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
                 onChange={(e) => setFromTime(e.target.value)}
                 required
               />
-            </label>
+            </div>
 
             {/* To Time Input */}
-            <label className="block mb-4">
-              <span className="text-white">To Time:</span>
+            <div>
+              <label className="block text-xl font-semibold text-gray-800 mb-2">
+                To Time
+              </label>
               <input
                 type="time"
-                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
                 onChange={(e) => setToTime(e.target.value)}
                 required
               />
-            </label>
+            </div>
 
             {/* Working Days Input */}
-            <label className="block mb-4">
-              <span className="text-white">Select Working Days:</span>
+            <div>
+              <label className="block text-xl font-semibold text-gray-800 mb-2">
+                Working Days
+              </label>
               <select
                 multiple
-                className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
                 onChange={(e) => {
-                  const selectedDays: any = Array.from(
+                  const selectedDays:any = Array.from(
                     e.target.selectedOptions,
                     (option) => option.value
                   );
                   setWorkingDays(selectedDays);
                 }}
               >
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                  <option key={day} value={day} className="text-lg font-medium">
+                    {day}
+                  </option>
+                ))}
               </select>
-            </label>
+            </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="mt-6 w-full bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-green-600 transition-all duration-300 ease-in-out"
+              className="w-full py-4 text-lg font-bold bg-gradient-to-r from-green-400 to-teal-500 text-white rounded-xl shadow-lg hover:from-green-500 hover:to-teal-600 hover:scale-105 transition-all duration-300"
             >
               Save Slot
             </button>
           </form>
 
           <button
-            className="mt-4 w-full text-center text-gray-300 underline hover:text-white transition-all duration-300"
+            className="w-full mt-4 text-sm text-gray-500 hover:text-gray-700 underline transition-all duration-300"
             onClick={handleCloseModal2}
           >
             Close
@@ -378,6 +386,8 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     )}
   </>
 )}
+
+
 
 
 

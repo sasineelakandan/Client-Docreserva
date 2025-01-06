@@ -9,6 +9,7 @@ import AppointmentBooking from "../bookingModal/page";
 import { setUserDetails } from '../../Store/slices/doctorSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
+import MapComponent from '../viewDirection/page';
 
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
@@ -105,6 +106,9 @@ const DoctorDetails: React.FC = () => {
       </div>
     );
   }
+  const toggleview = () => {
+    
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 to-blue-50">
@@ -155,8 +159,9 @@ const DoctorDetails: React.FC = () => {
           >
             Book Now
           </button>
+          <MapComponent location={doctor.location} company={doctor} toggleview={toggleview}/>
         </div>
-
+        
         <AppointmentBooking
           doctorId={doctor?._id}
           isModalOpen={isModalOpen}

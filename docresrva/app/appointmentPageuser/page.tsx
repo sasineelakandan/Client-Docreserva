@@ -23,8 +23,10 @@ const AppointmentsList = () => {
         setLoading(true);
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
+
           { withCredentials: true }
         );
+        console.log(response.data)
         setAppointments(response.data);
       } catch (err: any) {
         setError(err.message);
@@ -37,7 +39,7 @@ const AppointmentsList = () => {
   }, []);
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
-      const appointmentDate = new Date(appt.slotId.date).toISOString().split('T')[0];
+      const appointmentDate = new Date(appt?.slotId?.date).toDateString();
       const matchesDate = !filterDate || appointmentDate === filterDate;
       const matchesPatient = !filterDoctor || appt.doctorId.name.toLowerCase().includes(filterDoctor.toLowerCase());
       return matchesDate && matchesPatient;
@@ -187,10 +189,10 @@ const AppointmentsList = () => {
                   <div>
                     <p className="text-lg font-semibold text-gray-800">{appt?.doctorId?.name}</p>
                     <p className="text-sm text-gray-500">
-                      Date: {new Date(appt.slotId.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      Date: {new Date(appt?.slotId?.date).toDateString()}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Time: {formatTime(appt.slotId.startTime)} - {formatTime(appt.slotId.endTime)}
+                      Time: {formatTime(appt?.slotId?.slot)}
                     </p>
                     <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
                   </div>
