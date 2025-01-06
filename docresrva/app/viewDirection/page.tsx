@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { FaArrowRight, FaMapMarkerAlt } from 'react-icons/fa';
 import polyline from 'polyline';
-
+import logo from '../../public/PngItem_93782.png'
 import Swal from 'sweetalert2';
 import '../../public/olamap/OlaMapsWebSDK/dist/style.css';
 
@@ -159,10 +159,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ location, company, togglevi
 
 
             // Add the background image directly using JavaScript
-            if (company?.profilePic) {
+            if (false) {
                 customMarker.style.backgroundImage = `url(${company?.profilePic})`; // Replace with your image URL
             } else {
-                customMarker.style.backgroundImage = `url(/logo.jpeg)`; // Replace with your image URL
+                customMarker.style.backgroundImage = `url(${logo})`; // Replace with your image URL
             }
             // customMarker.style.backgroundImage = `url(${company?.images?.[0] === undefined} ? "/logo.jpeg" || ${company?.images?.[0]})`; // Replace with your image URL
             customMarker.style.backgroundSize = "cover"; // Ensures the image covers the element
