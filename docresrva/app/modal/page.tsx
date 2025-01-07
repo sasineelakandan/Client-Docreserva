@@ -85,7 +85,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       formData.append('file', file);
 
       const response = await axios.post<{ url: string }>(
-        'https://www.docreserva.site/api/upload',
+        'api/upload',
         formData,
         {
           headers: {
@@ -135,7 +135,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       formData.append('file', file);
 
       const response = await axios.post<{ url: string }>(
-        'https://www.docreserva.site/api/upload',
+        'api/upload',
         formData,
         {
           headers: {

@@ -18,6 +18,7 @@ const PUBLIC_ROUTES = new Set([
   '/ForgotPassword',
   '/forgotOtp',
   '/map',
+  '/wallet',
   '/paymentSuccessPage',
   '/paymentFailurePage'
 ]);
