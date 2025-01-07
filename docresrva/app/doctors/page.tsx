@@ -24,7 +24,7 @@ const DoctorManagement: React.FC = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://localhost:8001/api/admin/doctors", { withCredentials: true });
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`, { withCredentials: true });
         setDoctors(response.data);
       } catch (error) {
         Swal.fire("Empty!", " No data availaple in doctors Verification.", "warning");
@@ -47,7 +47,7 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:8001/api/admin/doctors?userId=${_id}`, {
+          await axios.delete(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors?userId=${_id}`, {
             withCredentials: true,
           });
           Swal.fire("Deleted!", "Doctor deleted successfully.", "success");
@@ -77,7 +77,7 @@ const DoctorManagement: React.FC = () => {
       if (result.isConfirmed) {
         try {
           await axios.patch(
-            `http://localhost:8001/api/admin/doctors`,
+            `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`,
             { userId: _id },
             { withCredentials: true }
           );

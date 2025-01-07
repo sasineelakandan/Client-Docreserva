@@ -1,91 +1,133 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/utils/Navbar';
+import Navbar from '@/components/utils/doctorNavbar';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import Image from 'next/image';
 
 interface Transaction {
   id: number;
   date: string;
   type: string;
+  userId:{
+    profilePic:string,
+    username:string
+  }
   amount: number;
   status: string;
 }
 
-export default function DoctorEwalletPage() {
-  const transactions: Transaction[] = [
-    { id: 1, date: '2025-01-05', type: 'Consultation Fee', amount: 5000, status: 'Completed' },
-    { id: 2, date: '2025-01-04', type: 'Refund', amount: -2000, status: 'Pending' },
-    { id: 3, date: '2025-01-03', type: 'Surgery Fee', amount: 12000, status: 'Completed' },
-    { id: 4, date: '2025-01-02', type: 'Consultation Fee', amount: 4000, status: 'Completed' },
-    { id: 5, date: '2025-01-01', type: 'Refund', amount: -1500, status: 'Completed' },
-    { id: 6, date: '2024-12-31', type: 'Consultation Fee', amount: 6000, status: 'Pending' },
-    { id: 7, date: '2024-12-30', type: 'Surgery Fee', amount: 15000, status: 'Completed' },
-    { id: 8, date: '2024-12-29', type: 'Refund', amount: -5000, status: 'Pending' },
-    { id: 9, date: '2024-12-28', type: 'Consultation Fee', amount: 3500, status: 'Completed' },
-    { id: 10, date: '2024-12-27', type: 'Surgery Fee', amount: 10000, status: 'Completed' },
-  ];
-
-  const formatCurrency = (amount: number): string => {
-    return amount > 0 ? `+ ₹${amount.toFixed(2)}` : `- ₹${Math.abs(amount).toFixed(2)}`;
+interface UserProfile {
+  profilePic: string;
+  name: string;
+  specialization: string;
+  eWallet: number;
+  location?: {
+    address?: string;
   };
+}
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+export default function DoctorEwalletPage() {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [address, setAddress] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [filter, setFilter] = useState<string>('All');
+
   const transactionsPerPage = 5;
-
-  // Filter state
-  const [filter, setFilter] = useState<string>('All'); // All, Consultations, Refunds
-
-  // Get current transactions based on page
   const indexOfLastTransaction = currentPage * transactionsPerPage;
   const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
 
-  // Filter transactions based on selected filter
   const filteredTransactions = transactions.filter((transaction) => {
     if (filter === 'Consultations') {
       return transaction.type === 'Consultation Fee';
     } else if (filter === 'Refunds') {
       return transaction.type === 'Refund';
     }
-    return true; // All transactions
+    return true;
   });
 
   const currentTransactions = filteredTransactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
   const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
 
-  // Calculate total amount for filtered transactions
   const totalAmount = filteredTransactions.reduce((total, transaction) => total + transaction.amount, 0);
 
+  const formatCurrency = (amount: number): string => {
+    return amount > 0 ? `+ ₹${amount.toFixed(2)}` : `- ₹${Math.abs(amount).toFixed(2)}`;
+  };
+
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      try {
+        const response = await axios.get<UserProfile>(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, {
+          withCredentials: true,
+        });
+        if (response?.data) {
+          setUser(response.data);
+          setAddress(response.data.location?.address || '');
+        }
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to fetch doctor profile.');
+      }
+    };
+
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.get<Transaction[]>(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/transactions`, {
+          withCredentials: true,
+        });
+        if (response.data) {
+          console.log(response.data)
+          setTransactions(response.data);
+        }
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to fetch transactions.');
+      }
+    };
+
+    fetchDoctorProfile();
+    fetchTransactions();
+  }, []);
+  const formatDate = (dateString:any) => {
+    const options:any = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  };
   return (
     <div className="min-h-screen bg-white text-black p-8">
-      {/* Navbar */}
       <Navbar />
 
-      {/* Doctor Profile Section */}
       <div className="flex items-center mb-8 space-x-6 mt-8">
         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700">
-          <img
-            src="/doctor-profile.jpg"
-            alt="Doctor Profile Picture"
-            className="w-full h-full object-cover"
-          />
+          {user?.profilePic ? (
+            <Image
+              src={user.profilePic}
+              alt={`${user.name}'s Profile Picture`}
+              width={128}
+              height={128}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-700">
+              No Image
+            </div>
+          )}
         </div>
         <div>
-          <h1 className="text-4xl font-bold">Dr. John Doe</h1>
-          <p className="text-lg text-gray-400">Cardiologist</p>
+          <h1 className="text-4xl font-bold">{user?.name || 'Doctor Name'}</h1>
+          <p className="text-lg text-gray-400">{user?.specialization || 'Specialization'}</p>
         </div>
       </div>
 
-      {/* eWallet Overview */}
       <div className="mb-8">
         <h2 className="text-3xl font-semibold">eWallet Balance</h2>
-        <p className="text-2xl font-semibold mt-2">₹15,230.45
-          <span className="text-sm text-gray-400 ml-2">(Equivalent in BTC: 0.30 BTC)</span>
+        <p className="text-2xl font-semibold mt-2">
+          ₹{user?.eWallet || '0.00'}{' '}
+       
         </p>
       </div>
 
-      {/* Filters and Search */}
       <div className="flex justify-between items-center mb-6">
         <div className="space-x-2">
           <button
@@ -114,49 +156,57 @@ export default function DoctorEwalletPage() {
         />
       </div>
 
-      {/* Total Amount */}
       <div className="mb-6">
         <h3 className="text-2xl font-semibold">Total Amount: {formatCurrency(totalAmount)}</h3>
       </div>
 
-      {/* Transaction History */}
       <div className="bg-white rounded-lg p-4 shadow-lg">
-        <h2 className="text-2xl mb-4">Transaction History</h2>
-        {currentTransactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="flex justify-between items-center p-3 mb-2 bg-gray-100 rounded hover:bg-gray-200 transition duration-300 ease-in-out"
-          >
-            <div>
-              <p className="font-semibold">{transaction.date}</p>
-              <p className="text-sm text-gray-400">{transaction.type}</p>
-            </div>
-            <div>
-              <p
-                className={`font-bold text-lg ${
-                  transaction.amount > 0 ? 'text-green-500' : 'text-red-500'
-                }`}
-              >
-                {formatCurrency(transaction.amount)}
-              </p>
-              <p className="text-sm text-gray-400">{transaction.status}</p>
-            </div>
-          </div>
-        ))}
+  <h2 className="text-2xl mb-4">Transaction History</h2>
+  {currentTransactions.map((transaction) => (
+    <div
+      key={transaction.id}
+      className="flex justify-between items-center p-3 mb-2 bg-gray-100 rounded hover:bg-gray-200 transition duration-300 ease-in-out"
+    >
+      <div className="flex items-center gap-4">
+        <img
+          src={transaction?.userId?.profilePic}
+          alt={`${transaction?.userId?.username}'s profile`}
+          className="w-12 h-12 rounded-full object-cover"
+        />
+        <div>
+          <p className="font-semibold">{transaction?.userId?.username}</p>
+          <p className="text-sm text-block">{formatDate(transaction.date)}</p>
+          <p className="text-sm text-black">{transaction.type}</p>
+        </div>
       </div>
+      <div>
+        <p
+          className={`font-bold text-lg ${
+            transaction.amount > 0 ? 'text-green-500' : 'text-red-500'
+          }`}
+        >
+          {formatCurrency(transaction.amount)}
+        </p>
+        <p className="text-sm text-block">{transaction.status}</p>
+      </div>
+    </div>
+  ))}
+</div>
 
-      {/* Pagination */}
+
       <div className="flex justify-center space-x-4 mt-6">
         <button
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
           disabled={currentPage === 1}
         >
           Previous
         </button>
-        <p className="self-center text-lg">{currentPage} / {totalPages}</p>
+        <p className="self-center text-lg">
+          {currentPage} / {totalPages}
+        </p>
         <button
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
           disabled={currentPage === totalPages}
         >

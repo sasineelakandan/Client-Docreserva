@@ -5,7 +5,7 @@ import jwt,{JwtPayload} from 'jsonwebtoken';
 import { log } from "console";
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor']);
+const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet']);
 const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification']);
 const PUBLIC_ROUTES = new Set([
   "/login", 
@@ -18,7 +18,7 @@ const PUBLIC_ROUTES = new Set([
   '/ForgotPassword',
   '/forgotOtp',
   '/map',
-  '/wallet',
+  
   '/paymentSuccessPage',
   '/paymentFailurePage'
 ]);
