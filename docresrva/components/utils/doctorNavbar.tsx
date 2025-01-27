@@ -8,7 +8,8 @@ import {
   Notifications,
   ExitToApp,
   Search,
-  AccountCircle, // Profile icon
+  AccountCircle,
+  AccountBalanceWallet // Profile icon
 } from '@mui/icons-material';
 import Image from 'next/image';
 import Img from '../../public/PngItem_93782.png';
@@ -127,6 +128,13 @@ const doctorNavbar: React.FC = () => {
           <Event className="text-2xl" />
           <span className="font-medium">Appointments</span>
         </a>
+        <a
+    href="/wallet" // Replace with your actual wallet page route
+    className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
+  >
+    <AccountBalanceWallet className="text-2xl" />
+    <span className="font-medium">Wallet</span>
+  </a>
       </div>
 
       {/* Right Section: User Profile and Actions */}

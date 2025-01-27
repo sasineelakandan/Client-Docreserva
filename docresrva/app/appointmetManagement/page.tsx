@@ -92,7 +92,7 @@ const AppointmentManagement: React.FC = () => {
       appointment.doctorId.name,
       appointment.patientId?.firstName || "N/A",
       appointment.paymentId.transactionId,
-      new Date(appointment.slotId.date).toLocaleDateString(),
+      new Date(appointment?.slotId?.date).toLocaleDateString(),
       appointment.status,
     ]);
 

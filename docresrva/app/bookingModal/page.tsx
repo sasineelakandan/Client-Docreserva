@@ -103,6 +103,19 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
       setLoading(false);
     }
   };
+  const isFutureTimeAndDate = (slotDate:any, slotTime:any) => {
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+    if (slotDate > currentDate) {
+      return true; // Future date
+    } else if (slotDate === currentDate) {
+      const startTime = slotTime.split(' - ')[0]; // Extract "10:00" from "10:00 - 11:00"
+      return startTime > currentTime; // Future time on the same date
+    }
+    return false; // Past date
+  };
 
   return (
     isModalOpen && (
@@ -120,37 +133,41 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
             Book an Appointment Slot
           </h1>
           <div className="flex space-x-2 mb-4 overflow-x-auto">
-            {uniqueDates.map((date) => (
-              <button
-                key={date}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  selectedDate === date
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-blue-100 text-gray-800"
-                }`}
-                onClick={() => setSelectedDate(date)}
-                aria-pressed={selectedDate === date}
-              >
-                {date}
-              </button>
-            ))}
-          </div>
+  {uniqueDates
+    .filter((date) => new Date(date) >= new Date()) // Filter only future dates
+    .map((date) => (
+      <button
+        key={date}
+        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          selectedDate === date
+            ? "bg-blue-600 text-white"
+            : "bg-gray-100 hover:bg-blue-100 text-gray-800"
+        }`}
+        onClick={() => setSelectedDate(date)}
+        aria-pressed={selectedDate === date}
+      >
+        {date}
+      </button>
+    ))}
+</div>
           {error && <p className="text-red-500 text-center font-medium mb-4">{error}</p>}
           <div className="grid grid-cols-2 gap-4">
-            {slotsForSelectedDate.map((slot) => (
-              <button
-                key={slot._id}
-                className={`px-4 py-3 text-sm font-semibold border rounded-lg ${
-                  slot.isBooked
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-50 hover:bg-blue-50 text-gray-800"
-                }`}
-                onClick={() => !slot.isBooked && handleBooking(slot)}
-                disabled={slot.isBooked || loading}
-              >
-                {slot.day} - {slot.slot}
-              </button>
-            ))}
+          {slotsForSelectedDate.map((slot) => (
+      isFutureTimeAndDate(slot.date, slot.slot) && (
+        <button
+          key={slot._id}
+          className={`px-4 py-3 text-sm font-semibold border rounded-lg ${
+            slot.isBooked
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-gray-50 hover:bg-blue-50 text-gray-800"
+          }`}
+          onClick={() => !slot.isBooked && handleBooking(slot)}
+          disabled={slot.isBooked || loading}
+        >
+          {slot.day} - {slot.slot}
+        </button>
+      )
+    ))}
           </div>
           <button
             className="mt-6 px-6 py-3 rounded-lg bg-red-600 text-white font-medium text-lg w-full shadow-lg hover:bg-red-700"

@@ -73,7 +73,7 @@ const AppointmentsList: React.FC = () => {
   const doctorsPerPage = 1;
   const filteredAppointments = useMemo(() => {
     return appointments.filter(appt => {
-      const appointmentDate = new Date(appt.slotId.date).toDateString();
+      const appointmentDate = new Date(appt?.slotId?.date).toDateString();
       const matchesDate = !filterDate || appointmentDate === filterDate;
       const matchesPatient = !filterPatient || appt.patientId.firstName.toLowerCase().includes(filterPatient.toLowerCase());
       return matchesDate && matchesPatient;
@@ -318,14 +318,14 @@ const AppointmentsList: React.FC = () => {
     <div className="flex items-center gap-4">
       <img
         src={appt.userId.profilePic}
-        alt={`${appt.patientId.firstName} ${appt.patientId.lastName}`}
+        alt={`${appt?.patientId?.firstName} ${appt?.patientId?.lastName}`}
         className="w-16 h-16 rounded-full object-cover shadow-md"
       />
       <div>
-        <p className="text-lg font-semibold text-gray-800">{appt.patientId.firstName} {appt.patientId.lastName}</p>
-        <p className="text-sm text-gray-500">Date: {new Date(appt.slotId.date).toDateString()}</p>
+        <p className="text-lg font-semibold text-gray-800">{appt?.patientId?.firstName} {appt?.patientId?.lastName}</p>
+        <p className="text-sm text-gray-500">Date: {new Date(appt?.slotId?.date).toDateString()}</p>
         <p className="text-sm text-gray-500">Time: {appt?.slotId?.slot}</p>
-        <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
+        <p className="text-sm text-gray-500">Reason: {appt?.patientId?.reason}</p>
       </div>
     </div>
     <div className="flex items-center gap-4">

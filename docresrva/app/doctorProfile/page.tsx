@@ -12,6 +12,7 @@ import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
+import Swal from "sweetalert2";
 
 const DoctorProfile: React.FC = () => {
   
@@ -33,30 +34,82 @@ const [toTime, setToTime] = useState("");
 const [workingDays, setWorkingDays] = useState([]);
 
 // Submit handler
-const handleSubmit2 = async (e: any) => {
+const handleSubmit2 = async (e: React.FormEvent, doctorId: string) => {
   e.preventDefault();
 
-  const slotData = { fromTime, toTime, workingDays };
+  const slotData = { fromTime, toTime, workingDays, doctorId };
+
+  // Store slot data in local storage
+  localStorage.setItem(`doctorSlotData${doctorId}`, JSON.stringify(slotData));
 
   // Call backend API using axios with credentials
   try {
-    
     const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`, slotData, {
       headers: { 'Content-Type': 'application/json' },
-      withCredentials: true, 
+      withCredentials: true,
     });
 
     if (response.data) {
       toast.success("Slots created successfully!");
       handleCloseModal2();
-    } else {
-      toast.error("Failed to save the slot.");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred.");
+    } 
+     
+    
+  } catch (error: any) {
+    Swal.fire({
+      title: 'Slot Already Created',
+      text: 'A slot is already created. If you want to modify it, please go to Slot Management.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Go to Slot Management',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        confirmButton: 'bg-blue-500 text-white px-4 py-2 rounded-md',
+        cancelButton: 'bg-gray-300 text-black px-4 py-2 rounded-md'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Navigate to the Slot Management page
+        window.location.href = '/slotmanagement';
+      }
+    });
+   
   }
 };
+
+
+
+useEffect(() => {
+  const sendSlotsAtMonthEnd = async () => {
+    const slotDataString = localStorage.getItem(`doctorSlotData${user?._id}`);
+    if (slotDataString) {
+      const slotData = JSON.parse(slotDataString);
+      console.log(slotData)
+      try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`, slotData, {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        });
+
+        if (response.data) {
+          toast.success("Slots sent automatically at month-end!");
+           // Clear local storage after successful submission
+        } else {
+          toast.error("Failed to send slots at month-end.");
+        }
+      } catch (error) {
+        console.error("Error sending slots at month-end:", error);
+      }
+    }
+  };
+
+  const today = new Date();
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+console.log(today.getDate())
+  if (today.getDate() === lastDayOfMonth.getDate()) {
+    sendSlotsAtMonthEnd();
+  }
+}, []);
   // Handle open modal for slots
 
   const passwordForm = useForm({
@@ -299,12 +352,21 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 )}
 {user?.isVerified && (
   <>
+   <div className="flex space-x-4">
+  <button
+    className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 ease-in-out"
+    onClick={handleOpenModal2}
+  >
+    Create Slot
+  </button>
+  <a href={'/slotmanagement'}>
     <button
       className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 ease-in-out"
-      onClick={handleOpenModal2}
     >
-      Create Slot
+      Slot Management
     </button>
+  </a>
+</div>
 
     {isModalOpen2 && (
       <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
@@ -313,7 +375,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   Create Slots
 </h2>
 
-          <form onSubmit={handleSubmit2} className="space-y-8">
+          <form onSubmit={handleSubmit2 as any} className="space-y-8">
           <label className="block text-xl font-semibold text-gray-800 mb-2">
                 Working Hours
               </label>
