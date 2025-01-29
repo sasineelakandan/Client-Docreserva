@@ -129,9 +129,52 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
     return date < today;
   };
 
-  const handleBlockSlot = (slotId: string) => {
-    console.log(`Slot with ID ${slotId} has been blocked.`);
+  
+  
+  const handleBlockSlot = async (slotId: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "Do you really want to block this slot?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, block it!",
+      });
+
+      if (result.isConfirmed) {
+        const response = await axios.patch(
+          `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`,
+          { slotId }, // Sending as an object
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+
+        // Update the state to reflect the blocked slot
+        setAvailableSlots((prevSlots) => {
+          const updatedSlots = { ...prevSlots };
+
+          // Find the slot in each category and update its blocked status
+          Object.keys(updatedSlots).forEach((key) => {
+            updatedSlots[key] = updatedSlots[key].map((slot) =>
+              slot.id === slotId ? { ...slot, blocked: true } : slot
+            );
+          });
+
+          return updatedSlots;
+        });
+         window.location.reload()
+        Swal.fire("Blocked!", "The slot has been blocked.", "success");
+      }
+    } catch (err: any) {
+      console.error("Error blocking slot:", err.response?.data || err.message);
+      Swal.fire("Error", "Failed to block the slot. Please try again.", "error");
+    }
   };
+  ;
 
   // Filter slots based on selected date
   const filteredSlots =
@@ -184,7 +227,7 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
   const existingSlotData =JSON.parse(slotDataString as any);
   console.log(existingSlotData.fromTime)
   console.log(existingSlotData.toTime)
- console.log( existingSlotData.workingDays)
+  console.log( existingSlotData.workingDays)
   const remainingDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].filter(
     (day) => !existingSlotData.workingDays?.includes(day)
   );
