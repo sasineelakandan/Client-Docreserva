@@ -157,7 +157,7 @@ export default function DoctorEwalletPage() {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-2xl font-semibold">Total Amount: {formatCurrency(totalAmount)}</h3>
+        <h3 className="text-2xl font-semibold">Total Amount: {formatCurrency(user?.eWallet as any)}</h3>
       </div>
 
       <div className="bg-white rounded-lg p-4 shadow-lg">
