@@ -20,7 +20,7 @@ const ChatRoom = () => {
     const userId = searchParams.get('userId');
     const messageEndRef = useRef<HTMLDivElement | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
-
+    const [videoLink, setVideoLink] = useState<string | null>(null); 
     useEffect(() => {
         // Initialize the socket connection
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
@@ -100,6 +100,10 @@ const ChatRoom = () => {
                 ...msg,
                 timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
             };
+            socket.on('linkNotification', (data:any) => {
+                console.log("Incoming video call link:", data);
+                setVideoLink(data.link);
+              });
             setMessages((prevMessages) => {
                 if (
                     !prevMessages.some(
@@ -118,7 +122,7 @@ const ChatRoom = () => {
             socket.disconnect();
         };
     }, []);
-
+    console.log(videoLink)
     const sendMessage = async () => {
         if (!message.trim() || !activeUser) return;
 
@@ -135,7 +139,7 @@ const ChatRoom = () => {
             setMessage('');
 
             await axios.put(
-                `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`,
+                `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat`,
                 { roomId: activeUser, message: newMessage },
                 { withCredentials: true }
             );
@@ -157,6 +161,13 @@ const ChatRoom = () => {
 
     const key = Object.keys(onlineUsers);
     const isOnline = key.includes(selectedUserProfile?.doctor?._id);
+    const handleJoinRoom = () => {
+        if (videoLink) {
+          console.log("Joining video room:", videoLink);
+          window.open(videoLink, "_blank");
+          setVideoLink(null); // Clear the video link after joining
+        }
+      };
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -222,6 +233,17 @@ const ChatRoom = () => {
                                 className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-500'}`}
                                 title={isOnline ? 'Online' : 'Offline'}
                             ></span>
+                            {videoLink && (
+        <div
+          className="fixed top-5 right-5 bg-green-500 text-white p-4 rounded-lg cursor-pointer z-50"
+          
+        >
+          <p className="font-bold">Incoming Video Call</p>
+          <p>Click here to join the call</p>
+          <button className='p-2 mt-4 bg-green-600 mr-7 rounded-lg' onClick={handleJoinRoom}>Answer</button>
+          <button className='p-2 mt-4 bg-red-600 rounded-lg' onClick={()=>setVideoLink(null)}>Reject</button>
+        </div>
+      )}
                         </div>
                         <div className="ml-3">
                             <h3 className="text-lg font-semibold text-gray-800">

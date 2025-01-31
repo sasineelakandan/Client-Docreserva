@@ -98,7 +98,7 @@ useEffect(() => {
           toast.error("Failed to send slots at month-end.");
         }
       } catch (error) {
-        console.error("Error sending slots at month-end:", error);
+        console.log("Error sending slots at month-end:", error);
       }
     }
   };

@@ -48,7 +48,7 @@ const initialState: DoctorState = {
 };
 
 const DoctorSlice = createSlice({
-  name: 'Doctor',
+  name:'Doctor',
   initialState,
   reducers: {
     setUserDetails: (State, action: PayloadAction<DoctorState>) => {

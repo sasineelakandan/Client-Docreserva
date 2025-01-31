@@ -169,16 +169,16 @@ const DoctorChatRoom = () => {
         setActiveUser(user._id);
         setSelectedUserProfile(user);
     };
-
+  
     const isOnline = Object.keys(onlineUsers).includes(selectedUserProfile?.patient?._id);
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-gray-50">
             {/* Sidebar */}
-            <div className="w-1/4 bg-white shadow-md p-4 overflow-y-auto">
-                <h2 className="text-xl font-semibold mb-4">Patients</h2>
+            <div className="w-1/4 bg-white shadow-lg p-6 overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Patients</h2>
                 {loadingUsers ? (
-                    <p>Loading patients...</p>
+                    <p className="text-gray-500">Loading patients...</p>
                 ) : users.length > 0 ? (
                     <ul>
                         {users.map((user: any) => {
@@ -186,12 +186,12 @@ const DoctorChatRoom = () => {
                             return (
                                 <li
                                     key={user._id}
-                                    className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${
-                                        activeUser === user._id ? 'bg-gray-300' : ''
+                                    className={`flex items-center p-3 mb-3 cursor-pointer rounded-lg transition-all duration-200 ${
+                                        activeUser === user._id ? 'bg-blue-50' : 'hover:bg-gray-100'
                                     }`}
                                     onClick={() => handleUserSelect(user)}
                                 >
-                                    <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
+                                    <div className="relative w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-white mr-4">
                                         {user?.patient?.profilePic ? (
                                             <>
                                                 <img
@@ -206,12 +206,16 @@ const DoctorChatRoom = () => {
                                                 ></span>
                                             </>
                                         ) : (
-                                            user?.patient?.username?.charAt(0)
+                                            <span className="text-gray-600 text-lg">
+                                                {user?.patient?.username?.charAt(0)}
+                                            </span>
                                         )}
                                     </div>
 
                                     <div className="flex-1">
-                                        <span className="font-bold">{user?.patient?.username}</span>
+                                        <span className="font-semibold text-gray-800">
+                                            {user?.patient?.username}
+                                        </span>
                                         <p className="text-sm text-gray-500 truncate">
                                             {user?.lastMessage || 'No messages yet'}
                                         </p>
@@ -221,19 +225,19 @@ const DoctorChatRoom = () => {
                         })}
                     </ul>
                 ) : (
-                    <p>No patients available.</p>
+                    <p className="text-gray-500">No patients available.</p>
                 )}
             </div>
 
             {/* Chat Window */}
-            <div className="w-3/4 flex flex-col p-4">
+            <div className="w-3/4 flex flex-col p-6 bg-white shadow-lg">
                 {selectedUserProfile && (
-                    <div className="flex items-center mb-4">
+                    <div className="flex items-center mb-6">
                         <div className="relative">
                             <img
                                 src={selectedUserProfile?.patient?.profilePic || 'default-profile-pic.jpg'}
                                 alt="Profile"
-                                className="w-12 h-12 rounded-full border-2 border-white"
+                                className="w-14 h-14 rounded-full border-2 border-white shadow-md"
                             />
                             <span
                                 className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${
@@ -242,65 +246,80 @@ const DoctorChatRoom = () => {
                                 title={isOnline ? 'Online' : 'Offline'}
                             ></span>
                         </div>
-                        <div className="ml-3">
-                            <h3 className="text-lg font-semibold text-gray-800">
+                        <div className="ml-4">
+                            <h3 className="text-xl font-bold text-gray-800">
                                 {selectedUserProfile?.patient?.username || 'Unknown Patient'}
                             </h3>
                             <p className="text-sm text-gray-500">{isOnline ? 'Online' : 'Offline'}</p>
                         </div>
+                        <a href={`/videoCall?id=${activeUser}`}><button
+    
+    className="ml-auto flex items-center gap-2 p-3 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all duration-200"
+>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14m0 0V10m0 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h8a2 2 0 012 2v6z" />
+    </svg>
+    Video Call
+</button></a>
+
                     </div>
+                    
                 )}
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto mb-4">
+                <div className="flex-1 overflow-y-auto mb-6">
                     {loadingMessages ? (
-                        <p>Loading messages...</p>
+                        <p className="text-gray-500">Loading messages...</p>
                     ) : messages.length > 0 ? (
                         messages.map((msg, index) => (
                             <div
                                 key={index}
-                                className={`message ${msg.sender === 'Doctor' ? 'text-right' : 'text-left'}`}
+                                className={`flex ${
+                                    msg.sender === 'Doctor' ? 'justify-end' : 'justify-start'
+                                } mb-4`}
                             >
                                 <div
-                                    className={`inline-block max-w-xs p-2 rounded-lg ${
+                                    className={`max-w-xs p-3 rounded-lg shadow-sm ${
                                         msg.sender === 'Doctor'
                                             ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-300 text-black'
+                                            : 'bg-gray-100 text-gray-800'
                                     }`}
                                 >
-                                    {msg.content}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                    {msg.timestamp.toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                    })}
+                                    <p className="text-sm">{msg.content}</p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {msg.timestamp.toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true,
+                                        })}
+                                    </p>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <p>No messages yet.</p>
+                        <p className="text-gray-500">No messages yet.</p>
                     )}
                     <div ref={messageEndRef} />
                 </div>
 
-                {/* Message Input */}
-                <div className="flex items-center mt-4">
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-lg"
-                        placeholder="Type a message..."
-                    />
-                    <button
-                        onClick={sendMessage}
-                        className="ml-2 p-2 bg-blue-500 text-white rounded-lg"
-                    >
-                        Send
-                    </button>
-                </div>
+                {/* Message Input and Send Button (Conditional Rendering) */}
+                {activeUser && (
+                    <div className="flex items-center mt-6">
+                        <input
+                            type="text"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            className="flex-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Type a message..."
+                        />
+                        <button
+                            onClick={sendMessage}
+                            className="ml-3 p-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all duration-200"
+                        >
+                            Send
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
