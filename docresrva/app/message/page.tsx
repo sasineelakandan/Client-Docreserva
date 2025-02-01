@@ -270,12 +270,12 @@ const ChatRoom = () => {
                             <div
                                 key={index}
                                 className={`flex ${
-                                    msg.sender === 'Doctor' ? 'justify-end' : 'justify-start'
+                                    msg.sender === 'patient' ? 'justify-end' : 'justify-start'
                                 } mb-4`}
                             >
                                 <div
                                     className={`max-w-xs p-3 rounded-lg shadow-sm ${
-                                        msg.sender === 'Doctor'
+                                        msg.sender === 'patient'
                                             ? 'bg-blue-500 text-white'
                                             : 'bg-gray-100 text-gray-800'
                                     }`}

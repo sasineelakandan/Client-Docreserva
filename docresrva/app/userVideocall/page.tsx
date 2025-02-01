@@ -41,16 +41,13 @@ const RoomComponent = () => {
     
     // Access localStorage safely
     if (typeof window !== "undefined") {
-      setDoctor(localStorage.getItem("Doctor"));
+      
       const generatedLink = `${window.location.origin}/userVideocall?roomId=${roomId}`;
       setShareLink(generatedLink);
     }
   }, [roomId]);
 
-  if (!doctor) {
-    console.error("Doctor data not found in localStorage.");
-    return <div>Error: No doctor data found</div>;
-  }
+  
 
   async function sendMsg(shareLink: string, activeUser: any) {
     console.log("active" + activeUser);

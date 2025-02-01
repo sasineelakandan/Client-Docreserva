@@ -19,7 +19,7 @@ const RoomPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [roomId, setRoomId] = useState<string>("Your Name");
-  const doctor = localStorage.getItem('Doctor');
+  
 
   useEffect(() => {
     const roomIdFromParams = searchParams.get("id");
