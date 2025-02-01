@@ -4,6 +4,7 @@ import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { FaPaperPlane, FaUserCircle, FaVideo } from 'react-icons/fa';
 
 interface Message {
     sender: string;
@@ -64,6 +65,12 @@ const DoctorChatRoom = () => {
                     { withCredentials: true }
                 );
                 setUsers(response.data);
+                if (roomId) {
+                    const selectedUser = response.data.find((user: any) => user._id === roomId);
+                    if (selectedUser) {
+                        setSelectedUserProfile(selectedUser);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
@@ -71,7 +78,7 @@ const DoctorChatRoom = () => {
             }
         };
         fetchUsers();
-    }, []);
+    }, [roomId]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -169,11 +176,11 @@ const DoctorChatRoom = () => {
         setActiveUser(user._id);
         setSelectedUserProfile(user);
     };
-  
+
     const isOnline = Object.keys(onlineUsers).includes(selectedUserProfile?.patient?._id);
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-gray-50 font-sans">
             {/* Sidebar */}
             <div className="w-1/4 bg-white shadow-lg p-6 overflow-y-auto">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Patients</h2>
@@ -206,9 +213,7 @@ const DoctorChatRoom = () => {
                                                 ></span>
                                             </>
                                         ) : (
-                                            <span className="text-gray-600 text-lg">
-                                                {user?.patient?.username?.charAt(0)}
-                                            </span>
+                                            <FaUserCircle className="w-8 h-8 text-gray-400" />
                                         )}
                                     </div>
 
@@ -252,18 +257,15 @@ const DoctorChatRoom = () => {
                             </h3>
                             <p className="text-sm text-gray-500">{isOnline ? 'Online' : 'Offline'}</p>
                         </div>
-                        <a href={`/videoCall?id=${activeUser}`}><button
-    
-    className="ml-auto flex items-center gap-2 p-3 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all duration-200"
->
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14m0 0V10m0 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h8a2 2 0 012 2v6z" />
-    </svg>
-    Video Call
-</button></a>
-
+                        <div className="ml-auto">
+                            <a href={`/videoCall?id=${activeUser}`}>
+                                <button className="flex items-center gap-2 p-3 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all duration-200">
+                                    <FaVideo className="w-5 h-5" />
+                                    Video Call
+                                </button>
+                            </a>
+                        </div>
                     </div>
-                    
                 )}
 
                 {/* Messages */}
@@ -311,12 +313,13 @@ const DoctorChatRoom = () => {
                             onChange={(e) => setMessage(e.target.value)}
                             className="flex-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Type a message..."
+                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                         />
                         <button
                             onClick={sendMessage}
                             className="ml-3 p-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all duration-200"
                         >
-                            Send
+                            <FaPaperPlane className="w-5 h-5" />
                         </button>
                     </div>
                 )}
@@ -326,7 +329,7 @@ const DoctorChatRoom = () => {
 };
 
 const ChatRoomWithSuspense = () => (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex justify-center items-center h-screen text-gray-500">Loading...</div>}>
         <DoctorChatRoom />
     </Suspense>
 );

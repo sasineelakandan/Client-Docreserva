@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { FaPaperPlane, FaVideo, FaUserCircle } from 'react-icons/fa';
 
 let socket: ReturnType<typeof io>;
 
@@ -20,9 +21,9 @@ const ChatRoom = () => {
     const userId = searchParams.get('userId');
     const messageEndRef = useRef<HTMLDivElement | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<Record<string, boolean>>({});
-    const [videoLink, setVideoLink] = useState<string | null>(null); 
+    const [videoLink, setVideoLink] = useState<string | null>(null);
+
     useEffect(() => {
-        // Initialize the socket connection
         socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!);
 
         if (userId) {
@@ -52,6 +53,12 @@ const ChatRoom = () => {
                     withCredentials: true,
                 });
                 setUsers(response.data);
+                if (roomId) {
+                    const selectedUser = response.data.find((user: any) => user._id === roomId);
+                    if (selectedUser) {
+                        setSelectedUserProfile(selectedUser);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching users:', error);
             } finally {
@@ -59,7 +66,7 @@ const ChatRoom = () => {
             }
         };
         fetchUsers();
-    }, []);
+    }, [roomId]);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -100,10 +107,10 @@ const ChatRoom = () => {
                 ...msg,
                 timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
             };
-            socket.on('linkNotification', (data:any) => {
+            socket.on('linkNotification', (data: any) => {
                 console.log("Incoming video call link:", data);
                 setVideoLink(data.link);
-              });
+            });
             setMessages((prevMessages) => {
                 if (
                     !prevMessages.some(
@@ -122,7 +129,7 @@ const ChatRoom = () => {
             socket.disconnect();
         };
     }, []);
-    console.log(videoLink)
+
     const sendMessage = async () => {
         if (!message.trim() || !activeUser) return;
 
@@ -161,21 +168,22 @@ const ChatRoom = () => {
 
     const key = Object.keys(onlineUsers);
     const isOnline = key.includes(selectedUserProfile?.doctor?._id);
+
     const handleJoinRoom = () => {
         if (videoLink) {
-          console.log("Joining video room:", videoLink);
-          window.open(videoLink, "_blank");
-          setVideoLink(null); // Clear the video link after joining
+            console.log("Joining video room:", videoLink);
+            window.open(videoLink, "_blank");
+            setVideoLink(null); // Clear the video link after joining
         }
-      };
+    };
 
     return (
-        <div className="flex h-screen bg-gray-100">
+        <div className="flex h-screen bg-gray-50 font-sans">
             {/* Sidebar */}
-            <div className="w-1/4 bg-white shadow-md p-4 overflow-y-auto">
-                <h2 className="text-xl font-semibold mb-4">Chats</h2>
+            <div className="w-1/4 bg-white shadow-lg p-6 overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Chats</h2>
                 {loadingUsers ? (
-                    <p>Loading users...</p>
+                    <p className="text-gray-500">Loading users...</p>
                 ) : users.length > 0 ? (
                     <ul>
                         {users.map((user: any) => {
@@ -184,10 +192,10 @@ const ChatRoom = () => {
                             return (
                                 <li
                                     key={user._id}
-                                    className={`flex items-center p-2 mb-2 cursor-pointer rounded-lg hover:bg-gray-200 ${activeUser === user._id ? 'bg-gray-300' : ''}`}
+                                    className={`flex items-center p-3 mb-3 cursor-pointer rounded-lg transition-all duration-200 ${activeUser === user._id ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                                     onClick={() => handleUserSelect(user)}
                                 >
-                                    <div className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white mr-3">
+                                    <div className="relative w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-white mr-3">
                                         {user?.doctor?.profilePic ? (
                                             <>
                                                 <img
@@ -200,13 +208,13 @@ const ChatRoom = () => {
                                                 ></span>
                                             </>
                                         ) : (
-                                            user?.doctor?.name?.charAt(0)
+                                            <FaUserCircle className="w-8 h-8 text-gray-400" />
                                         )}
                                     </div>
 
                                     <div className="flex-1">
-                                        <span className="font-bold">{user?.doctor?.name}</span>
-                                        <p className="text-sm text-black-500 truncate">
+                                        <span className="font-semibold text-gray-800">{user?.doctor?.name}</span>
+                                        <p className="text-sm text-gray-500 truncate">
                                             {user?.lastMessage || 'No messages yet'}
                                         </p>
                                     </div>
@@ -215,38 +223,35 @@ const ChatRoom = () => {
                         })}
                     </ul>
                 ) : (
-                    <p>No users available.</p>
+                    <p className="text-gray-500">No users available.</p>
                 )}
             </div>
 
             {/* Chat Window */}
-            <div className="w-3/4 flex flex-col p-4">
+            <div className="w-3/4 flex flex-col p-6  bg-white shadow-lg">
                 {selectedUserProfile && (
-                    <div className="flex items-center mb-4">
+                    <div className="flex items-center mb-6  bg-white " >
                         <div className="relative">
                             <img
                                 src={selectedUserProfile?.doctor?.profilePic || 'default-profile-pic.jpg'}
                                 alt="Profile"
-                                className="w-12 h-12 rounded-full border-2 border-white"
+                                className="w-12 h-12 rounded-full border-2 border-gray shadow-sm"
                             />
                             <span
                                 className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-500'}`}
                                 title={isOnline ? 'Online' : 'Offline'}
                             ></span>
                             {videoLink && (
-        <div
-          className="fixed top-5 right-5 bg-green-500 text-white p-4 rounded-lg cursor-pointer z-50"
-          
-        >
-          <p className="font-bold">Incoming Video Call</p>
-          <p>Click here to join the call</p>
-          <button className='p-2 mt-4 bg-green-600 mr-7 rounded-lg' onClick={handleJoinRoom}>Answer</button>
-          <button className='p-2 mt-4 bg-red-600 rounded-lg' onClick={()=>setVideoLink(null)}>Reject</button>
-        </div>
-      )}
+                                <div className="fixed top-5 right-5 bg-green-500 text-white p-4 rounded-lg cursor-pointer z-50 shadow-lg">
+                                    <p className="font-bold">Incoming Video Call</p>
+                                    <p>Click here to join the call</p>
+                                    <button className='p-2 mt-4 bg-green-600 mr-7 rounded-lg hover:bg-green-700 transition-all duration-200' onClick={handleJoinRoom}>Answer</button>
+                                    <button className='p-2 mt-4 bg-red-600 rounded-lg hover:bg-red-700 transition-all duration-200' onClick={() => setVideoLink(null)}>Reject</button>
+                                </div>
+                            )}
                         </div>
                         <div className="ml-3">
-                            <h3 className="text-lg font-semibold text-gray-800">
+                            <h3 className="text-xl font-semibold text-gray-800">
                                 {selectedUserProfile?.doctor?.name || 'Unknown User'}
                             </h3>
                             <p className="text-sm text-gray-500">
@@ -257,48 +262,61 @@ const ChatRoom = () => {
                 )}
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto mb-4">
+                <div className="flex-1 overflow-y-auto mb-6">
                     {loadingMessages ? (
-                        <p>Loading messages...</p>
+                        <p className="white">Loading messages...</p>
                     ) : messages.length > 0 ? (
                         messages.map((msg, index) => (
-                            <div key={index} className={`message ${msg.sender === 'patient' ? 'text-right' : 'text-left'}`}>
+                            <div
+                                key={index}
+                                className={`flex ${
+                                    msg.sender === 'Doctor' ? 'justify-end' : 'justify-start'
+                                } mb-4`}
+                            >
                                 <div
-                                    className={`inline-block max-w-xs p-2 rounded-lg ${msg.sender === 'patient' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'}`}
+                                    className={`max-w-xs p-3 rounded-lg shadow-sm ${
+                                        msg.sender === 'Doctor'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-800'
+                                    }`}
                                 >
-                                    {msg.content}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                    {msg.timestamp.toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                    })}
+                                    <p className="text-sm">{msg.content}</p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {msg.timestamp.toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true,
+                                        })}
+                                    </p>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <p>No messages yet.</p>
+                        <p className="text-gray-500">No messages yet.</p>
                     )}
                     <div ref={messageEndRef} />
                 </div>
 
-                {/* Message Input */}
-                <div className="flex items-center space-x-3">
-                    <input
-                        type="text"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Type your message..."
-                        className="w-full p-2 border border-gray-300 rounded-lg"
-                    />
-                    <button
-                        onClick={sendMessage}
-                        className="bg-blue-500 text-white p-2 rounded-lg"
-                    >
-                        Send
-                    </button>
-                </div>
+
+                {/* Message Input and Send Button (Conditional Rendering) */}
+                {activeUser && (
+                    <div className="flex items-center space-x-3 bg-white p-4 rounded-lg shadow-sm">
+                        <input
+                            type="text"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-all duration-200"
+                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                        />
+                        <button
+                            onClick={sendMessage}
+                            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all duration-200"
+                        >
+                            <FaPaperPlane className="w-5 h-5" />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -306,7 +324,7 @@ const ChatRoom = () => {
 
 export default function ChatRoomWithSuspense() {
     return (
-        <Suspense fallback={<div>Loading chat room...</div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-screen text-gray-500">Loading chat room...</div>}>
             <ChatRoom />
         </Suspense>
     );

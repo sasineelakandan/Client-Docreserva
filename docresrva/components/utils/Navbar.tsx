@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Home, Mail, Event, Notifications, ExitToApp, LocalHospital, Search, AccountCircle, Cookie } from '@mui/icons-material';
+import { Home, Mail, Event, Notifications, ExitToApp, LocalHospital, Search, AccountCircle, Cookie,AccountBalanceWallet } from '@mui/icons-material';
 import Image from 'next/image';
 import Img from '../../public/PngItem_93782.png';
 import Img2 from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg';
@@ -131,6 +131,13 @@ const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
           <LocalHospital className="text-2xl" />
           <span className="font-medium">All Doctors</span>
         </a>
+          <a
+            href="/userWallet" // Replace with your actual wallet page route
+            className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
+          >
+            <AccountBalanceWallet className="text-2xl" />
+            <span className="font-medium">Wallet</span>
+          </a>
       </div>
 
       {/* Right Section: Notifications, User Profile, and Logout */}

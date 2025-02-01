@@ -11,7 +11,7 @@ interface Transaction {
   id: number;
   date: string;
   type: string;
-  doctor: {
+  doctorId: {
     profilePic: string;
     name: string;
   };
@@ -59,6 +59,7 @@ export default function PatientEwalletPage() {
           withCredentials: true,
         });
         if (response?.data) {
+          console.log(response.data)
           setUser(response.data);
         }
       } catch (error: any) {
@@ -72,6 +73,7 @@ export default function PatientEwalletPage() {
           withCredentials: true,
         });
         if (response.data) {
+          console.log(response.data)
           setTransactions(response.data);
         }
       } catch (error: any) {
@@ -96,7 +98,7 @@ export default function PatientEwalletPage() {
         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700">
           {user?.profilePic ? (
             <Image
-              src={user.profilePic}
+              src={user?.profilePic}
               alt={`${user.username}'s Profile Picture`}
               width={128}
               height={128}
@@ -142,7 +144,7 @@ export default function PatientEwalletPage() {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-2xl font-semibold">Total Amount: {formatCurrency(totalAmount)}</h3>
+        <h3 className="text-2xl font-semibold">Total Amount: {user?.eWallet}</h3>
       </div>
 
       <div className="bg-white rounded-lg p-4 shadow-lg">
@@ -154,21 +156,21 @@ export default function PatientEwalletPage() {
           >
             <div className="flex items-center gap-4">
               <Image
-                src={transaction?.doctor?.profilePic}
-                alt={`${transaction?.doctor?.name}'s profile`}
+                src={transaction?.doctorId?.profilePic||'sasi'}
+                alt={`${transaction?.doctorId?.name}'s profile`}
                 width={48}
                 height={48}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>
-                <p className="font-semibold">{transaction?.doctor?.name}</p>
+                <p className="font-semibold">{transaction?.doctorId?.name}</p>
                 <p className="text-sm text-black">{formatDate(transaction.date)}</p>
                 <p className="text-sm text-black">{transaction.type}</p>
               </div>
             </div>
             <div>
-              <p className={`font-bold text-lg ${transaction.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {formatCurrency(transaction.amount)}
+              <p className={`font-bold text-lg ${Math.abs(transaction?.amount) > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {formatCurrency(Math.abs(transaction?.amount))}
               </p>
               <p className="text-sm text-black">{transaction.status}</p>
             </div>
