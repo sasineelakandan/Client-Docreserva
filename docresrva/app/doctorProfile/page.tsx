@@ -40,7 +40,7 @@ const handleSubmit2 = async (e: React.FormEvent, doctorId: string) => {
   const slotData = { fromTime, toTime, workingDays, doctorId };
 
   // Store slot data in local storage
-  localStorage.setItem(`doctorSlotData${doctorId}`, JSON.stringify(slotData));
+  localStorage.setItem(`doctorSlotData${user._id}`, JSON.stringify(slotData));
 
   // Call backend API using axios with credentials
   try {

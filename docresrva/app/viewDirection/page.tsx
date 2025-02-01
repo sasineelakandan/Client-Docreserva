@@ -13,17 +13,17 @@ import '../../public/olamap/OlaMapsWebSDK/dist/style.css';
 
 
 
-interface MapComponentProps {
-    location?: { latitude: number, longitude: number }
-    company: { profilePic:string, name: string, phone: number | string };
-    toggleview: () => void;
-}
+// export interface MapComponentProps {
+//     location?: { latitude: number, longitude: number }
+//     company: { profilePic:string, name: string, phone: number | string };
+//     toggleview: () => void;
+// }
 
 interface RouteDetails {
     duration: string;  // Assuming duration is a string (e.g., "10 mins")
     distance: number;  // Assuming distance is a number (e.g., 10)
 }
-const MapComponent: React.FC<MapComponentProps> = ({ location, company, toggleview }) => {
+const MapComponent: React.FC<any> = ({ location, company, toggleview }) => {
     
   
     const mapContainerRef = useRef<HTMLDivElement | null>(null);

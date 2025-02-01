@@ -12,7 +12,7 @@ const Page = () => {
   const [isClient, setIsClient] = useState(false); // Track if it's client-side
   const [selectedDates, setSelectedDates] = useState<Date[]>([]); // Store an array of selected dates
   const [availableSlots, setAvailableSlots] = useState<{ [key: string]: any[] }>({}); // Store available slots per date
-  const [currentSelectedDate, setCurrentSelectedDate] = useState<Date | null>(null); // Store the currently selected date for slot display
+  const [currentSelectedDate, setCurrentSelectedDate] = useState<any | null>(null); // Store the currently selected date for slot display
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
   const [leaveDays, setLeaveDays] = useState<Date[]>([]); // Store selected leave days
  const [fromTime, setFromTime] = useState("");
@@ -23,13 +23,22 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
   useEffect(() => {
     setIsClient(true); // Ensure the calendar only renders on the client side
   }, []);
-  const user:any = localStorage.getItem(`user`);
-  const userData = JSON.parse(user as string);
-  console.log(userData)
+
+   const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    // Ensure this runs only on the client
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("Doctor");
+      if (user) {
+        setUserData(JSON.parse(user));
+      }
+    }
+  }, []);
   // Fetch available slots from the backend when a date is selected
   useEffect(() => {
-    if (currentSelectedDate) {
-      const selectedDateString = currentSelectedDate.toISOString().split("T")[0]; // Format to 'YYYY-MM-DD'
+    
+      const selectedDateString = currentSelectedDate?.toISOString().split("T")[0]; // Format to 'YYYY-MM-DD'
       axios
         .get(
           `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/available-slots`,
@@ -45,9 +54,10 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
         .catch((error) => {
           console.error("Error fetching available slots:", error);
         });
-    }
+    
   }, [currentSelectedDate]);
-
+const slotInfo=availableSlots?.undefined?.[availableSlots?.undefined.length-1]
+console.log(slotInfo)
   if (!isClient) return null; // Prevent SSR mismatch
 
   const handleDateChange = (date: Date) => {
@@ -63,18 +73,14 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
   };
   const handleSubmit2 = async (e: React.FormEvent, doctorId: string) => {
     e.preventDefault();
-  
+  console.log(userData._id)
     // Retrieve existing slot data from localStorage
-    const slotDataString = localStorage.getItem(`doctorSlotData${doctorId}`);
-    const existingSlotData = slotDataString ? JSON.parse(slotDataString) : { workingDays: [] };
+    
   
-    // Merge existing workingDays with the new ones
-    const updatedWorkingDays = [...new Set([...existingSlotData.workingDays, ...workingDays])];
+    const slotData = { fromTime, toTime, workingDays};
   
-    const slotData = { fromTime, toTime, workingDays: updatedWorkingDays, doctorId };
-  
-    // Store updated slot data in localStorage
-    localStorage.setItem(`doctorSlotData${doctorId}`, JSON.stringify(slotData));
+    
+    
   
     try {
       // Call backend API
@@ -107,7 +113,7 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
     }
   };
   
-
+  console.log(userData._id)
   const handleLeaveDaysChange = (date: Date) => {
     const leaveExists = leaveDays.some(
       (leaveDay) => leaveDay.toDateString() === date.toDateString()
@@ -222,14 +228,11 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
         console.error('Error adding leave days:', error);
       });
   };
-  const slotDataString = localStorage.getItem(`doctorSlotData${user?.userId}`);
+  
    
-  const existingSlotData =JSON.parse(slotDataString as any);
-  console.log(existingSlotData.fromTime)
-  console.log(existingSlotData.toTime)
-  console.log( existingSlotData.workingDays)
+  
   const remainingDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].filter(
-    (day) => !existingSlotData.workingDays?.includes(day)
+    (day) => !slotInfo?.workingDays?.includes(day)
   );
   
   const handleOpenModal2=()=>setIsModalOpen2(true)
@@ -293,7 +296,7 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
               <input
                 type="time"
                 className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
-                value={existingSlotData?.fromTime}
+                
                 onChange={(e) => setFromTime(e.target.value)}
                 required
               />
@@ -306,7 +309,7 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
               </label>
               <input
                 type="time"
-                value={existingSlotData?.toTime}
+                
                 className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
                 onChange={(e) => setToTime(e.target.value)}
                 required

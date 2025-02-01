@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
 import io from "socket.io-client";
 
-// Initialize socket connection
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "");
+// Initialize socket connection dynamically to prevent SSR issues
+let socket: any;
+if (typeof window !== "undefined") {
+  socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "");
+}
 
 interface Message {
   sender: string;
@@ -16,41 +18,42 @@ interface Message {
 }
 
 const RoomPage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RoomComponent />
+    </Suspense>
+  );
+};
+
+const RoomComponent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const roomId = searchParams.get("id") || "Your Name";
-  const doctor = localStorage.getItem('Doctor');
- 
-  
-  console.log(roomId)
-  console.log(doctor)
-  let doctors = null;
- 
-    doctors='Docreserva';
-  
-  if (!doctors) {
-    console.error("Doctor data not found in localStorage.");
-    return <div>Error: No doctor data found</div>;
-  }
 
-  
-  const meetingRef = useRef<HTMLDivElement>(null);
-  
+  const [doctor, setDoctor] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [shareLink, setShareLink] = useState<string>("");
 
+  const meetingRef = useRef<HTMLDivElement>(null);
   
-  const activeUser=roomId
   useEffect(() => {
     setIsClient(true);
+    
+    // Access localStorage safely
     if (typeof window !== "undefined") {
+      setDoctor(localStorage.getItem("Doctor"));
       const generatedLink = `${window.location.origin}/userVideocall?roomId=${roomId}`;
       setShareLink(generatedLink);
     }
   }, [roomId]);
 
-  async function sendMsg(shareLink: string,activeUser:any) {
-   console.log('active'+activeUser)
+  if (!doctor) {
+    console.error("Doctor data not found in localStorage.");
+    return <div>Error: No doctor data found</div>;
+  }
+
+  async function sendMsg(shareLink: string, activeUser: any) {
+    console.log("active" + activeUser);
 
     const newMessage: Message = {
       sender: "Doctor",
@@ -60,9 +63,7 @@ const RoomPage = () => {
     };
 
     try {
-      socket.emit('sendMessage', { roomId:activeUser, message: newMessage });
-
-      
+      socket.emit("sendMessage", { roomId: activeUser, message: newMessage });
     } catch (error: any) {
       console.error("Error sending message:", error.response?.data || error.message);
     }
@@ -87,7 +88,7 @@ const RoomPage = () => {
             serverSecret,
             roomId,
             Date.now().toString(),
-            doctors
+            "Docreserva"
           );
 
           const zc = ZegoUIKitPrebuilt.create(kitToken);
@@ -99,13 +100,13 @@ const RoomPage = () => {
             onLeaveRoom: handleExit,
           });
 
-          sendMsg(shareLink,roomId); // Send the share link message after joining the room
+          sendMsg(shareLink, roomId);
         })
         .catch((error) => {
           console.error("Error loading ZegoUIKitPrebuilt:", error);
         });
     }
-  }, [isClient, shareLink, roomId, doctors]);
+  }, [isClient, shareLink, roomId]);
 
   if (!isClient) return null;
 
