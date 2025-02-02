@@ -205,45 +205,19 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    // Upload file to backend
-    const response = await axios.post<{ url: string }>(
-      "/api/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      withCredentials: true, // Enables sending cookies and authentication headers
+    });
 
-    if (response.data) {
-      setProfilePic(response.data.url)
-      const uploadedUrl = response.data.url;
-      console.log(uploadedUrl)
-      
-      const getResponse = await axiosInstance.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
-
-      // Handle the response from the s
-      console.log("URL saved response:", getResponse.data);
-
-      ; // Set the profile picture state
-      toast.success("Profile upload success message!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-      });
-    }
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
-    } else {
-      toast.error("Upload failed due to an unknown error.");
-    }
+    toast.success("File uploaded successfully!");
+    console.log(response.data)
+    setProfilePic(response.data.filePath)
+  } catch (error: any) {
+    toast.error(error.response?.data?.error || "Upload failed. Please try again.");
+    console.error("Upload error:", error);
   }
 };
 
@@ -280,6 +254,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         );
         if (response.data) {
           setUser(response.data);
+
           setAddress(response?.data?.location?.address)
           toast.success("Profile updated successfully!");
         }
@@ -301,7 +276,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
      
         <div className="relative">
           <Image
-            src={profilePic1||user?.profilePic||Img}
+            src={user?.profilePic||Img}
             alt="Doctor's profile picture"
             width={128}
             height={128}
@@ -317,6 +292,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
           </button>
           <input
             type="file"
+            name="file"
             accept="image/*"
             className="hidden"
             ref={fileInputRef}

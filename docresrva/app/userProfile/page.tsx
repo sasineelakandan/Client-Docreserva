@@ -82,7 +82,7 @@ const UserProfile: React.FC = () => {
       const formData = new FormData();
       formData.append("file", file);
   
-      const response = await axios.post("http://localhost:8001/v1/api/user/profile", formData, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -90,6 +90,7 @@ const UserProfile: React.FC = () => {
       });
   
       toast.success("File uploaded successfully!");
+      console.log(response.data)
       setProfilePic(response.data.filePath)
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Upload failed. Please try again.");
@@ -133,6 +134,7 @@ const UserProfile: React.FC = () => {
         );
         if (response.data) {
           setUser(response.data);
+          setProfilePic(response.data.filePath)
           toast.success("Profile updated successfully!");
         }
       
@@ -142,35 +144,36 @@ const UserProfile: React.FC = () => {
       toast.error("Failed to update profile.");
     }
   };
-  console.log(user)
 
+  
   return (
     <div className="max-w-full">
       <Navbar />
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
-        <div className="relative">
-          <Image
-            src={user?.profilePic}
-            alt="Profile picture"
-            width={128}
-            height={128}
-            className="w-32 h-32 rounded-lg object-cover"
-          />
-          <button
-            type="button"
-            className="absolute bottom-0 right-0 p-2 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600"
-            onClick={handleCameraClick}
-          >
-            <FaCamera className="w-6 h-6" />
-          </button>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleUpload}
-          />
-        </div>
+      <div className="relative">
+  <Image
+    src={user?.profilePic|| profilePic || Img}
+    alt="Profile picture"
+    width={128}
+    height={128}
+    className="w-32 h-32 rounded-lg object-cover"
+  />
+  <button
+    type="button"
+    className="absolute bottom-0 right-0 p-2 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600"
+    onClick={handleCameraClick} // Triggering file input click here
+  >
+    <FaCamera className="w-6 h-6" />
+  </button>
+  <input
+    type="file"
+    name="file"
+    accept="image/*"
+    className="hidden" // Hidden by default
+    ref={fileInputRef} // Reference to the file input element
+    onChange={handleUpload} // Function that handles the file when selected
+  />
+</div>
         <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
           <h2 className="text-xl font-semibold">{user?.username || "User Name"}</h2>
           <p className="text-gray-600">{user?.phone || "Phone"}</p>
