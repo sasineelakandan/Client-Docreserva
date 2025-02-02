@@ -193,9 +193,9 @@ const AppointmentsList = () => {
                       Date: {new Date(appt?.slotId?.date).toDateString()}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Time: {formatTime(appt?.slotId?.slot)}
+                      Time: {appt?.slotId?.slot}
                     </p>
-                    <p className="text-sm text-gray-500">Reason: {appt.patientId.reason}</p>
+                    <p className="text-sm text-gray-500">Reason: {appt?.patientId?.reason}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
