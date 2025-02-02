@@ -23,6 +23,7 @@ const PUBLIC_ROUTES = new Set([
 const UNPROTECTED_ROUTES = new Set(["/_next/", "/favicon.ico", "/api/"]);
 
 export async function middleware(req: NextRequest) {
+  console.log(req)
   const { pathname } = req.nextUrl;
 
   // Allow unprotected or public routes without requiring authentication
