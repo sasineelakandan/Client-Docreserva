@@ -6,7 +6,7 @@ import { log } from "console";
 
 const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
 const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet','/slotmanagement','/videoCall']);
-const USER_ROUTES = new Set(["userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
+const USER_ROUTES = new Set([ "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
 const PUBLIC_ROUTES = new Set([
   "/login", 
   "/signup", 
@@ -18,7 +18,7 @@ const PUBLIC_ROUTES = new Set([
   '/ForgotPassword',
   '/forgotOtp',
   '/map',
-  
+  'userHome',
   '/paymentSuccessPage',
   '/paymentFailurePage'
 ]);
