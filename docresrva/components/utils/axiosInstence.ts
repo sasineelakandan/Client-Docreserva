@@ -10,14 +10,8 @@ const axiosInstance = axios.create({
 // Add a request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        const accesstoken = localStorage.getItem('accesstoken'); // Adjust the key as necessary
-        const refreshtoken = localStorage.getItem('refreshtoken'); // Adjust the key as necessary
-        if (refreshtoken && accesstoken) {
-            config.headers['accesstoken'] = `Bearer ${accesstoken}`;
-            config.headers['refreshtoken'] = `Bearer ${refreshtoken}`;
-        }
-        console.log(config.headers,"config.headers")
-        return config; // Return the modified config
+        
+        return config; 
     },
     (error) => {
         // Handle the error
