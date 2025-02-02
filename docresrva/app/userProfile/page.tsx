@@ -82,47 +82,23 @@ const UserProfile: React.FC = () => {
       const formData = new FormData();
       formData.append("file", file);
   
-      // Upload file to backend
-      const response = await axios.post<{ url: string }>(
-        "https://www.docreserva.site/api/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post("http://localhost:8001/v1/api/user/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true, // Enables sending cookies and authentication headers
+      });
   
-      if (response.data) {
-        setProfilePic(response.data.url)
-        const uploadedUrl = response.data.url;
-        console.log(uploadedUrl)
-        
-        const getResponse = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
-  
-        // Handle the response from the s
-        console.log("URL saved response:", getResponse.data);
-  
-        ; // Set the profile picture state
-        toast.success("Profile upload success message!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-        });
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast.error(`Upload failed: ${error.response?.data?.message || error.message}`);
-      } else {
-        toast.error("Upload failed due to an unknown error.");
-      }
+      toast.success("File uploaded successfully!");
+      setProfilePic(response.data.filePath)
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Upload failed. Please try again.");
+      console.error("Upload error:", error);
     }
   };
+  
+  
+  
   
   const handleCameraClick = () => fileInputRef.current?.click();
 
@@ -174,7 +150,7 @@ const UserProfile: React.FC = () => {
       <div className="flex flex-col md:flex-row items-center text-teal-500 shadow-lg rounded-lg p-6 mt-6">
         <div className="relative">
           <Image
-            src={user?.profilePic||profilePic||Img}
+            src={user?.profilePic}
             alt="Profile picture"
             width={128}
             height={128}
