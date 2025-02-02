@@ -85,7 +85,7 @@ const RoomComponent = () => {
             serverSecret,
             roomId,
             Date.now().toString(),
-            "Docreserva"
+            "Sasi"
           );
 
           const zc = ZegoUIKitPrebuilt.create(kitToken);

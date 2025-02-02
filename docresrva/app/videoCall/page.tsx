@@ -28,7 +28,7 @@ const RoomPageContent = () => {
     }
   }, [searchParams]);
 
-  let doctors = "Docreserva"; // You can adjust this based on your use case.
+  let doctors = "sasi deva"; // You can adjust this based on your use case.
 
   if (!doctors) {
     console.error("Doctor data not found in localStorage.");
