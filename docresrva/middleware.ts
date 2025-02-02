@@ -1,26 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
-import jwt,{JwtPayload} from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import { log } from "console";
 
-const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet','/slotmanagement','/videoCall']);
-const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
+const ADMIN_ROUTES = new Set(["/admin", "/patients", "/doctors", "/verifiedDoctors", "/appointmentManagement", "/reviews"]);
+const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile", "/appointmentPage", "/chatroomDoctor", "/wallet", "/slotmanagement", "/videoCall"]);
+const USER_ROUTES = new Set(["/userHome", "/userProfile", "/alldoctors", "/doctorDetails", "/patientDetails", "/confirmBooking", "/appointmentPageuser", "/message", "/Notification", "/userWallet", "/userVideocall"]);
 const PUBLIC_ROUTES = new Set([
-  "/login", 
-  "/signup", 
-  "/doctorSignup", 
-  "/doctorLogin", 
-  "/userOtp", 
-  "/doctorOtp", 
+  "/login",
+  "/signup",
+  "/doctorSignup",
+  "/doctorLogin",
+  "/userOtp",
+  "/doctorOtp",
   "/adminLogin",
-  '/ForgotPassword',
-  '/forgotOtp',
-  '/map',
-  
-  '/paymentSuccessPage',
-  '/paymentFailurePage'
+  "/ForgotPassword",
+  "/forgotOtp",
+  "/map",
+  "/paymentSuccessPage",
+  "/paymentFailurePage"
 ]);
 const UNPROTECTED_ROUTES = new Set(["/_next/", "/favicon.ico", "/api/"]);
 
@@ -67,13 +65,11 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-
-
 async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   const token = req.cookies.get(tokenName);  // Get token from cookies
   console.log(req.cookies);
   console.log(token?.value, '------------------------------------------');
-  
+
   if (!token?.value) {
     console.error("Token not found in cookies");
     return { role: null };
@@ -87,12 +83,11 @@ async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role:
   }
 
   try {
-    // Verify the token using jose's jwtVerify function
-    const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
-    console.log('decoded payload', payload);
+    // Verify the token using jsonwebtoken's verify method
+    const decoded = jwt.verify(token.value, secret) as { role: string };
+    console.log('decoded payload', decoded);
 
-  
-    const role = payload?.role as string | undefined;  // Type assertion to string
+    const role = decoded?.role;
 
     if (!role) {
       console.error("Role not found in token payload");
