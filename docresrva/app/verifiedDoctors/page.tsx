@@ -13,7 +13,7 @@ type Doctor = {
   name: string;
   phone: string;
   licenseNumber: number;
-  licenseImage?: string;
+  hospitalName?: string;
   profilePic?: string;
   isVerified: boolean;
   isBlocked: boolean;
@@ -146,21 +146,21 @@ const DoctorManagement: React.FC = () => {
           </thead>
           <tbody>
             {currentDoctors.map((doctor) => (
-              <tr key={doctor._id}>
+              <tr key={doctor?._id}>
                 <td className="border px-4 py-2">
                   <img
-                    src={doctor.profilePic || "/default-avatar.png"}
+                    src={doctor?.profilePic || "/default-avatar.png"}
                     alt="Profile"
                     className="h-10 w-10 rounded-full"
                   />
                 </td>
-                <td className="border px-4 py-2">{doctor.name}</td>
-                <td className="border px-4 py-2">{doctor.email}</td>
-                <td className="border px-4 py-2">{doctor.licenseNumber}</td>
-                <td className="border px-4 py-2">{doctor.phone}</td>
+                <td className="border px-4 py-2">{doctor?.name}</td>
+                <td className="border px-4 py-2">{doctor?.email}</td>
+                <td className="border px-4 py-2">{doctor?.licenseNumber}</td>
+                <td className="border px-4 py-2">{doctor?.phone}</td>
                 <td className="border px-4 py-2">
                   <img
-                    src={doctor.licenseImage || "/default-avatar.png"}
+                    src={doctor?.hospitalName || "/default-avatar.png"}
                     alt="License"
                     className="h-10 w-20 rounded-full"
                   />

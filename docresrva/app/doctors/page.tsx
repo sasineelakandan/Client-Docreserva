@@ -13,7 +13,7 @@ type Doctor = {
   name: string;
   phone: string;
   licenseNumber:number
-  licenseImage?:string
+  hospitalName?:string
   profilePic?: string;
   isVerified: boolean;
 };
@@ -132,7 +132,7 @@ const DoctorManagement: React.FC = () => {
           </thead>
           <tbody>
             {filteredDoctors.map((doctor) => (
-              <tr key={doctor._id}>
+              <tr key={doctor?._id}>
                 <td className="border px-4 py-2">
                   <img
                     src={doctor.profilePic || "/default-avatar.png"}
@@ -146,7 +146,7 @@ const DoctorManagement: React.FC = () => {
                 <td className="border px-4 py-2">{doctor?.phone}</td>
                 <td className="border px-4 py-2">
                   <img
-                    src={doctor?.licenseImage || "/default-avatar.png"}
+                    src={doctor?.hospitalName || "/default-avatar.png"}
                     alt="Profile"
                     className="h-10 w-20 rounded-full"
                   />

@@ -11,13 +11,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
 import MapComponent from '../viewDirection/page';
 import axiosInstance from '@/components/utils/axiosInstence';
-
+import Swal from 'sweetalert2';
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [reviews, setReviews] = useState<any[]>([]);
   const [address, setAddress] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen1, setIsModalOpen1] = useState(false);
+  const [comment, setComment] = useState('');
+  const [rating, setRating] = useState(1);
   const searchParams = useSearchParams();
   const doctorId = searchParams.get("id");
   const user = useSelector((state: RootState) => state.doctor);
@@ -83,6 +86,40 @@ const DoctorDetails: React.FC = () => {
   }
 
   const result = splitAddress(address);
+  const handleSave = async (): Promise<void> => {
+    try {
+      // Send the comment and rating to the backend via a POST request
+      const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/reviews`, {
+        doctorId,
+        comment,
+        rating,
+      },{withCredentials:true});
+
+      // Log the response from the backend (optional)
+      console.log('Review saved:', response.data);
+
+      // Close the modal after saving
+      setIsModalOpen1(false);
+
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Review Submitted!',
+        text: `Comment: ${comment}\nRating: ${'⭐'.repeat(rating)}`,
+        confirmButtonText: 'OK',
+      });
+      window.location.reload()
+    } catch (error) {
+      // Handle any errors
+      console.error('Error saving review:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'There was an issue submitting your review. Please try again.',
+        confirmButtonText: 'OK',
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,6 +147,10 @@ const DoctorDetails: React.FC = () => {
   const toggleview = () => {
     
   };
+
+ 
+
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gray-100 to-blue-50">
@@ -161,6 +202,72 @@ const DoctorDetails: React.FC = () => {
             Book Now
           </button>
           <MapComponent location={doctor.location} company={doctor} toggleview={toggleview}/>
+
+          <button
+            onClick={() => setIsModalOpen1(true)}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow hover:scale-105 transform transition"
+          >
+            Add Review
+          </button>
+          {isModalOpen1 && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-2xl mb-4">Add Review</h2>
+
+            {/* Comment Section */}
+            <div className="mb-4">
+              <label htmlFor="comment" className="block text-sm font-semibold">
+                Comment
+              </label>
+              <textarea
+                id="comment"
+                rows={4}
+                className="w-full p-2 border rounded-lg"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </div>
+
+            {/* Star Rating Section */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-2">Rating</label>
+              <div className="flex space-x-2">
+                {[1, 2, 3, 4, 5].map((rate) => (
+                  <button
+                    key={rate}
+                    onClick={() => setRating(rate)}
+                    className={`text-2xl ${
+                      rating >= rate ? 'text-yellow-500' : 'text-gray-300'
+                    } hover:text-yellow-500 focus:outline-none transition-colors`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+              {/* Display Selected Rating */}
+              <div className="mt-2 text-sm text-gray-600">
+                Selected Rating: {rating} {rating === 1 ? 'star' : 'stars'}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between">
+              <button
+                onClick={() => setIsModalOpen1(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
         
         <AppointmentBooking
