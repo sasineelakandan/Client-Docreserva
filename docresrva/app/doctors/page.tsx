@@ -5,6 +5,7 @@ import { FaSearch, FaLock, FaUnlock } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 type Doctor = {
   _id: string;
@@ -24,7 +25,7 @@ const DoctorManagement: React.FC = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`, { withCredentials: true });
+        const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`, { withCredentials: true });
         setDoctors(response.data);
       } catch (error) {
         Swal.fire("Empty!", " No data availaple in doctors Verification.", "warning");
@@ -47,7 +48,7 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors?userId=${_id}`, {
+          await axiosInstance.delete(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors?userId=${_id}`, {
             withCredentials: true,
           });
           Swal.fire("Deleted!", "Doctor deleted successfully.", "success");
@@ -76,7 +77,7 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.patch(
+          await axiosInstance.patch(
             `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`,
             { userId: _id },
             { withCredentials: true }

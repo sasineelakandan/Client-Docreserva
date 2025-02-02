@@ -7,6 +7,7 @@ import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend);
 
@@ -22,7 +23,7 @@ const Page: React.FC = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<any[]>(
+        const response = await axiosInstance.get<any[]>(
           `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/dashbord`,
           { withCredentials: true }
         );

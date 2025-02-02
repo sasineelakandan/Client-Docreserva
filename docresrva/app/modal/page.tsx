@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { FaCamera } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 interface DoctorModalProps {
   isOpen: boolean;
@@ -84,7 +85,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post<{ url: string }>(
+      const response = await axiosInstance.post<{ url: string }>(
         '/api/upload',
         formData,
         {
@@ -134,7 +135,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post<{ url: string }>(
+      const response = await axiosInstance.post<{ url: string }>(
         '/api/upload',
         formData,
         {
@@ -160,7 +161,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/verifyprofile`,
         data,
         { withCredentials: true }

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { FaPaperPlane, FaVideo, FaUserCircle } from 'react-icons/fa';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 let socket: ReturnType<typeof io>;
 
@@ -49,7 +50,7 @@ const ChatRoom = () => {
         const fetchUsers = async () => {
             setLoadingUsers(true);
             try {
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chatroom`, {
+                const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chatroom`, {
                     withCredentials: true,
                 });
                 setUsers(response.data);
@@ -73,7 +74,7 @@ const ChatRoom = () => {
             if (!activeUser) return;
             setLoadingMessages(true);
             try {
-                const response = await axios.get(
+                const response = await axiosInstance.get(
                     `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat?roomId=${activeUser}`,
                     { withCredentials: true }
                 );
@@ -145,7 +146,7 @@ const ChatRoom = () => {
 
             setMessage('');
 
-            await axios.put(
+            await axiosInstance.put(
                 `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/chat`,
                 { roomId: activeUser, message: newMessage },
                 { withCredentials: true }

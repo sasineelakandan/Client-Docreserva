@@ -39,9 +39,14 @@ export async function middleware(req: NextRequest) {
   }
 
   // Verify token to get role
-  const tokenData = await verifyToken("accessToken", req);
+  const tokenData = await verifyToken("refreshToken", req);
+  const response = NextResponse.next();
+    response.headers.set("Cache-Control", "no-store, must-revalidate");
+    if(!tokenData){
+      localStorage.removeItem('user');
+    }
   const role = tokenData?.role;
-
+  
   if (!role) {
     console.log(`Redirecting unauthenticated user from ${pathname} to /login`);
     return NextResponse.redirect(new URL("/login", req.url));

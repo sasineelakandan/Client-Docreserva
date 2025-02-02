@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
 import Swal from "sweetalert2";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 const DoctorProfile: React.FC = () => {
   
@@ -135,7 +136,7 @@ console.log(today.getDate())
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
+            const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
             if(response?.data){
               console.log(response?.data)
               setUser(response?.data)
@@ -220,7 +221,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const uploadedUrl = response.data.url;
       console.log(uploadedUrl)
       
-      const getResponse = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
+      const getResponse = await axiosInstance.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,{uploadedUrl}, {withCredentials:true});
 
       // Handle the response from the s
       console.log("URL saved response:", getResponse.data);
@@ -255,7 +256,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         toast.error("New password and confirmation do not match!");
         return;
       }
-      let response=await axios.patch(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
+      let response=await axiosInstance.patch(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
         data,
         { withCredentials: true }
       );
@@ -273,7 +274,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleProfileUpdate = async (data: any) => {
     try {
-      let response=await axios.put(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
+      let response=await axiosInstance.put(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
           data,
           { withCredentials: true }
         );

@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/components/utils/axiosInstence';
 interface Appointment {
   _id: string;
   doctorId:{
@@ -95,7 +96,7 @@ const AppointmentsList: React.FC = () => {
     };
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
         payload,
         { withCredentials: true }
@@ -177,7 +178,7 @@ const AppointmentsList: React.FC = () => {
 
   const handleComplete = async (appointmentId: string) => {
     try {
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
         { appointmentId },
         { withCredentials: true }
@@ -198,7 +199,7 @@ const AppointmentsList: React.FC = () => {
   const handleCancel = async (appointmentId: string) => {
     try {
       console.log(appointmentId)
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
         { appointmentId },
         { withCredentials: true }
@@ -244,7 +245,7 @@ const AppointmentsList: React.FC = () => {
   const handleChat=async(apptId:string,doctorId:string)=>{
     try {
       console.log(apptId,doctorId)
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`, {
+      const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`, {
         apptId },{withCredentials:true});
   
       if(response.data){

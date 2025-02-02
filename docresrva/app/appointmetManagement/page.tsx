@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
 import { jsPDF } from "jspdf";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 // Define types for the appointment object
 interface Appointment {
@@ -38,7 +39,7 @@ const AppointmentManagement: React.FC = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const { data } = await axios.get<Appointment[]>(
+        const { data } = await axiosInstance.get<Appointment[]>(
           `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/appointments`,
           { withCredentials: true }
         );

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOpen }) => {
   const router = useRouter();
@@ -17,7 +18,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     const fetchSlots = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots?doctorId=${doctorId}`,
           { withCredentials: true }
         );
@@ -35,7 +36,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     const fetchBookedSlots = async () => {
       try {
         setLoading(true);
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
           { doctorId },
           { withCredentials: true }
@@ -73,7 +74,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots`,
         slot,
         { withCredentials: true }

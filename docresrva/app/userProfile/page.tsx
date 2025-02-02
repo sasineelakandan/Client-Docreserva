@@ -11,6 +11,7 @@ import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
+import axiosInstance from "@/components/utils/axiosInstence";
 const UserProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -38,7 +39,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
           
           { withCredentials: true }

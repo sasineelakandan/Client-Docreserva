@@ -7,6 +7,7 @@ import "react-calendar/dist/Calendar.css"; // Import styles
 import axios from "axios";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 const Page = () => {
   const [isClient, setIsClient] = useState(false); // Track if it's client-side
@@ -39,7 +40,7 @@ const [isModalOpen2, setIsModalOpen2] = useState(false);
   useEffect(() => {
     
       const selectedDateString = currentSelectedDate?.toISOString().split("T")[0]; // Format to 'YYYY-MM-DD'
-      axios
+      axiosInstance
         .get(
           `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/available-slots`,
           { withCredentials: true }
@@ -84,7 +85,7 @@ console.log(slotInfo)
   
     try {
       // Call backend API
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`,
         slotData,
         {
@@ -150,7 +151,7 @@ console.log(slotInfo)
       });
 
       if (result.isConfirmed) {
-        const response = await axios.patch(
+        const response = await axiosInstance.patch(
           `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`,
           { slotId }, // Sending as an object
           {
@@ -198,7 +199,7 @@ console.log(slotInfo)
 
   const handleLeaveDaysSubmit = () => {
     const leaveDaysFormatted = leaveDays.map((date) => new Date(date));
-    axios
+    axiosInstance
       .put(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/available-slots`,
         { leaveDays: leaveDaysFormatted },

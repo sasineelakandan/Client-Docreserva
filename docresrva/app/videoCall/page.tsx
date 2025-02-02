@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import io from "socket.io-client";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 // Initialize socket connection
 const socket = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || "");
@@ -63,7 +64,7 @@ const RoomPageContent = () => {
     try {
       socket.emit('sendMessage', { roomId: activeUser, message: newMessage });
 
-      await axios.put(
+      await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/chat`,
         { activeUser, message: newMessage },
         { withCredentials: true }

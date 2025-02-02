@@ -5,6 +5,7 @@ import { FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
 import axios from "axios";
 import AdminSidebar from "@/components/utils/Sidebar";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 const ReviewManagement: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -15,7 +16,7 @@ const ReviewManagement: React.FC = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/reviews`,
           { withCredentials: true }
         );
@@ -42,7 +43,7 @@ const ReviewManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(
+          await axiosInstance.delete(
             `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/reviews?reviewId=${_id}`,
             {
               withCredentials: true,

@@ -6,6 +6,7 @@ import Navbar from '@/components/utils/Navbar';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import Image from 'next/image';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 interface Transaction {
   id: number;
@@ -55,7 +56,7 @@ export default function PatientEwalletPage() {
   useEffect(() => {
     const fetchPatientProfile = async () => {
       try {
-        const response = await axios.get<PatientProfile>(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`, {
+        const response = await axiosInstance.get<PatientProfile>(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`, {
           withCredentials: true,
         });
         if (response?.data) {
@@ -69,7 +70,7 @@ export default function PatientEwalletPage() {
 
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get<Transaction[]>(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/transactions`, {
+        const response = await axiosInstance.get<Transaction[]>(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/transactions`, {
           withCredentials: true,
         });
         if (response.data) {

@@ -10,6 +10,7 @@ import { setUserDetails } from '../../Store/slices/doctorSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Store';
 import MapComponent from '../viewDirection/page';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
@@ -27,7 +28,7 @@ const DoctorDetails: React.FC = () => {
     const fetchDoctorDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.patch(
+        const response = await axiosInstance.patch(
           `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
           { doctorId },
           { withCredentials: true }
@@ -86,7 +87,7 @@ const DoctorDetails: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/reviews?doctorId=${doctorId}`,
           { withCredentials: true }
         );

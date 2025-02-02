@@ -7,6 +7,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter, useSearchParams } from "next/navigation";
+import axiosInstance from '@/components/utils/axiosInstence';
 
 // Loading Spinner Fallback Component
 const LoadingSpinner = () => (
@@ -71,7 +72,7 @@ function OTPVerification() {
   const handleSubmit = async () => {
     try {
       const otpString = otp.join('');
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/verifyotp`,
         { otp: otpString, userId },
         { withCredentials: true }
@@ -95,7 +96,7 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/resendotp`,
         { userId },
         { withCredentials: true }

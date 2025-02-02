@@ -4,6 +4,7 @@ import Navbar from "@/components/utils/Navbar";
 import axios from "axios";
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 // Define the Doctor interface
 interface Doctor {
@@ -40,7 +41,7 @@ const App: React.FC = () => {
         if (!process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL) {
           throw new Error("Backend URL is missing in environment variables");
         }
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
           { withCredentials: true }
         );

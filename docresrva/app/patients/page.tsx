@@ -5,6 +5,7 @@ import { FaSearch, FaLock, FaUnlock } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 type Patient = {
   _id: string;
@@ -24,7 +25,7 @@ const PatientManagement: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const { data } = await axios.get(
+        const { data } = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`,
           { withCredentials: true }
         );

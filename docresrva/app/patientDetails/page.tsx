@@ -7,6 +7,7 @@ import axios from "axios";
 import { useDispatch } from 'react-redux';
 import { setPatientDetails } from "@/Store/slices/patientDetails";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 // Define a type for the form data
 interface FormData {
@@ -72,7 +73,7 @@ const DoctorPage: React.FC = () => {
     data.doctorId = doctor?._id;
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, { withCredentials: true });
+      const response = await axiosInstance.post(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, data, { withCredentials: true });
       const patientData = response.data;
 
       if (response.data) {

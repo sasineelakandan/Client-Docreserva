@@ -6,6 +6,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import CryptoJS from "crypto-js";
 import Image from "next/image";
+import axiosInstance from "@/components/utils/axiosInstence";
 
 // Define types
 interface Doctor {
@@ -76,7 +77,7 @@ const DoctorPage: React.FC = () => {
     if (!patient || !doctor) return;
 
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, {
+      const response = await axiosInstance.put(`${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/bookings`, {
         slotId,
         doctorId: doctor._id,
         patientId: patient._id,

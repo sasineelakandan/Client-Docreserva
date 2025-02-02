@@ -5,6 +5,7 @@ import Navbar from '@/components/utils/Navbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/components/utils/axiosInstence';
 
 const AppointmentsList = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -21,7 +22,7 @@ const AppointmentsList = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
 
           { withCredentials: true }
@@ -76,7 +77,7 @@ const AppointmentsList = () => {
       });
 
       if (result.isConfirmed) {
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
           { appointmentId },
           { withCredentials: true }
@@ -100,12 +101,12 @@ const AppointmentsList = () => {
     }
   };
 
-  const formatTime = (time24: string) => {
-    const [hours, minutes] = time24.split(':');
+  const formatTime = (time24: string): string => {
+    const [hours, minutes] = time24.split(':')
     const period = +hours >= 12 ? 'PM' : 'AM';
     const hours12 = +hours % 12 || 12;
     return `${hours12}:${minutes} ${period}`;
-  };
+};
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
