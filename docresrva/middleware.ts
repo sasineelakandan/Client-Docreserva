@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import jwt,{JwtPayload} from 'jsonwebtoken';
 import { log } from "console";
 
-// Your route sets
-const ADMIN_ROUTES = new Set(["/admin", "/patients", "/doctors", "/verifiedDoctors", '/appointmetManagement', '/reviews']);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile", '/appointmentPage', '/chatroomDoctor', '/wallet', '/slotmanagement', '/videoCall']);
-const USER_ROUTES = new Set(["/userHome", "/userProfile", "/alldoctors", "/doctorDetails", '/patientDetails', '/confirmBooking', '/appointmentPageuser', '/message', '/Notification', '/userWallet', '/userVideocall']);
+const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
+const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet','/slotmanagement','/videoCall']);
+const USER_ROUTES = new Set(["/userHome", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
 const PUBLIC_ROUTES = new Set([
-  "/login",
-  "/signup",
-  "/doctorSignup",
-  "/doctorLogin",
-  "/userOtp",
-  "/doctorOtp",
+  "/login", 
+  "/signup", 
+  "/doctorSignup", 
+  "/doctorLogin", 
+  "/userOtp", 
+  "/doctorOtp", 
   "/adminLogin",
   '/ForgotPassword',
   '/forgotOtp',
   '/map',
+  
   '/paymentSuccessPage',
   '/paymentFailurePage'
 ]);
@@ -37,16 +38,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Verify token to get role from the Authorization header
-  const tokenData = await verifyToken(req);
-  console.log(req);
-  const response = NextResponse.next();
-  response.headers.set("Cache-Control", "no-store, must-revalidate");
-
-  if (!tokenData) {
-    localStorage.removeItem('user');
-  }
-
+  // Verify token to get role
+  const tokenData = await verifyToken("accessToken", req);
   const role = tokenData?.role;
 
   if (!role) {
@@ -74,26 +67,32 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-async function verifyToken(req: NextRequest): Promise<{ role: string | null }> {
-  const accessToken = req.headers.get('accesstoken');  // Get access token from headers
-  const refreshToken = req.headers.get('refreshtoken');  // Get refresh token from headers
+
+
+async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
   
-  if (!accessToken || !refreshToken) {
-    console.error("Tokens not found in request headers");
+  const token = req.cookies.get(tokenName);  // Get token from cookies
+  console.log(req.cookies);
+  console.log(token?.value, '------------------------------------------');
+  
+  if (!token?.value) {
+    console.error("Token not found in cookies");
     return { role: null };
   }
 
   const secret = process.env.JWT_SECRET;  // Retrieve the secret from environment variables
+  console.log('secret', secret);
   if (!secret) {
     console.error("JWT_SECRET is not defined in environment variables");
     return { role: null };
   }
 
   try {
-    // Verify the access token using jose's jwtVerify function
-    const { payload } = await jwtVerify(accessToken.replace('Bearer ', ''), new TextEncoder().encode(secret));
-    console.log('Decoded payload:', payload);
+    // Verify the token using jose's jwtVerify function
+    const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
+    console.log('decoded payload', payload);
 
+  
     const role = payload?.role as string | undefined;  // Type assertion to string
 
     if (!role) {
