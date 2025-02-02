@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";  // Importing the JWT verification function from jose library
+import { jwtVerify } from "jose";
+import jwt,{JwtPayload} from 'jsonwebtoken';
+import { log } from "console";
 
-const ADMIN_ROUTES = new Set(["/admin", "/patients", "/doctors", "/verifiedDoctors", '/appointmetManagement', '/reviews']);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile", '/appointmentPage', '/chatroomDoctor', '/wallet', '/slotmanagement', '/videoCall']);
-const USER_ROUTES = new Set(["", "/userProfile", "/alldoctors", "/doctorDetails", '/patientDetails', '/confirmBooking', '/appointmentPageuser', '/message', '/Notification', '/userWallet', '/userVideocall']);
+const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
+const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet','/slotmanagement','/videoCall']);
+const USER_ROUTES = new Set(["", "/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
 const PUBLIC_ROUTES = new Set([
   "/login", 
   "/signup", 
@@ -27,7 +29,7 @@ export async function middleware(req: NextRequest) {
 
   // Allow unprotected or public routes without requiring authentication
   if ([...UNPROTECTED_ROUTES].some(route => pathname.startsWith(route)) || pathname === "/") {
-    console.log(`Allowing access to unprotected route: ${pathname}`);
+    console.log(`Allowing access to public route: ${pathname}`);
     return NextResponse.next();
   }
 
@@ -36,7 +38,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Verify the token to get the role
+  // Verify token to get role
   const tokenData = await verifyToken("accessToken", req);
   const role = tokenData?.role;
 
@@ -65,36 +67,43 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
-  const token = req.cookies.get(tokenName); // Get token from cookies
-  console.log("Token retrieved:", token?.value);
 
+
+async function verifyToken(tokenName: string, req: NextRequest): Promise<{ role: string | null }> {
+  
+  const token = req.cookies.get(tokenName);  // Get token from cookies
+  console.log(req.cookies);
+  console.log(token?.value, '------------------------------------------');
+  
   if (!token?.value) {
     console.error("Token not found in cookies");
     return { role: null };
   }
 
-  const secret = process.env.JWT_SECRET; // Retrieve the secret from environment variables
+  const secret = process.env.JWT_SECRET;  // Retrieve the secret from environment variables
+  console.log('secret', secret);
   if (!secret) {
     console.error("JWT_SECRET is not defined in environment variables");
     return { role: null };
   }
 
   try {
-    // Verify the token using the jose's jwtVerify function
+    // Verify the token using jose's jwtVerify function
     const { payload } = await jwtVerify(token.value, new TextEncoder().encode(secret));
-    console.log('Decoded JWT payload:', payload);
+    console.log('decoded payload', payload);
 
-    const role = payload?.role as string | undefined; // Extract the role from the decoded token payload
+  
+    const role = payload?.role as string | undefined;  // Type assertion to string
+
     if (!role) {
       console.error("Role not found in token payload");
       return { role: null };
     }
 
     console.log(`Verified role: ${role}`);
-    return { role };  // Return the extracted role
+    return { role };  // Return the role
   } catch (err: any) {
     console.error(`Failed to verify token: ${err.message}`);
-    return { role: null }; // Return null if token verification fails
+    return { role: null };  // Return null if token verification fails
   }
 }
