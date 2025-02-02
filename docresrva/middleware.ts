@@ -40,6 +40,7 @@ export async function middleware(req: NextRequest) {
 
   // Verify token to get role
   const tokenData = await verifyToken("refreshToken", req);
+  console.log(req)
   const response = NextResponse.next();
     response.headers.set("Cache-Control", "no-store, must-revalidate");
     if(!tokenData){
