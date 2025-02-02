@@ -40,8 +40,6 @@ function Login() {
       );
 
       if (response.data) {
-        localStorage.setItem("accesstoken", JSON.stringify(response.data.accessToken))
-        localStorage.setItem("refreshtoken", JSON.stringify(response.data.refreshToken))
         dispatch(
           setUserDetails({
             username: response.data.username,
