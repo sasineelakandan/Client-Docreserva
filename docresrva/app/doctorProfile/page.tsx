@@ -276,7 +276,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
      
         <div className="relative">
           <Image
-            src={user?.profilePic||Img}
+            src={user?.profilePic||profilePic1||Img}
             alt="Doctor's profile picture"
             width={128}
             height={128}

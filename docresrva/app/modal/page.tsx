@@ -41,8 +41,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       hospitalName: '',
       licenseNumber: '',
       
-      licenseImage: '',
-      licenseImage1: '',
+     
       fees: 0,
     },
   });
