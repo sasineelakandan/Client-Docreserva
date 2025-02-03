@@ -1,23 +1,21 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import AdminNavbar from '../../components/utils/Sidebar';
+import AdminNavbar from '../../components/utils/Sidebar'; // Ensure this is the correct import for the sidebar
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import axios from 'axios';
-import Swal from 'sweetalert2';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 import axiosInstance from '@/components/utils/axiosInstence';
+import Swal from 'sweetalert2';
 
-// Registering the chart elements
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend);
 
-const AdminDashboard: React.FC = () => {
-  const [timePeriod, setTimePeriod] = useState<'weekly' | 'monthly' | 'yearly' | 'today'>('weekly');
-  const [doctors, setDoctors] = useState<any[]>([]);
-  const [patients, setPatients] = useState<any[]>([]);
+const Page: React.FC = () => {
+  const [timePeriod, setTimePeriod] = useState<'total' | 'weekly' | 'monthly' | 'yearly'>('total');
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -66,32 +64,22 @@ const AdminDashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  // Helper function to calculate revenue for a given date range
-  const calculateRevenue = (startDate: Date, endDate: Date) => {
-    return appointments
-      .filter((appt) => {
-        const transactionDate = new Date(appt.paymentId?.transactionDate || '');
-        return transactionDate >= startDate && transactionDate <= endDate;
-      })
-      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
-  };
+  // Compute earnings
+  const earnings = useMemo(() => ({
+    weekly: appointments
+      .filter(
+        (appt) => new Date(appt.paymentId?.transactionDate || '') >= new Date(new Date().setDate(new Date().getDate() - 7))
+      )
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
+    monthly: appointments
+      .filter((appt) => new Date(appt.paymentId?.transactionDate || '').getMonth() === new Date().getMonth())
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
+    yearly: appointments
+      .filter((appt) => new Date(appt.paymentId?.transactionDate || '').getFullYear() === new Date().getFullYear())
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
+  }), [appointments]);
 
-  const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const startOfYear = new Date(today.getFullYear(), 0, 1);
-
-  const stats = {
-    totalDoctors: doctors.length,
-    totalPatients: patients.length,
-    totalAppointments: appointments.length,
-    totalEarnings: appointments.reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
-    todayRevenue: calculateRevenue(new Date(today.setHours(0, 0, 0, 0)), today),
-    weeklyRevenue: calculateRevenue(startOfWeek, today),
-    monthlyRevenue: calculateRevenue(startOfMonth, today),
-    yearlyRevenue: calculateRevenue(startOfYear, today),
-  };
+  const totalEarnings = useMemo(() => appointments.reduce((a, b) => a + (b.paymentId?.amount || 0), 0), [appointments]);
 
   // Filter earnings by selected date
   useEffect(() => {
@@ -104,100 +92,120 @@ const AdminDashboard: React.FC = () => {
       const revenue = filteredData.reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
       setFilteredRevenue(revenue);
     } else {
-      setFilteredRevenue(stats.totalEarnings);
+      setFilteredRevenue(totalEarnings);
     }
-  }, [selectedDate, appointments, stats.totalEarnings]);
+  }, [selectedDate, appointments, totalEarnings]);
 
+  // Dynamically update Doughnut chart data
   const chartData = useMemo(() => {
-    const colors = {
-      today: '#FF6384',
-      weekly: '#36A2EB',
-      monthly: '#4BC0C0',
-      yearly: '#FFCD56',
-    };
-
-    const revenue = selectedDate ? filteredRevenue : stats[`${timePeriod}Revenue`];
-
-    return {
-      labels: [selectedDate ? `Revenue on ${format(selectedDate, 'dd MMM yyyy')}` : 'Revenue'],
-      datasets: [
-        {
-          data: [revenue],
-          backgroundColor: [colors[timePeriod]],
-        },
-      ],
-    };
-  }, [selectedDate, filteredRevenue, timePeriod, stats]);
-
-  const barChartData = useMemo(() => {
-    const colors = {
-      today: '#FF6384',
-      weekly: '#36A2EB',
-      monthly: '#4BC0C0',
-      yearly: '#FFCD56',
-    };
-
-    return {
-      labels: [timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)],
-      datasets: [
-        {
-          label: 'Earnings (₹)',
-          data: [stats[`${timePeriod}Revenue`]],
-          backgroundColor: [colors[timePeriod]],
-          borderColor: [colors[timePeriod]],
-          borderWidth: 1,
-        },
-      ],
-    };
-  }, [timePeriod, stats]);
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function (tooltipItem: any) {
-            const value = tooltipItem.raw as number;
-            return tooltipItem.label === 'Total Earnings'
-              ? `₹${value.toLocaleString()}`
-              : value.toLocaleString();
+    if (timePeriod === 'total') {
+      // Show three colors for weekly, monthly, and yearly earnings
+      return {
+        labels: ['Weekly Earnings', 'Monthly Earnings', 'Yearly Earnings'],
+        datasets: [
+          {
+            data: [earnings.weekly, earnings.monthly, earnings.yearly],
+            backgroundColor: ['#FF5733', '#4CAF50', '#FF6384'], // Colors for weekly, monthly, yearly
           },
-        },
-      },
-    },
-  };
+        ],
+      };
+    } else {
+      // Show single color for selected time period
+      const colors = {
+        weekly: '#FF5733',
+        monthly: '#4CAF50',
+        yearly: '#FF6384',
+      };
+
+      const revenue = selectedDate ? filteredRevenue : earnings[timePeriod];
+
+      return {
+        labels: [selectedDate ? `Revenue on ${format(selectedDate, 'dd MMM yyyy')}` : 'Revenue'],
+        datasets: [
+          {
+            data: [revenue],
+            backgroundColor: [colors[timePeriod]],
+          },
+        ],
+      };
+    }
+  }, [selectedDate, filteredRevenue, timePeriod, earnings]);
+
+  // Dynamically update Bar Chart data
+  const barChartData = useMemo(() => {
+    if (timePeriod === 'total') {
+      // Show all three periods (weekly, monthly, yearly)
+      return {
+        labels: ['Weekly', 'Monthly', 'Yearly'],
+        datasets: [
+          {
+            label: 'Earnings (₹)',
+            data: [earnings.weekly, earnings.monthly, earnings.yearly],
+            backgroundColor: ['#FF5733', '#4CAF50', '#FF6384'],
+            borderColor: ['#D32F2F', '#388E3C', '#D32F2F'],
+            borderWidth: 1,
+          },
+        ],
+      };
+    } else {
+      // Show only the selected time period
+      const colors = {
+        weekly: '#FF5733',
+        monthly: '#4CAF50',
+        yearly: '#FF6384',
+      };
+
+      return {
+        labels: [timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)], // Capitalize the first letter
+        datasets: [
+          {
+            label: 'Earnings (₹)',
+            data: [earnings[timePeriod]],
+            backgroundColor: [colors[timePeriod]],
+            borderColor: [colors[timePeriod]],
+            borderWidth: 1,
+          },
+        ],
+      };
+    }
+  }, [timePeriod, earnings]);
+
+  const totalAppointments = appointments.length;
+  const totalPatients = patients.length;
+  const totalDoctors = doctors.length;
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <AdminNavbar />
 
       {/* Main Content */}
-      <div className="flex-1 p-6 bg-gray-100">
+      <div className="w-full m-10"> {/* Adjust ml-[250px] to match the width of your sidebar */}
         {/* Stats Cards */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Total Doctors', value: stats.totalDoctors, gradient: 'from-blue-400 to-blue-600' },
-            { label: 'Total Patients', value: stats.totalPatients, gradient: 'from-teal-400 to-teal-600' },
-            { label: 'Total Appointments', value: stats.totalAppointments, gradient: 'from-green-400 to-green-600' },
-            { label: 'Total Earnings', value: `₹${stats.totalEarnings.toLocaleString()}`, gradient: 'from-purple-400 to-purple-600' },
-          ].map((card, index) => (
-            <div
-              key={index}
-              className={`bg-gradient-to-r ${card.gradient} p-4 shadow-lg rounded-lg text-center`}
-            >
-              <h3 className="text-xl font-semibold text-white">{card.label}</h3>
-              <p className="mt-2 text-3xl font-bold text-white">{card.value}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold">Total Revenue</h3>
+            <p className="text-3xl font-bold text-green-600">₹ {totalEarnings}</p>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold">Total Appointments</h3>
+            <p className="text-3xl font-bold text-blue-600">{totalAppointments}</p>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold">Total Patients</h3>
+            <p className="text-3xl font-bold text-purple-600">{totalPatients}</p>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+            <h3 className="text-lg font-semibold">Total Doctors</h3>
+            <p className="text-3xl font-bold text-orange-600">{totalDoctors}</p>
+          </div>
         </div>
 
         {/* Date Picker and Period Selector */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <label className="text-lg font-semibold">Select Date:</label>
             <DatePicker
@@ -213,10 +221,10 @@ const AdminDashboard: React.FC = () => {
             <label className="text-lg font-semibold">Select Period:</label>
             <select
               value={timePeriod}
-              onChange={(e) => setTimePeriod(e.target.value as 'weekly' | 'monthly' | 'yearly' | 'today')}
+              onChange={(e) => setTimePeriod(e.target.value as 'total' | 'weekly' | 'monthly' | 'yearly')}
               className="p-2 border rounded-md"
             >
-              <option value="today">Today</option>
+              <option value="total">Total</option>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly</option>
@@ -231,16 +239,16 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Charts */}
-        <div className="flex flex-wrap justify-between gap-4 mt-8">
-          <div className="w-full sm:w-1/2 md:w-1/2 xl:w-1/2 max-w-md">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="bg-white shadow-lg rounded-lg p-6">
             <h3 className="text-center text-lg font-semibold mb-4">Revenue Overview</h3>
-            <div className="h-[400px] max-h-[500px] flex justify-center items-center bg-white shadow-lg rounded-lg">
-              <Doughnut data={chartData} options={chartOptions} />
+            <div className="h-[400px] flex justify-center items-center">
+              <Doughnut data={chartData} />
             </div>
           </div>
-          <div className="w-full sm:w-1/2 md:w-1/2 xl:w-1/2 max-w-full">
+          <div className="bg-white shadow-lg rounded-lg p-6">
             <h3 className="text-center text-lg font-semibold mb-4">Earnings Comparison</h3>
-            <div className="h-[400px] max-h-[500px] flex justify-center items-center bg-white shadow-lg rounded-lg">
+            <div className="h-[400px] flex justify-center items-center">
               <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false }} />
             </div>
           </div>
@@ -250,4 +258,4 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-export default AdminDashboard;
+export default Page;
