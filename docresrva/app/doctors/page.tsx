@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { FaSearch, FaLock, FaUnlock } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
-import axios from "axios";
+
 import axiosInstance from "@/components/utils/axiosInstence";
 
 type Doctor = {
