@@ -19,8 +19,6 @@ const schema = yup.object({
   hospitalName: yup.string().required('Hospital name is required'),
   licenseNumber: yup.string().required('License number is required'),
 
-  licenseImage: yup.string().required('License image URL is required'),
-  licenseImage1: yup.string().required('Profile image URL is required'),
   fees: yup
     .number()
     .required('Fees are required')
@@ -95,7 +93,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
       );
 
       const imageUrl = response.data.url;
-      setValue('licenseImage', imageUrl);
+      
       toast.success('Image uploaded successfully!');
       setPreviewImage(null); 
     } catch (error) {
@@ -146,7 +144,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
 
       const imageUrl1 = response.data .url;
       localStorage.setItem("profilePic", response.data.url);
-      setValue('licenseImage1', imageUrl1);
+      
       toast.success('Image uploaded successfully!');
       setPreviewImage1(null); // Clear preview after upload
     } catch (error) {
@@ -177,9 +175,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
 
   if (!isOpen) return null;
 
-  const licenseImage = watch('licenseImage');
-  const licenseImage1 = watch('licenseImage1');
-
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 overflow-y-auto max-h-[80vh]">
