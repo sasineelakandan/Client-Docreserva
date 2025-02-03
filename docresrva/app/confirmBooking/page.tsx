@@ -102,9 +102,9 @@ const DoctorPage: React.FC = () => {
       slotId,
       firstname: patient.firstName,
       lastname: patient.lastName,
-      surl: "http://localhost:3000/api/paymentSuccess",
+      surl: "https://www.docreserva.site/api/paymentSuccess",
       furl: "https://www.docreserva.site/api/paymentFailure",
-      phone: "", // Add patient phone
+      phone: "", 
       hash,
     };
 

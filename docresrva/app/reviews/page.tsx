@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
-import axios from "axios";
+
 import AdminSidebar from "@/components/utils/Sidebar";
 import axiosInstance from "@/components/utils/axiosInstence";
 
