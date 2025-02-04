@@ -130,7 +130,7 @@ const ChatRoom = () => {
             socket.disconnect();
         };
     }, []);
-
+    console.log(onlineUsers)
     const sendMessage = async () => {
         if (!message.trim() || !activeUser) return;
 

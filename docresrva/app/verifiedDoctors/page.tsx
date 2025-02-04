@@ -12,6 +12,7 @@ type Doctor = {
   email: string;
   name: string;
   phone: string;
+  fees:string
   licenseNumber: number;
   hospitalName?: string;
   profilePic?: string;
@@ -159,11 +160,7 @@ const DoctorManagement: React.FC = () => {
                 <td className="border px-4 py-2">{doctor?.licenseNumber}</td>
                 <td className="border px-4 py-2">{doctor?.phone}</td>
                 <td className="border px-4 py-2">
-                  <img
-                    src={doctor?.hospitalName || "/default-avatar.png"}
-                    alt="License"
-                    className="h-10 w-20 rounded-full"
-                  />
+                 {doctor?.fees}
                 </td>
                 <td className="border px-4 py-2 flex space-x-2">
                   <button

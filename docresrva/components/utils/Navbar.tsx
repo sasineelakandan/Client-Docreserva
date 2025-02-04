@@ -87,7 +87,7 @@ const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
   }
 };
 
-  
+  console.log(unreadCount)
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
@@ -115,11 +115,7 @@ const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
 
         <a href={`/message/?userId=${user?.userId}`} className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
-          {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-              {unreadCount}
-            </span>
-          )}
+          
           <span  className="font-medium">Messages</span>
         </a>
 
@@ -142,9 +138,15 @@ const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
 
       {/* Right Section: Notifications, User Profile, and Logout */}
       <div className="flex items-center space-x-4">
-        <a href="/Notification" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
-          <Notifications className="text-2xl" />
-        </a>
+        
+      <a href="/Notification" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
+    <Notifications className="text-2xl" />
+    {unreadCount > 0 && (
+      <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+        {unreadCount}
+      </span>
+    )}
+  </a>
 
         {user ? (
           <a href={'/userProfile'} className="hidden md:flex items-center space-x-3 cursor-pointer">

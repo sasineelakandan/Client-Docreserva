@@ -179,18 +179,18 @@ const App: React.FC = () => {
                 onClick={() => handleCardClick(doctor._id)}
               >
                 <img
-                  src={doctor.profilePic || "/default-avatar.png"}
-                  alt={doctor.name}
+                  src={doctor?.profilePic || "/default-avatar.png"}
+                  alt={doctor?.name}
                   className="w-28 h-28 rounded-full object-cover border-4 border-teal-600"
                 />
                 <div className="flex flex-col">
                   <h3 className="text-xl font-bold text-gray-800 hover:text-teal-700 transition">
-                    {doctor.name}
+                    {doctor?.name}
                   </h3>
                   <p className="text-gray-600">{doctor.specialization}</p>
                   <p className="text-gray-500">Experience: {doctor.experience} years</p>
                   <p className="text-gray-500">Fees: ₹{doctor.fees}</p>
-                  <p className="text-gray-500">Location: {doctor?.hospitalName}</p>
+                  <p className="text-gray-500">Phone: {doctor?.phone}</p>
                 </div>
               </div>
             ))}

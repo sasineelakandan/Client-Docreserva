@@ -159,7 +159,7 @@ const MapComponent: React.FC<any> = ({ location, company, toggleview }) => {
 
 
             // Add the background image directly using JavaScript
-            if (false) {
+            if (true) {
                 customMarker.style.backgroundImage = `url(${company?.profilePic})`; // Replace with your image URL
             } else {
                 customMarker.style.backgroundImage = `url(${logo})`; // Replace with your image URL
