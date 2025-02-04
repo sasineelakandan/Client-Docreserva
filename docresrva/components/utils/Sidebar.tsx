@@ -4,6 +4,7 @@ import React from "react";
 import { FaHome, FaCalendarAlt, FaUserMd, FaUsers, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { deleteCookie } from './deleteCookie';
 import Cookies from 'js-cookie';
+import axiosInstance from "./axiosInstence";
 // Define a type for the navigation link
 type NavLink = {
   label: string;
@@ -20,18 +21,17 @@ const navLinks: NavLink[] = [
   { label: "Reviews", icon: <FaCog />, href: "/reviews" },
 ];
 
-const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
-  event.preventDefault(); 
+const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+  event.preventDefault();
 
   try {
-    
-    deleteCookie('accessToken')
-    Cookies.remove('accessToken');
-    window.location.href = '/';
+      await axiosInstance.post(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/logout`,{},{withCredentials:true});// Call backend logout route
+      localStorage.removeItem('user'); // Clear user data from localStorage
+      window.location.href = '/adminLogin'; // Redirect after logout
   } catch (error) {
-    console.error('Error during logout:', error);
+      console.error('Logout failed:', error);
   }
-};
+}
 
 const AdminSidebar: React.FC = () => {
   return (

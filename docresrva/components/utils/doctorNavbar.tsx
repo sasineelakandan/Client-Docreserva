@@ -18,6 +18,7 @@ import { deleteCookie } from './deleteCookie';
 import io from 'socket.io-client';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import axiosInstance from './axiosInstence';
 let socket: ReturnType<typeof io>;
 
 const doctorNavbar: React.FC = () => {
@@ -71,14 +72,17 @@ const doctorNavbar: React.FC = () => {
   }, []);
 
 
-  const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    localStorage.removeItem('user'); 
-    setUser(null); 
-    Cookies.remove('accessToken');
-    deleteCookie('accessToken'); 
-    window.location.href='/doctorLogin'
-  };
+
+    try {
+        await axiosInstance.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/logout`,{},{withCredentials:true});// Call backend logout route
+        localStorage.removeItem('user'); // Clear user data from localStorage
+        window.location.href = '/doctorLogin'; // Redirect after logout
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+};
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">

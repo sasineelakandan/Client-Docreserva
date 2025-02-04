@@ -7,6 +7,7 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { deleteCookie } from './deleteCookie';
 import Cookies from 'js-cookie';
+import axiosInstance from './axiosInstence';
 
 interface Message {
   id: string;
@@ -73,18 +74,16 @@ const Navbar: React.FC = () => {
    
   
 
-const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-  event.preventDefault();
-  try {
-    
-    localStorage.removeItem('user');
-    setUser(null);
-    Cookies.remove('accessToken');
-    deleteCookie('accessToken'); 
-    window.location.href = '/';
-  } catch (error) {
-    console.error('Error during logout:', error);
-  }
+   const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+
+    try {
+        await axiosInstance.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/logout`,{},{withCredentials:true});
+        localStorage.removeItem('user'); 
+        window.location.href = '/login'; 
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
 };
 
   console.log(unreadCount)
