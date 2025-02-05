@@ -1,20 +1,18 @@
-// axiosInstance.js
+
 import axios from 'axios';
 
-// Create an Axios instance
-const axiosInstance = axios.create({
-    // baseURL: 'http://localhost:8001'
-    baseURL: 'https://api.docreserva.site',
-});
 
-// Add a request interceptor
+const axiosInstance = axios.create({
+    
+    baseURL:`${process.env.NEXT_PUBLIC_BASE_URL}`,
+});
 axiosInstance.interceptors.request.use(
     (config) => {
         
         return config; 
     },
     (error) => {
-        // Handle the error
+        
         return Promise.reject(error);
     }
 );
