@@ -5,8 +5,9 @@ import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
-import { useRouter } from 'next/navigation';
+import { useRouter ,useSearchParams} from 'next/navigation';
 import axiosInstance from '@/components/utils/axiosInstence';
+
 interface Appointment {
   _id: string;
   doctorId:{
@@ -45,7 +46,7 @@ const AppointmentsList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filterPatient, setFilterPatient] = useState("");
   const router=useRouter()
-
+  const searchParams = useSearchParams();
  
 
   const { register, handleSubmit, formState: { errors },watch } = useForm<FormValues>();
@@ -325,38 +326,51 @@ const AppointmentsList: React.FC = () => {
       </div>
     </div>
     <div className="flex items-center gap-4">
-      {appt.status !== "completed" && appt.status !== "canceled" ? (
-        <div className="flex items-center space-x-4">
-        {/* Action Selector */}
-        <select
-          onChange={(e) => handleSelectChange(e, appt._id)}
-          className="bg-gray-100 text-black p-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-        >
-          <option value="">Actions</option>
-         
-          <option value="complete">Complete</option>
-          <option value="cancel">Cancel</option>
-        </select>
-      
-        {/* Chat Button */}
-        <button
-          onClick={() => handleChat(appt._id, appt?.doctorId?._id)}
-          className="bg-black text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-blue-500 transition duration-300"
-        >
-          Chat
-        </button>
-      </div>
+  {appt.status !== "completed" && appt.status !== "canceled" ? (
+    <div className="flex items-center space-x-4">
+      {/* Action Selector */}
+      <select
+        onChange={(e) => handleSelectChange(e, appt._id)}
+        className="bg-gray-100 text-black p-2 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+      >
+        <option value="">Actions</option>
+        <option value="complete">Complete</option>
+        <option value="cancel">Cancel</option>
+      </select>
+
+      {/* Chat Button */}
+      <button
+        onClick={() => handleChat(appt._id, appt?.doctorId?._id)}
+        className="bg-black text-white px-4 py-2 rounded-md shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-blue-500 transition duration-300"
+      >
+        Chat
+      </button>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2">
+      <span
+        className={`px-4 py-2 rounded-lg shadow ${
+          appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+        }`}
+      >
+        {appt.status === "completed" ? "Completed" : "Canceled"}
+      </span>
+
+      {/* Add Prescription Button when status is completed */}
+      {appt.status === "completed" && (
+        <a href={`/priscription?id=${appt?._id}`}>
+          <button
         
-      ) : (
-        <span
-          className={`px-4 py-2 rounded-lg shadow ${
-            appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-          }`}
+          className="bg-blue-500 text-white px-3 py-1 rounded-lg shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition duration-300"
         >
-          {appt.status === "completed" ? "Completed" : "Canceled"}
-        </span>
+          Add Prescription
+        </button>
+        </a>
       )}
     </div>
+  )}
+</div>
+
   </li>
 ))}<div className="flex justify-center items-center mt-6">
 <button
