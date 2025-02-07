@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Swal from 'sweetalert2';
@@ -9,34 +9,43 @@ import axiosInstance from '@/components/utils/axiosInstence';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DoctorNavbar from '@/components/utils/doctorNavbar';
 
-interface PrescriptionFormData {
+// Define the prescription form data structure
+type PrescriptionFormData = {
   patientName: string;
   medication: string;
   dosage: string;
   instructions: string;
   days: number;
   prescriptionDate: string;
-}
-
-const schema = yup.object().shape({
-  patientName: yup.string().required('Patient name is required'),
-  medication: yup.string().required('Medication is required'),
-  dosage: yup.string().required('Dosage is required'),
-  instructions: yup.string().required('Instructions are required'),
-  days: yup.number().positive().integer().required('Number of days is required'),
-  prescriptionDate: yup.string().required('Prescription date is required'),
-});
+};
 
 const PrescriptionForm: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PrescriptionFormContent />
+    </Suspense>
+  );
+};
+
+const PrescriptionFormContent: React.FC = () => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<PrescriptionFormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(
+      yup.object().shape({
+        patientName: yup.string().required('Patient name is required'),
+        medication: yup.string().required('Medication is required'),
+        dosage: yup.string().required('Dosage is required'),
+        instructions: yup.string().required('Instructions are required'),
+        days: yup.number().positive().integer().required('Number of days is required'),
+        prescriptionDate: yup.string().required('Prescription date is required'),
+      })
+    ),
     defaultValues: {
-      prescriptionDate: new Date().toISOString().split('T')[0], // Default to today
+      prescriptionDate: new Date().toISOString().split('T')[0],
     },
   });
 
@@ -62,7 +71,7 @@ const PrescriptionForm: React.FC = () => {
         confirmButtonText: 'OK',
       });
 
-      reset(); // Clear form fields after successful submission
+      reset();
       router.push('/doctorHome');
     } catch (error) {
       console.error('Error submitting prescription:', error);
@@ -85,26 +94,30 @@ const PrescriptionForm: React.FC = () => {
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
             Prescription Form
           </h2>
-
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {['patientName', 'medication', 'dosage', 'instructions'].map((field) => (
-              <div key={field}>
-                <label className="block text-gray-700 capitalize">{field.replace(/([A-Z])/g, ' $1')}:</label>
-                {field === 'instructions' ? (
-                  <textarea
-                    {...register(field as keyof PrescriptionFormData)}
-                    className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    {...register(field as keyof PrescriptionFormData)}
-                    className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-                <p className="text-red-500 text-sm">{errors[field as keyof PrescriptionFormData]?.message}</p>
-              </div>
-            ))}
+            {/* Mapping over form fields with explicit types */}
+            {(['patientName', 'medication', 'dosage', 'instructions'] as (keyof PrescriptionFormData)[]).map(
+              (field) => (
+                <div key={field}>
+                  <label className="block text-gray-700 capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}:
+                  </label>
+                  {field === 'instructions' ? (
+                    <textarea
+                      {...register(field)}
+                      className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      {...register(field)}
+                      className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  )}
+                  <p className="text-red-500 text-sm">{errors[field]?.message}</p>
+                </div>
+              )
+            )}
 
             <div>
               <label className="block text-gray-700">How many days to take tablet:</label>
@@ -116,13 +129,11 @@ const PrescriptionForm: React.FC = () => {
               <p className="text-red-500 text-sm">{errors.days?.message}</p>
             </div>
 
-            {/* Prescription Date Field (Replaces Start Date & End Date) */}
             <div>
               <label className="block text-gray-700">Prescription Date:</label>
               <input
                 type="date"
                 {...register('prescriptionDate')}
-                defaultValue={new Date().toISOString().split('T')[0]} // Default to today
                 className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-red-500 text-sm">{errors.prescriptionDate?.message}</p>

@@ -5,7 +5,7 @@ import Navbar from '@/components/utils/doctorNavbar';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
-import { useRouter ,useSearchParams} from 'next/navigation';
+import { useRouter} from 'next/navigation';
 import axiosInstance from '@/components/utils/axiosInstence';
 
 interface Appointment {
@@ -46,8 +46,9 @@ const AppointmentsList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filterPatient, setFilterPatient] = useState("");
   const router=useRouter()
-  const searchParams = useSearchParams();
  
+  
+
 
   const { register, handleSubmit, formState: { errors },watch } = useForm<FormValues>();
 
