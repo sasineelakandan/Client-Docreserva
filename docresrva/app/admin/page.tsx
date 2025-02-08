@@ -288,12 +288,12 @@ const [fromDate, setFromDate] = useState<Date | null>(null);
               <option value="yearly">Yearly</option>
             </select>
           </div>
-          {selectedDate && (
-            <div className="bg-white shadow-lg rounded-lg p-4 text-center">
-              <h3 className="text-lg font-semibold">Revenue for {format(selectedDate, 'dd MMM yyyy')}</h3>
-              <p className="text-2xl font-bold text-blue-600">₹ {filteredRevenue}</p>
-            </div>
-          )}
+          {fromDate && toDate && (
+                     <div className="bg-white shadow-lg rounded-lg p-4 text-center">
+                       <h3 className="text-lg font-semibold">Revenue from {format(fromDate, 'dd MMM yyyy')} to {format(toDate, 'dd MMM yyyy')}</h3>
+                       <p className="text-2xl font-bold text-blue-600">₹ {filteredRevenue}</p>
+                     </div>
+                   )}
         </div>
 
         {/* Charts */}
