@@ -26,7 +26,7 @@ interface Appointment {
     lastName: string;
     reason:string
   };
-  reason: string;
+  prescriptionAdded:boolean
   status: 'completed' | 'canceled' | 'pending';
 }
 
@@ -60,6 +60,7 @@ const AppointmentsList: React.FC = () => {
           `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
           { withCredentials: true }
         );
+        console.log(response.data)
         setAppointments(response.data);
       } catch (err) {
         console.error("Error fetching appointments:", err);
@@ -349,26 +350,32 @@ const AppointmentsList: React.FC = () => {
     </div>
   ) : (
     <div className="flex items-center gap-2">
-      <span
-        className={`px-4 py-2 rounded-lg shadow ${
-          appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-        }`}
-      >
-        {appt.status === "completed" ? "Completed" : "Canceled"}
-      </span>
+  <span
+    className={`px-4 py-2 rounded-lg shadow ${
+      appt.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+    }`}
+  >
+    {appt.status === "completed" ? "Completed" : "Canceled"}
+  </span>
 
-      {/* Add Prescription Button when status is completed */}
-      {appt.status === "completed" && (
-        <a href={`/priscription?id=${appt?._id}`}>
-          <button
-        
+  {/* Show button only when the status is completed */}
+  {appt.status === "completed" && (
+    appt?.prescriptionAdded ? (
+      <button className="bg-green-100 text-green-600 px-3 py-1 rounded-lg shadow" disabled>
+        Prescription Added
+      </button>
+    ) : (
+      <a href={`/prescription?id=${appt?._id}`}>
+        <button
           className="bg-blue-500 text-white px-3 py-1 rounded-lg shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition duration-300"
         >
           Add Prescription
         </button>
-        </a>
-      )}
-    </div>
+      </a>
+    )
+  )}
+</div>
+
   )}
 </div>
 

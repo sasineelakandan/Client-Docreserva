@@ -72,7 +72,7 @@ const PrescriptionFormContent: React.FC = () => {
       });
 
       reset();
-      router.push('/doctorHome');
+      router.push('/appointmentPage');
     } catch (error) {
       console.error('Error submitting prescription:', error);
 

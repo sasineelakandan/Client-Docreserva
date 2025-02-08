@@ -135,6 +135,14 @@ const doctorNavbar: React.FC = () => {
     <AccountBalanceWallet className="text-2xl" />
     <span className="font-medium">Wallet</span>
   </a>
+
+  <a
+          href="/prescriptionHistory"
+          className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
+        >
+          <Event className="text-2xl" />
+          <span className="font-medium">prescriptions</span>
+        </a>
       </div>
 
       {/* Right Section: User Profile and Actions */}
@@ -154,7 +162,7 @@ const doctorNavbar: React.FC = () => {
     className="hidden md:flex items-center space-x-3 cursor-pointer"
   >
     <Image
-      src={user.profilePicture || Img2}
+      src={user?.profilePicture || Img2}
       alt="User Profile Picture"
       className="h-12 w-12 rounded-full border border-gray-300"
       priority

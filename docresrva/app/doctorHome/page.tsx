@@ -6,7 +6,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, ArcElement, BarElement, T
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import axiosInstance from '@/components/utils/axiosInstence';
 
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend);
@@ -16,7 +16,8 @@ const Page: React.FC = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
   const [filteredRevenue, setFilteredRevenue] = useState<number>(0);
 
   useEffect(() => {
@@ -40,28 +41,56 @@ const Page: React.FC = () => {
   }, []);
 
   // Compute earnings
-  const earnings = useMemo(() => ({
-    weekly: appointments
+  const earnings = useMemo(() => {
+    const now = new Date();
+    
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+    const dailyEarnings = appointments
       .filter(
-        (appt) => new Date(appt.paymentId?.transactionDate || '') >= new Date(new Date().setDate(new Date().getDate() - 7))
+        (appt) => {
+          const apptDate = new Date(appt.paymentId?.transactionDate || '');
+          return apptDate >= startOfDay && apptDate <= endOfDay;
+        }
       )
-      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
-    monthly: appointments
-      .filter((appt) => new Date(appt.paymentId?.transactionDate || '').getMonth() === new Date().getMonth())
-      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
-    yearly: appointments
-      .filter((appt) => new Date(appt.paymentId?.transactionDate || '').getFullYear() === new Date().getFullYear())
-      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0),
-  }), [appointments]);
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
+
+    const weeklyEarnings = appointments
+      .filter(
+        (appt) => new Date(appt.paymentId?.transactionDate || '') >= startOfWeek(now) && new Date(appt.paymentId?.transactionDate || '') <= endOfWeek(now)
+      )
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
+
+    const monthlyEarnings = appointments
+      .filter(
+        (appt) => new Date(appt.paymentId?.transactionDate || '') >= startOfMonth(now) && new Date(appt.paymentId?.transactionDate || '') <= endOfMonth(now)
+      )
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
+
+    const yearlyEarnings = appointments
+      .filter(
+        (appt) => new Date(appt.paymentId?.transactionDate || '') >= startOfYear(now) && new Date(appt.paymentId?.transactionDate || '') <= endOfYear(now)
+      )
+      .reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
+
+    return {
+      daily: dailyEarnings,
+      weekly: weeklyEarnings,
+      monthly: monthlyEarnings,
+      yearly: yearlyEarnings,
+    };
+}, [appointments]);
+
 
   const totalEarnings = useMemo(() => appointments.reduce((a, b) => a + (b.paymentId?.amount || 0), 0), [appointments]);
 
-  // Filter earnings by selected date
+  // Filter earnings by selected date range
   useEffect(() => {
-    if (selectedDate) {
+    if (fromDate && toDate) {
       const filteredData = appointments.filter((appt) => {
         const apptDate = new Date(appt.paymentId?.transactionDate || '');
-        return format(apptDate, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+        return apptDate >= fromDate && apptDate <= toDate;
       });
 
       const revenue = filteredData.reduce((acc, appt) => acc + (appt.paymentId?.amount || 0), 0);
@@ -69,47 +98,67 @@ const Page: React.FC = () => {
     } else {
       setFilteredRevenue(totalEarnings);
     }
-  }, [selectedDate, appointments, totalEarnings]);
-
-  // Dynamically update Doughnut chart data
+  }, [fromDate, toDate, appointments, totalEarnings]);
   const chartData = useMemo(() => {
-    if (timePeriod === 'total') {
-      // Show three colors for weekly, monthly, and yearly earnings
+    if (fromDate && toDate) {
+      // Show filtered revenue for selected date range
+      return {
+        labels: [`Revenue from ${format(fromDate, 'dd MMM yyyy')} to ${format(toDate, 'dd MMM yyyy')}`],
+        datasets: [
+          {
+            data: [filteredRevenue],
+            backgroundColor: ['#FFD700'], // Gold color for filtered revenue
+          },
+        ],
+      };
+    } else if (timePeriod === 'total') {
+      // Show three categories for total earnings
       return {
         labels: ['Weekly Earnings', 'Monthly Earnings', 'Yearly Earnings'],
         datasets: [
           {
             data: [earnings.weekly, earnings.monthly, earnings.yearly],
-            backgroundColor: ['#FF5733', '#4CAF50', '#FF6384'], // Colors for weekly, monthly, yearly
+            backgroundColor: ['#FF5733', '#4CAF50', '#FF6384'],
           },
         ],
       };
     } else {
-      // Show single color for selected time period
+      // Show single category for selected time period
       const colors = {
         weekly: '#FF5733',
         monthly: '#4CAF50',
         yearly: '#FF6384',
       };
-
-      const revenue = selectedDate ? filteredRevenue : earnings[timePeriod];
-
+  
       return {
-        labels: [selectedDate ? `Revenue on ${format(selectedDate, 'dd MMM yyyy')}` : 'Revenue'],
+        labels: ['Revenue'],
         datasets: [
           {
-            data: [revenue],
+            data: [earnings[timePeriod]],
             backgroundColor: [colors[timePeriod]],
           },
         ],
       };
     }
-  }, [selectedDate, filteredRevenue, timePeriod, earnings]);
+  }, [fromDate, toDate, filteredRevenue, timePeriod, earnings]);
 
-  // Dynamically update Bar Chart data
   const barChartData = useMemo(() => {
-    if (timePeriod === 'total') {
-      // Show all three periods (weekly, monthly, yearly)
+    if (fromDate && toDate) {
+      // Show filtered revenue for selected date range
+      return {
+        labels: [`Revenue from ${format(fromDate, 'dd MMM yyyy')} to ${format(toDate, 'dd MMM yyyy')}`],
+        datasets: [
+          {
+            label: 'Earnings (₹)',
+            data: [filteredRevenue],
+            backgroundColor: ['#FFD700'],
+            borderColor: ['#DAA520'],
+            borderWidth: 1,
+          },
+        ],
+      };
+    } else if (timePeriod === 'total') {
+      // Show all three earnings (weekly, monthly, yearly)
       return {
         labels: ['Weekly', 'Monthly', 'Yearly'],
         datasets: [
@@ -123,15 +172,15 @@ const Page: React.FC = () => {
         ],
       };
     } else {
-      // Show only the selected time period
+      // Show selected time period earnings
       const colors = {
         weekly: '#FF5733',
         monthly: '#4CAF50',
         yearly: '#FF6384',
       };
-
+  
       return {
-        labels: [timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)], // Capitalize the first letter
+        labels: [timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)],
         datasets: [
           {
             label: 'Earnings (₹)',
@@ -143,36 +192,59 @@ const Page: React.FC = () => {
         ],
       };
     }
-  }, [timePeriod, earnings]);
+  }, [fromDate, toDate, filteredRevenue, timePeriod, earnings]);
+
   const totalAppointments = appointments.length;
+
   if (loading) return <div>Loading...</div>;
- 
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <DoctorNavbar />
       <main className="flex-1 p-6">
         {/* Date Picker and Revenue Card */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
-            <h3 className="text-lg font-semibold">Total Revenue</h3>
-            <p className="text-3xl font-bold text-green-600">₹ {totalEarnings}</p>
-          </div>
-          <div className="bg-white shadow-lg rounded-lg p-6 text-center">
-            <h3 className="text-lg font-semibold">Total Appointments</h3>
-            <p className="text-3xl font-bold text-blue-600">{totalAppointments}</p>
-          </div>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+  {/* Total Revenue Card */}
+
+  <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+    <h3 className="text-lg font-semibold">Today's Earnings</h3>
+    <p className="text-3xl font-bold text-orange-600">₹ {earnings.daily}</p>
+  </div>
+  
+
+  {/* Total Appointments Card */}
+  <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+    <h3 className="text-lg font-semibold">Total Appointments</h3>
+    <p className="text-3xl font-bold text-blue-600">{totalAppointments}</p>
+  </div>
+  <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+    <h3 className="text-lg font-semibold">Total Revenue</h3>
+    <p className="text-3xl font-bold text-green-600">₹ {totalEarnings}</p>
+  </div>
+
+  {/* Today's Earnings Card */}
+  
+</div>
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
-            <label className="text-lg font-semibold">Select Date:</label>
+            <label className="text-lg font-semibold">From:</label>
             <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
+              selected={fromDate}
+              onChange={(date) => setFromDate(date)}
               className="p-2 border rounded-md"
               dateFormat="yyyy-MM-dd"
               isClearable
-              placeholderText="Pick a date"
+              placeholderText="Pick a start date"
+            />
+            <label className="text-lg font-semibold">To:</label>
+            <DatePicker
+              selected={toDate}
+              onChange={(date) => setToDate(date)}
+              className="p-2 border rounded-md"
+              dateFormat="yyyy-MM-dd"
+              isClearable
+              placeholderText="Pick an end date"
             />
           </div>
           <div className="flex items-center gap-4">
@@ -188,9 +260,9 @@ const Page: React.FC = () => {
               <option value="yearly">Yearly</option>
             </select>
           </div>
-          {selectedDate && (
+          {fromDate && toDate && (
             <div className="bg-white shadow-lg rounded-lg p-4 text-center">
-              <h3 className="text-lg font-semibold">Revenue for {format(selectedDate, 'dd MMM yyyy')}</h3>
+              <h3 className="text-lg font-semibold">Revenue from {format(fromDate, 'dd MMM yyyy')} to {format(toDate, 'dd MMM yyyy')}</h3>
               <p className="text-2xl font-bold text-blue-600">₹ {filteredRevenue}</p>
             </div>
           )}
