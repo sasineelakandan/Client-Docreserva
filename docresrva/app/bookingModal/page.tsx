@@ -61,9 +61,16 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     return { ...slot, isBooked };
   });
 
-  const uniqueDates = Array.from(
-    new Set(availableSlots.map((slot) => new Date(slot.date).toDateString()))
+  const uniqueDates = new Set(
+    availableSlots.map((slot) => new Date(slot.date).toDateString())
   );
+  
+  // Convert the Set to an array and sort it
+  const sortedDates = Array.from(uniqueDates).sort((a, b) => {
+    return new Date(a).getTime() - new Date(b).getTime();
+  });
+  
+  console.log(sortedDates);
 
   const slotsForSelectedDate = availableSlots.filter((slot) => {
     const slotDate = new Date(slot.date).toDateString();
@@ -134,7 +141,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
             Book an Appointment Slot
           </h1>
           <div className="flex space-x-2 mb-4 overflow-x-auto">
-  {uniqueDates
+  {sortedDates
     .filter((date) => new Date(date) >= new Date()) // Filter only future dates
     .map((date) => (
       <button

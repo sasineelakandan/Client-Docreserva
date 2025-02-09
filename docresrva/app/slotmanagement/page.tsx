@@ -74,7 +74,7 @@ console.log(slotInfo)
   };
   const handleSubmit2 = async (e: React.FormEvent, doctorId: string) => {
     e.preventDefault();
-  console.log(userData._id)
+  
     // Retrieve existing slot data from localStorage
     
   
@@ -280,24 +280,29 @@ console.log(slotInfo)
               </button>
             </div>
             {isModalOpen2 && (
-      <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform scale-95 transition-transform duration-300">
-        <h2 className="block text-4xl font-extrabold bg-gradient-to-r from-blue-500 to-indigo-600 text-center mb-8 hover:bg-gradient-to-l hover:from-indigo-600 hover:to-blue-500">
-  Create Slots
-</h2>
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform scale-95 hover:scale-100 transition-transform duration-300 ease-in-out">
+      {/* Modal Header */}
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+        Create Time Slots
+      </h2>
 
-          <form onSubmit={handleSubmit2 as any} className="space-y-8">
-          <label className="block text-xl font-semibold text-gray-800 mb-2">
-                Working Hours
-              </label>
+      {/* Form */}
+      <form onSubmit={(e) => handleSubmit2(e,userData?._id)} className="space-y-6">
+        {/* Working Hours Section */}
+        <div>
+          <label className="block text-lg font-medium text-gray-700 mb-2">
+            Working Hours
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            {/* From Time Input */}
             <div>
-              <label className="block text-xl font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 From Time
               </label>
               <input
                 type="time"
-                className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
-                
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                 onChange={(e) => setFromTime(e.target.value)}
                 required
               />
@@ -305,60 +310,62 @@ console.log(slotInfo)
 
             {/* To Time Input */}
             <div>
-              <label className="block text-xl font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-1">
                 To Time
               </label>
               <input
                 type="time"
-                
-                className="w-full px-5 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                 onChange={(e) => setToTime(e.target.value)}
                 required
               />
             </div>
-
-            {/* Working Days Input */}
-            <div>
-              <label className="block text-xl font-semibold text-gray-800 mb-2">
-                Working Days
-              </label>
-              <select
-                multiple
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 bg-gradient-to-r from-gray-50 to-white shadow-md transition duration-300"
-                onChange={(e) => {
-                  const selectedDays:any = Array.from(
-                    e.target.selectedOptions,
-                    (option) => option.value
-                  );
-                  setWorkingDays(selectedDays);
-                }}
-              >
-                {remainingDays.map((day) => (
-                  <option key={day} value={day} className="text-lg font-medium">
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-4 text-lg font-bold bg-gradient-to-r from-green-400 to-teal-500 text-white rounded-xl shadow-lg hover:from-green-500 hover:to-teal-600 hover:scale-105 transition-all duration-300"
-            >
-              Save Slot
-            </button>
-          </form>
-
-          <button
-            className="w-full mt-4 text-sm text-gray-500 hover:text-gray-700 underline transition-all duration-300"
-            onClick={handleCloseModal2}
-          >
-            Close
-          </button>
+          </div>
         </div>
-      </div>
-    )}
+
+        {/* Working Days Input */}
+        <div>
+          <label className="block text-lg font-medium text-gray-700 mb-2">
+            Working Days
+          </label>
+          <select
+            multiple
+            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white transition-all duration-200"
+            onChange={(e) => {
+              const selectedDays = Array.from(
+                e.target.selectedOptions,
+                (option) => option.value
+              );
+              setWorkingDays(selectedDays as any);
+            }}
+          >
+            {remainingDays.map((day) => (
+              <option key={day} value={day} className="text-base font-medium">
+                {day}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200"
+        >
+          Save Slot
+        </button>
+      </form>
+
+      {/* Close Button */}
+      <button
+        className="w-full mt-6 text-sm text-gray-500 hover:text-gray-700 underline text-center transition-all duration-200"
+        onClick={handleCloseModal2}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
             
             {currentSelectedDate && (
               <div className="mt-4 p-4 bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-lg shadow-lg">
