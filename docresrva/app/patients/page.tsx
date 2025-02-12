@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { getallpatientsApi } from "@/Service/adminapi/page";
 
 type Patient = {
   _id: string;
@@ -25,10 +26,7 @@ const PatientManagement: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const { data } = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`,
-          { withCredentials: true }
-        );
+        const { data } = await getallpatientsApi()
         setPatients(data);
       } catch (err) {
         Swal.fire("Empty!", "No data available in Patients.", "warning");

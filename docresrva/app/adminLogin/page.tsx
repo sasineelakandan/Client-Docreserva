@@ -10,6 +10,7 @@ import axios from 'axios';
 import {useRouter} from "next/navigation";
 import { setUserDetails} from '../../Store/slices/userSlices';
 import { useDispatch } from 'react-redux';
+import { adminloginApi } from '@/Service/adminapi/page';
 interface LoginFormValues extends FieldValues {
   email: string;
   password: string;
@@ -29,7 +30,8 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> =async (data) => {
     try{
-      const response= await axios.post(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/adminlogin`, data, { withCredentials: true })
+      const response= await adminloginApi(data)
+     
       if(response.data){
         
        

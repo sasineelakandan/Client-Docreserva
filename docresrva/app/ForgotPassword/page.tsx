@@ -6,6 +6,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
+import { forgotpasswordApi } from "@/Service/doctorApi/page";
 
 interface FormData {
   email: string;
@@ -34,11 +35,7 @@ const ForgotPassword: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/forgotpassword`,
-        { email },
-        { withCredentials: true }
-      );
+      const response = await forgotpasswordApi({email})
       console.log(response.data)
       if (response.data) {
         const userId = response.data.status;

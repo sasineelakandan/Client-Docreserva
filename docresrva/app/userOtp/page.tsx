@@ -8,6 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from '@/components/utils/axiosInstence';
+import { otpApi, resendotpApi } from '@/Service/userApi/page';
 
 // Loading Spinner Fallback Component
 const LoadingSpinner = () => (
@@ -72,11 +73,8 @@ function OTPVerification() {
   const handleSubmit = async () => {
     try {
       const otpString = otp.join('');
-      const response = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/verifyotp`,
-        { otp: otpString, userId },
-        { withCredentials: true }
-      );
+      const data={ otp: otpString, userId }
+      const response = await otpApi(data)
 
       if (response.data) {
         toast.success('OTP Verified');
@@ -96,11 +94,7 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/resendotp`,
-        { userId },
-        { withCredentials: true }
-      );
+      const response = await resendotpApi({userId})
 
       if (response.data) {
         toast.success('Resend OTP Success');

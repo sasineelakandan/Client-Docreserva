@@ -12,6 +12,7 @@ import { RootState } from '../../Store';
 import MapComponent from '../viewDirection/page';
 import axiosInstance from '@/components/utils/axiosInstence';
 import Swal from 'sweetalert2';
+import { getdoctorDetail } from '@/Service/userApi/page';
 const DoctorDetails: React.FC = () => {
   const [doctor, setDoctor] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,11 +32,8 @@ const DoctorDetails: React.FC = () => {
     const fetchDoctorDetails = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.patch(
-          `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
-          { doctorId },
-          { withCredentials: true }
-        );
+        const response = await getdoctorDetail({doctorId})
+        
         if (response.data) {
           dispatch(
             setUserDetails({

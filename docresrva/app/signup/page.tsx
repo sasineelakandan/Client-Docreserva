@@ -12,6 +12,7 @@ import { setUserDetails } from "../../Store/slices/userSlices";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../Store";
 import Spinner from "@/components/Spinner";
+import { signupApi } from "@/Service/userApi/page";
 
 interface SignUpFormValues extends FieldValues {
   email: string;
@@ -44,11 +45,8 @@ function SignUp() {
     try {
       console.log(data);
       setLoading(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/signup`,
-        data,
-        { withCredentials: true }
-      );
+      const response = await signupApi(data);
+      console.log(response)
       if (response.data) {
         toast.success("Sign Up successful! Please verify your email.");
         dispatch(

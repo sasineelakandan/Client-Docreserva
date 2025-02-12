@@ -14,6 +14,7 @@ import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection
 import Image from "next/image";
 import Swal from "sweetalert2";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { createslotApi, doctorchangeprofileApi, doctorpasswordChangeApi, getdoctorProfileApi, uploadpicApi } from "@/Service/doctorApi/page";
 
 const DoctorProfile: React.FC = () => {
   
@@ -45,10 +46,7 @@ const handleSubmit2 = async (e: React.FormEvent, doctorId: string) => {
 
   // Call backend API using axios with credentials
   try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`, slotData, {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true,
-    });
+    const response = await createslotApi(slotData)
 
     if (response.data) {
       toast.success("Slots created successfully!");
@@ -136,7 +134,7 @@ console.log(today.getDate())
   useEffect(() => {
     const fetchDoctorProfile = async () => {
         try {
-            const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, { withCredentials: true });
+            const response = await getdoctorProfileApi()
             if(response?.data){
               console.log(response?.data)
               setUser(response?.data)
@@ -205,12 +203,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true, // Enables sending cookies and authentication headers
-    });
+    const response = await uploadpicApi(formData)
 
     toast.success("File uploaded successfully!");
     console.log(response.data)
@@ -230,10 +223,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         toast.error("New password and confirmation do not match!");
         return;
       }
-      let response=await axiosInstance.patch(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
-        data,
-        { withCredentials: true }
-      );
+      let response=await doctorpasswordChangeApi(data)
       if(response.data){
         toast.success("Password changed successfully!");
         
@@ -248,10 +238,7 @@ const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   const handleProfileUpdate = async (data: any) => {
     try {
-      let response=await axiosInstance.put(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/profile`,
-          data,
-          { withCredentials: true }
-        );
+      let response=await doctorchangeprofileApi(data)
         if (response.data) {
           setUser(response.data);
 

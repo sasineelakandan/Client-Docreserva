@@ -7,6 +7,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Img from '../../public/1600w--HXaczhPPfU.webp';
+import { forgototpApi } from '@/Service/doctorApi/page';
 
 const OTPVerification = () => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
@@ -69,11 +70,8 @@ const OTPVerification = () => {
   const handleSubmit = async () => {
     try {
       const otpString = otp.join('');
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/forgotpassword`,
-        { otp: otpString, userId, password },
-        { withCredentials: true }
-      );
+      const response = await forgototpApi({ otp: otpString, userId, password })
+      
 
       if (response.data) {
         toast.success('OTP Verified');

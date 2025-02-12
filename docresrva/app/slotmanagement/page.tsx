@@ -8,6 +8,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { blockslotApi, updateslotApi } from "@/Service/doctorApi/page";
 
 const Page = () => {
   const [isClient, setIsClient] = useState(false); // Track if it's client-side
@@ -85,14 +86,7 @@ console.log(slotInfo)
   
     try {
       // Call backend API
-      const response = await axiosInstance.put(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`,
-        slotData,
-        {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
-        }
-      );
+      const response = await updateslotApi(slotData)
   
       if (response.data) {
         toast.success('Slots created successfully!');
@@ -151,14 +145,7 @@ console.log(slotInfo)
       });
 
       if (result.isConfirmed) {
-        const response = await axiosInstance.patch(
-          `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/createslots`,
-          { slotId }, // Sending as an object
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
+        const response = await blockslotApi({slotId})
 
         // Update the state to reflect the blocked slot
         setAvailableSlots((prevSlots) => {

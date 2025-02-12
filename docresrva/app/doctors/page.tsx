@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 
 import axiosInstance from "@/components/utils/axiosInstence";
+import { getallverifydoctorssApi } from "@/Service/adminapi/page";
 
 type Doctor = {
   _id: string;
@@ -78,7 +79,8 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axiosInstance.patch(
+          await getallverifydoctorssApi({ userId: _id })
+          axiosInstance.patch(
             `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/doctors`,
             { userId: _id },
             { withCredentials: true }

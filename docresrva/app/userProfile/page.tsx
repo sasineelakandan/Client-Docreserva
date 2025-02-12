@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { PasswordChangeApi, profileApi, ProfileChangeApi, profilepicApi } from "@/Service/userApi/page";
 const UserProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -39,11 +40,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
-          
-          { withCredentials: true }
-        );
+        const response = await profileApi() 
 
         if (response.data) {
           setUser(response.data);
@@ -82,12 +79,7 @@ const UserProfile: React.FC = () => {
       const formData = new FormData();
       formData.append("file", file);
   
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true, // Enables sending cookies and authentication headers
-      });
+     const response=await profilepicApi(formData) 
   
       toast.success("File uploaded successfully!");
       console.log(response.data)
@@ -110,10 +102,7 @@ const UserProfile: React.FC = () => {
         toast.error("New password and confirmation do not match!");
         return;
       }
-      let response=await axios.put(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
-        data,
-        { withCredentials: true }
-      );
+      const response=await PasswordChangeApi(data)
       if(response.data){
         toast.success("Password changed successfully!");
         
@@ -128,10 +117,8 @@ const UserProfile: React.FC = () => {
 
   const handleProfileUpdate = async (data: any) => {
     try {
-      let response=await axios.patch(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/profile`,
-          data,
-          { withCredentials: true }
-        );
+      let response=await ProfileChangeApi(data)
+         
         if (response.data) {
           setUser(response.data);
           setProfilePic(response.data.filePath)

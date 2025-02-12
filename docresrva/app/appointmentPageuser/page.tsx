@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/components/utils/axiosInstence';
+import { cancelappoinmentApi, getappoinmetApi } from '@/Service/userApi/page';
 
 const AppointmentsList = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -22,12 +23,8 @@ const AppointmentsList = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
-
-          { withCredentials: true }
-        );
-        console.log(response.data)
+        const response = await getappoinmetApi() 
+        
         setAppointments(response.data);
       } catch (err: any) {
         setError(err.message);
@@ -77,11 +74,7 @@ const AppointmentsList = () => {
       });
 
       if (result.isConfirmed) {
-        const response = await axiosInstance.put(
-          `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/appointments`,
-          { appointmentId },
-          { withCredentials: true }
-        );
+        const response = await cancelappoinmentApi({appointmentId})
 
         if (response.data) {
           setAppointments((prev) =>

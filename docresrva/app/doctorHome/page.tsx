@@ -8,6 +8,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import axiosInstance from '@/components/utils/axiosInstence';
+import { getdashbordApi } from '@/Service/doctorApi/page';
 
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend);
 
@@ -24,10 +25,8 @@ const Page: React.FC = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get<any[]>(
-          `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/dashbord`,
-          { withCredentials: true }
-        );
+        const response = await getdashbordApi()
+        
         setAppointments(response.data);
       } catch (err) {
         console.error('Error fetching appointments:', err);

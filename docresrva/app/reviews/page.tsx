@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 
 import AdminSidebar from "@/components/utils/Sidebar";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { getreviewsApi } from "@/Service/adminapi/page";
 
 const ReviewManagement: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -16,10 +17,8 @@ const ReviewManagement: React.FC = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/reviews`,
-          { withCredentials: true }
-        );
+        const response = await getreviewsApi()
+         
         setReviews(response.data);
       } catch (error) {
         Swal.fire("Error!", "Could not fetch reviews.", "error");

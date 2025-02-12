@@ -8,6 +8,7 @@ import { FaCamera } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import axiosInstance from '@/components/utils/axiosInstence';
+import { veryfydoctorApi } from '@/Service/doctorApi/page';
 
 interface DoctorModalProps {
   isOpen: boolean;
@@ -158,11 +159,7 @@ const DoctorModal: React.FC<any> = ({ isOpen, onClose, userId }) => {
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/verifyprofile`,
-        data,
-        { withCredentials: true }
-      );
+      const response = await veryfydoctorApi(data)
       if (response.data) {
         toast.success('Doctor details submitted successfully!');
         window.location.reload()

@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { useRouter} from 'next/navigation';
 import axiosInstance from '@/components/utils/axiosInstence';
+import { getappointmetApi, statusApi } from '@/Service/doctorApi/page';
 
 interface Appointment {
   _id: string;
@@ -56,10 +57,7 @@ const AppointmentsList: React.FC = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<Appointment[]>(
-          `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
-          { withCredentials: true }
-        );
+        const response = await getappointmetApi()
         console.log(response.data)
         setAppointments(response.data);
       } catch (err) {
@@ -176,11 +174,8 @@ const AppointmentsList: React.FC = () => {
 
   const handleComplete = async (appointmentId: string) => {
     try {
-      const response = await axiosInstance.patch(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/appointments`,
-        { appointmentId },
-        { withCredentials: true }
-      );
+      const response = await statusApi({appointmentId})
+       
 
       if (response.data) {
         setAppointments(prev =>

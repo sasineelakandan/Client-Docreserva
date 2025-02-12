@@ -17,6 +17,7 @@ import Map from "../map/page";
 
 import DocLogo from "../../public/1600w--HXaczhPPfU.webp";
 import MapIcon from "../../public/png-transparent-computer-icons-map-map-cdr-map-vector-map.png";
+import { doctorsignupApi } from "@/Service/doctorApi/page";
 
 interface DoctorSignUpFormValues extends FieldValues {
   email: string;
@@ -62,11 +63,7 @@ function DoctorSignUp() {
       const fullData = { ...data, location };
       setLoading(true);
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/signup`,
-        fullData,
-        { withCredentials: true }
-      );
+      const response = await doctorsignupApi(fullData)
 
       if (response.data) {
         toast.success("Sign Up successful! Please verify your email.");

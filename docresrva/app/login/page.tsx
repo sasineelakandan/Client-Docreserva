@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import Img from "../../public/PngItem_93782.png";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../firebase/config";
+import { loginApi } from "@/Service/userApi/page";
 
 interface LoginFormValues extends FieldValues {
   email: string;
@@ -33,11 +34,7 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/login`,
-        data,
-        { withCredentials: true }
-      );
+      const response = await loginApi(data)
 
       if (response.data) {
         dispatch(

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { slotApi } from "@/Service/userApi/page";
 
 const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOpen }) => {
   const router = useRouter();
@@ -81,11 +82,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/createslots`,
-        slot,
-        { withCredentials: true }
-      );
+      const response = await slotApi(slot)
       if (response.data) {
         await Swal.fire({
           icon: "success",

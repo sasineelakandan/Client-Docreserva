@@ -7,6 +7,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter, useSearchParams } from "next/navigation";
+import { doctorotpApi, doctorresendOtpApi } from '@/Service/doctorApi/page';
 
 // Loading Spinner Fallback Component
 const LoadingSpinner = () => (
@@ -71,12 +72,8 @@ function OTPVerification() {
   const handleSubmit = async () => {
     try {
       const otpString = otp.join('');
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/verifyotp`,
-        { otp: otpString, userId },
-        { withCredentials: true }
-      );
-
+      const response = await doctorotpApi({ otp: otpString, userId })
+      
       if (response.data) {
         toast.success('OTP Verified');
         setTimeout(() => {
@@ -95,11 +92,7 @@ function OTPVerification() {
 
   const handleResend = async () => {
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/resendotp`,
-        { userId },
-        { withCredentials: true }
-      );
+      const response = await doctorresendOtpApi({userId})
 
       if (response.data) {
         toast.success('Resend OTP Success');

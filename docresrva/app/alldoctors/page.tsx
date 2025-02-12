@@ -5,6 +5,7 @@ import Navbar from "@/components/utils/Navbar";
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { getdoctorApi } from "@/Service/userApi/page";
 
 // Define the Doctor interface
 interface Doctor {
@@ -41,10 +42,7 @@ const App: React.FC = () => {
         if (!process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL) {
           throw new Error("Backend URL is missing in environment variables");
         }
-        const response = await axiosInstance.get(
-          `${process.env.NEXT_PUBLIC_BOOKING_BACKEND_URL}/getdoctors`,
-          { withCredentials: true }
-        );
+        const response = await getdoctorApi()
         setDoctors(response.data || []);
       } catch (error) {
         console.error("Error fetching doctors:", error);

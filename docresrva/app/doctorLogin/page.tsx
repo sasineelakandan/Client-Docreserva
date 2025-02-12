@@ -10,6 +10,7 @@ import Image from "next/image";
 import Img from "../../public/PngItem_93782.png";
 import { useDispatch } from "react-redux";
 import { setUserDetails } from "../../Store/slices/userSlices";
+import { doctorloginApi } from "@/Service/doctorApi/page";
 
 interface LoginFormValues extends FieldValues {
   email: string;
@@ -30,9 +31,7 @@ function Login() {
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_DOCTOR_BACKEND_URL}/login`, data, {
-        withCredentials: true,
-      });
+      const response = await doctorloginApi(data)
       if (response.data) {
         dispatch(
           setUserDetails({

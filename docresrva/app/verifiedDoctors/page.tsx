@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { blockdoctorssApi, getalldoctorssApi } from "@/Service/adminapi/page";
 
 type Doctor = {
   _id: string;
@@ -29,7 +30,7 @@ const DoctorManagement: React.FC = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`, { withCredentials: true });
+        const response = await getalldoctorssApi()
         setDoctors(response.data);
       } catch (error) {
         Swal.fire("Empty!", "No data available in verified Doctors.", "warning");
@@ -79,11 +80,8 @@ const DoctorManagement: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axiosInstance.patch(
-            `${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`,
-            { doctorId: _id },
-            { withCredentials: true }
-          );
+          await blockdoctorssApi({ doctorId: _id })
+         
 
           setDoctors((prev) =>
             prev.map((doc) =>

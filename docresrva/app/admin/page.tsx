@@ -9,6 +9,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import axiosInstance from '@/components/utils/axiosInstence';
 import Swal from 'sweetalert2';
+import { getallappoinmentsApi, getalldoctorssApi, getallpatientsApi } from '@/Service/adminapi/page';
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend);
 
 const Page: React.FC = () => {
@@ -26,7 +27,7 @@ const [fromDate, setFromDate] = useState<Date | null>(null);
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const { data } = await axiosInstance.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/patients`, { withCredentials: true });
+        const { data } = await getallpatientsApi()
         setPatients(data);
       } catch (err) {
         Swal.fire("Empty!", "No data available for patients.", "warning");
@@ -35,7 +36,7 @@ const [fromDate, setFromDate] = useState<Date | null>(null);
 
     const fetchDoctors = async () => {
       try {
-        const response = await axiosInstance.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/verifieddoctors`, { withCredentials: true });
+        const response = await getalldoctorssApi()
         setDoctors(response.data);
       } catch (err) {
         Swal.fire("Error!", "Failed to fetch verified doctors.", "error");
@@ -44,7 +45,7 @@ const [fromDate, setFromDate] = useState<Date | null>(null);
 
     const fetchAppointments = async () => {
       try {
-        const { data } = await axiosInstance.get(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/appointments`, { withCredentials: true });
+        const { data } = await getallappoinmentsApi()
         setAppointments(data);
       } catch (err) {
         console.log(err);

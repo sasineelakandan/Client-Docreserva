@@ -7,6 +7,7 @@ import AdminSidebar from "@/components/utils/Sidebar";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import axiosInstance from "@/components/utils/axiosInstence";
+import { getappointmetApi } from "@/Service/doctorApi/page";
 
 // Define types for the appointment object
 interface Appointment {
