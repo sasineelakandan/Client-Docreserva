@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ product
   });
 
   
-  const redirectUrl = `/paymentSuccessPage?transactionId=${data.txnid}&amountPaid=${data.amount}&bankRefNum=${data.bank_ref_num}`;
+  const redirectUrl = `/user/paymentSuccessPage?transactionId=${data.txnid}&amountPaid=${data.amount}&bankRefNum=${data.bank_ref_num}`;
 
   redirect(redirectUrl);
 }

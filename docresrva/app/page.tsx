@@ -133,7 +133,7 @@ export default function Home() {
       <div className="py-16 bg-yellow-400 text-black text-center">
         <h2 className="text-4xl font-bold">Ready to Book an Appointment?</h2>
         <p className="mt-4">Find the best doctors and schedule your appointment in minutes.</p>
-        <a href="/userHome">
+        <a href="/user/userHome">
           <motion.button
             className="mt-6 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:bg-teal-700 transition"
             whileHover={{ scale: 1.1 }}

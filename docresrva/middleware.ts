@@ -4,23 +4,23 @@ import { jwtVerify } from "jose";
 import jwt,{JwtPayload} from 'jsonwebtoken';
 import { log } from "console";
 
-const ADMIN_ROUTES = new Set(["/admin", "/patients","/doctors","/verifiedDoctors",'/appointmetManagement','/reviews']);
-const DOCTOR_ROUTES = new Set(["/doctorHome", "/doctorProfile",'/appointmentPage','/chatroomDoctor','/wallet','/slotmanagement','/videoCall','/Notificationdoctor','/prescription','/prescriptionHistory']);
-const USER_ROUTES = new Set([ '/userHome',"/userProfile","/alldoctors","/doctorDetails",'/patientDetails','/confirmBooking','/appointmentPageuser','/message','/Notification','/userWallet','/userVideocall']);
+const ADMIN_ROUTES = new Set(["/admin/adminHome", "/admin/patients","/admin/doctors","/admin/verifiedDoctors",'/admin/appointmetManagement','/admin/reviews']);
+const DOCTOR_ROUTES = new Set(["/doctor/doctorHome", "/doctor/doctorProfile",'/doctor/appointmentPage','/doctor/chatroomDoctor','/doctor/wallet','/doctor/slotmanagement','/doctor/videoCall','/doctor/Notificationdoctor','/doctor/prescription','/doctor/prescriptionHistory']);
+const USER_ROUTES = new Set([ '/user/userHome',"/user/userProfile","/user/alldoctors","/user/doctorDetails",'/user/patientDetails','/user/confirmBooking','/user/appointmentPageuser','/user/message','/user/Notification','/user/userWallet','/user/userVideocall']);
 const PUBLIC_ROUTES = new Set([
-  "/login", 
-  "/signup", 
-  "/doctorSignup", 
-  "/doctorLogin", 
-  "/userOtp", 
-  "/doctorOtp", 
-  "/adminLogin",
-  '/ForgotPassword',
-  '/forgotOtp',
+  "/user/login", 
+  "/user/signup", 
+  "/doctor/doctorSignup", 
+  "/doctor/doctorLogin", 
+  "/user/userOtp", 
+  "/doctor/doctorOtp", 
+  "/admin/adminLogin",
+  '/doctor/ForgotPassword',
+  '/doctor/forgotOtp',
   '/map',
   
-  '/paymentSuccessPage',
-  '/paymentFailurePage'
+  '/user/paymentSuccessPage',
+  '/user/paymentFailurePage'
 ]);
 const UNPROTECTED_ROUTES = new Set(["/_next/", "/favicon.ico", "/api/"]);
 
@@ -45,23 +45,23 @@ export async function middleware(req: NextRequest) {
 
   if (!role) {
     console.log(`Redirecting unauthenticated user from ${pathname} to /login`);
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/user/login", req.url));
   }
 
   // Role-based access control
   if (role === "admin" && !ADMIN_ROUTES.has(pathname)) {
     console.log(`Unauthorized access attempt by admin to ${pathname}. Redirecting to /admin`);
-    return NextResponse.redirect(new URL("/admin", req.url));
+    return NextResponse.redirect(new URL("/admin/adminHome", req.url));
   }
 
   if (role === "doctor" && !DOCTOR_ROUTES.has(pathname)) {
     console.log(`Unauthorized access attempt by doctor to ${pathname}. Redirecting to /doctorHome`);
-    return NextResponse.redirect(new URL("/doctorHome", req.url));
+    return NextResponse.redirect(new URL("/doctor/doctorHome", req.url));
   }
 
   if (role === "user" && !USER_ROUTES.has(pathname)) {
     console.log(`Unauthorized access attempt by user to ${pathname}. Redirecting to /userHome`);
-    return NextResponse.redirect(new URL("/userHome", req.url));
+    return NextResponse.redirect(new URL("/user/userHome", req.url));
   }
 
   console.log(`Allowing access to ${pathname} for role: ${role}`);

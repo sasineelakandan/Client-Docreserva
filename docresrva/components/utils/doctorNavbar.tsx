@@ -109,20 +109,20 @@ const doctorNavbar: React.FC = () => {
       {/* Center Section: Navigation Icons */}
       <div className="hidden md:flex items-center space-x-8 text-gray-600">
         <a
-          href="/doctorHome"
+          href="/doctor/doctorHome"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Home className="text-2xl" />
           <span className="font-medium">Home</span>
         </a>
         <a href=
-        {`/chatroomDoctor?userId=${user?.userId}`} className="relative flex items-center space-x-2">
+        {`/doctor/chatroomDoctor?userId=${user?.userId}`} className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
            
           <span className="font-medium">Messages</span>
         </a>
         <a
-          href="/appointmentPage"
+          href="/doctor/appointmentPage"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Event className="text-2xl" />
@@ -137,7 +137,7 @@ const doctorNavbar: React.FC = () => {
   </a>
 
   <a
-          href="/prescriptionHistory"
+          href="/doctor/prescriptionHistory"
           className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
         >
           <Event className="text-2xl" />
@@ -147,7 +147,7 @@ const doctorNavbar: React.FC = () => {
 
       {/* Right Section: User Profile and Actions */}
       <div className="flex items-center space-x-4">
-         <a href="/Notificationdoctor" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
+         <a href="/doctor/Notificationdoctor" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
             <Notifications className="text-2xl" />
             {unreadCount > 0 && (
               <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
@@ -158,7 +158,7 @@ const doctorNavbar: React.FC = () => {
         
 
         {user ? (
-  <a href={'/doctorProfile'}
+  <a href={'/doctor/doctorProfile'}
     className="hidden md:flex items-center space-x-3 cursor-pointer"
   >
     <Image
@@ -185,7 +185,7 @@ const doctorNavbar: React.FC = () => {
           </a>
         ) : (
           <a
-            href="/doctorLogin"
+            href="/doctor/doctorLogin"
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
           >
             <AccountCircle className="text-lg" />

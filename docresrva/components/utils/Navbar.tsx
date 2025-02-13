@@ -80,7 +80,7 @@ const Navbar: React.FC = () => {
     try {
         await axiosInstance.post(`${process.env.NEXT_PUBLIC_USER_BACKEND_URL}/logout`,{},{withCredentials:true});
         localStorage.removeItem('user'); 
-        window.location.href = '/login'; 
+        window.location.href = '/user/login'; 
     } catch (error) {
         console.error('Logout failed:', error);
     }
@@ -107,27 +107,27 @@ const Navbar: React.FC = () => {
 
       {/* Center Section: Navigation Icons */}
       <div className="hidden md:flex items-center space-x-8 text-gray-600">
-        <a href="/userHome" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
+        <a href="/user/userHome" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <Home className="text-2xl" />
           <span className="font-medium">Home</span>
         </a>
 
-        <a href={`/message/?userId=${user?.userId}`} className="relative flex items-center space-x-2">
+        <a href={`/user/message/?userId=${user?.userId}`} className="relative flex items-center space-x-2">
           <Mail className="text-2xl" />
           
           <span  className="font-medium">Messages</span>
         </a>
 
-        <a href="/appointmentPageuser" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
+        <a href="/user/appointmentPageuser" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <Event className="text-2xl" />
           <span className="font-medium">Appointments</span>
         </a>
-        <a href="/alldoctors" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
+        <a href="/user/alldoctors" className="flex items-center space-x-2 hover:text-teal-700 transition duration-200">
           <LocalHospital className="text-2xl" />
           <span className="font-medium">All Doctors</span>
         </a>
           <a
-            href="/userWallet" // Replace with your actual wallet page route
+            href="/user/userWallet" // Replace with your actual wallet page route
             className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
           >
             <AccountBalanceWallet className="text-2xl" />
@@ -138,7 +138,7 @@ const Navbar: React.FC = () => {
       {/* Right Section: Notifications, User Profile, and Logout */}
       <div className="flex items-center space-x-4">
         
-      <a href="/Notification" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
+      <a href="/user/Notification" className="relative text-gray-600 hover:text-teal-700 transition duration-200">
     <Notifications className="text-2xl" />
     {unreadCount > 0 && (
       <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
@@ -148,7 +148,7 @@ const Navbar: React.FC = () => {
   </a>
 
         {user ? (
-          <a href={'/userProfile'} className="hidden md:flex items-center space-x-3 cursor-pointer">
+          <a href={'/user/userProfile'} className="hidden md:flex items-center space-x-3 cursor-pointer">
             <Image
               src={Img2}
               alt="User Profile Picture"
@@ -173,7 +173,7 @@ const Navbar: React.FC = () => {
           </a>
         ) : (
           <a
-            href="/login"
+            href="/user/login"
             className="flex items-center space-x-2 text-gray-600 hover:text-teal-700 transition duration-200"
           >
             <ExitToApp className="text-lg" />

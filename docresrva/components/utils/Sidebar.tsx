@@ -13,12 +13,12 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { label: "Dashboard", icon: <FaHome />, href: "/dashboard" },
-  { label: "Appointments", icon: <FaCalendarAlt />, href: "/appointmetManagement" },
-  { label: "Doctors", icon: <FaUserMd />, href: "/doctors" },
-  { label: "VerifiedDoctors", icon: <FaUserMd />, href: "/verifiedDoctors" },
-  { label: "Patients", icon: <FaUsers />, href: "/patients" },
-  { label: "Reviews", icon: <FaCog />, href: "/reviews" },
+  { label: "Dashboard", icon: <FaHome />, href: "/admin/adminHome" },
+  { label: "Appointments", icon: <FaCalendarAlt />, href: "/admin/appointmetManagement" },
+  { label: "Doctors", icon: <FaUserMd />, href: "/admin/doctors" },
+  { label: "VerifiedDoctors", icon: <FaUserMd />, href: "/admin/verifiedDoctors" },
+  { label: "Patients", icon: <FaUsers />, href: "/admin/patients" },
+  { label: "Reviews", icon: <FaCog />, href: "/admin/reviews" },
 ];
 
 const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -27,7 +27,7 @@ const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
   try {
       await axiosInstance.post(`${process.env.NEXT_PUBLIC_ADMIN_BACKEND_URL}/logout`,{},{withCredentials:true});// Call backend logout route
       localStorage.removeItem('user'); // Clear user data from localStorage
-      window.location.href = '/adminLogin'; // Redirect after logout
+      window.location.href = '/admin/adminLogin'; // Redirect after logout
   } catch (error) {
       console.error('Logout failed:', error);
   }
