@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Img from '../../public/1600w--HXaczhPPfU.webp';
+import Img from '../../../public/1600w--HXaczhPPfU.webp';
 import { forgototpApi } from '@/Service/doctorApi/page';
 
 const OTPVerification = () => {

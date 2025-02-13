@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "@/components/utils/deleteCookie";
 import { useForm } from "react-hook-form";
-import Img from '../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
+import Img from '../../../public/flat-male-doctor-avatar-in-medical-face-protection-mask-and-stethoscope-healthcare-vector-illustration-people-cartoon-avatar-profile-character-icon-2FJR92X.jpg'
 import Image from "next/image";
 import Swal from "sweetalert2";
 import axiosInstance from "@/components/utils/axiosInstence";

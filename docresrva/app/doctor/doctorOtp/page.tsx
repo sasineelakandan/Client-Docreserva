@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, ChangeEvent, Suspense } from 'react';
-import Img from '../../public/1600w--HXaczhPPfU.webp';
+import Img from '../../../public/1600w--HXaczhPPfU.webp';
 import Image from 'next/image';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
