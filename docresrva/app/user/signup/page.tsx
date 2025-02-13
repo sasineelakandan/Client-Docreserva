@@ -60,7 +60,7 @@ function SignUp() {
         const userId = response.data._id;
         setLoading(false);
         setTimeout(() => {
-          router.replace(`/userOtp?id=${userId}`);
+          router.replace(`/user/userOtp?id=${userId}`);
         }, 2000);
       }
     } catch (error) {
