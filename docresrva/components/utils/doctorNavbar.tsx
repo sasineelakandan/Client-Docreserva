@@ -129,7 +129,7 @@ const doctorNavbar: React.FC = () => {
           <span className="font-medium">Appointments</span>
         </a>
         <a
-    href="/wallet" // Replace with your actual wallet page route
+    href="/doctor/wallet" // Replace with your actual wallet page route
     className="flex items-center space-x-2 hover:text-teal-700 transition duration-200"
   >
     <AccountBalanceWallet className="text-2xl" />
