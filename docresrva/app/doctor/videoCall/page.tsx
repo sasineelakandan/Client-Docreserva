@@ -46,7 +46,7 @@ const RoomPageContent = () => {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined") {
-      const generatedLink = `${window.location.origin}/userVideocall?id=${roomId}`;
+      const generatedLink = `${window.location.origin}/user/userVideocall?id=${roomId}`;
       setShareLink(generatedLink);
     }
   }, [roomId]);
