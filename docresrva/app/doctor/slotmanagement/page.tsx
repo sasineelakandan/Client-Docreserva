@@ -90,7 +90,8 @@ console.log(slotInfo)
       const response = await updateslotApi(slotData)
   
       if (response.data) {
-        toast.success('Slots created successfully!');
+        Swal.fire("Blocked!", "The slot has been blocked.", "success");
+        
         handleCloseModal2();
       }
     } catch (error: any) {
@@ -475,7 +476,6 @@ console.log(slotInfo)
   </div>
 )}
 
-      <ToastContainer />
     </div>
   );
 };

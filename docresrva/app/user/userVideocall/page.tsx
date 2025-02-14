@@ -42,7 +42,7 @@ const RoomComponent = () => {
     // Access localStorage safely
     if (typeof window !== "undefined") {
       
-      const generatedLink = `${window.location.origin}/userVideocall?roomId=${roomId}`;
+      const generatedLink = `${window.location.origin}/user/userVideocall?roomId=${roomId}`;
       setShareLink(generatedLink);
     }
   }, [roomId]);
