@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import axiosInstance from "@/components/utils/axiosInstence";
 import { blockslotApi, updateslotApi } from "@/Service/doctorApi/page";
+import {ToastContainer } from "react-toastify";
 
 const Page = () => {
   const [isClient, setIsClient] = useState(false); // Track if it's client-side
@@ -93,18 +94,7 @@ console.log(slotInfo)
         handleCloseModal2();
       }
     } catch (error: any) {
-      Swal.fire({
-        title: 'Slot Already Created',
-        text: 'A slot is already created. If you want to modify it, please go to Slot Management.',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Ok',
-        cancelButtonText: 'Cancel',
-        customClass: {
-          confirmButton: 'bg-blue-500 text-white px-4 py-2 rounded-md',
-          cancelButton: 'bg-gray-300 text-black px-4 py-2 rounded-md',
-        },
-      });
+      console.log(error)
     }
   };
   
@@ -147,7 +137,9 @@ console.log(slotInfo)
       if (result.isConfirmed) {
         const response = await blockslotApi({slotId})
 
-        // Update the state to reflect the blocked slot
+        if(response.data){
+          toast.success('block slot successfully!')
+        }
         setAvailableSlots((prevSlots) => {
           const updatedSlots = { ...prevSlots };
 
@@ -160,8 +152,9 @@ console.log(slotInfo)
 
           return updatedSlots;
         });
-         window.location.reload()
+         
         Swal.fire("Blocked!", "The slot has been blocked.", "success");
+        window.location.reload()
       }
     } catch (err: any) {
       console.error("Error blocking slot:", err.response?.data || err.message);
@@ -482,6 +475,7 @@ console.log(slotInfo)
   </div>
 )}
 
+      <ToastContainer />
     </div>
   );
 };
