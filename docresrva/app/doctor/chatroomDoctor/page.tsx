@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { FaPaperPlane, FaUserCircle, FaVideo } from 'react-icons/fa';
 import axiosInstance from '@/components/utils/axiosInstence';
+import Navbar from '@/components/utils/doctorNavbar';
 
 interface Message {
     sender: string;
@@ -181,6 +182,8 @@ const DoctorChatRoom = () => {
     const isOnline = Object.keys(onlineUsers).includes(selectedUserProfile?.patient?._id);
 
     return (
+        <>
+        <Navbar/>
         <div className="flex h-screen bg-gray-50 font-sans">
             {/* Sidebar */}
             <div className="w-1/4 bg-white shadow-lg p-6 overflow-y-auto">
@@ -326,6 +329,7 @@ const DoctorChatRoom = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 

@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { FaPaperPlane, FaVideo, FaUserCircle } from 'react-icons/fa';
 import axiosInstance from '@/components/utils/axiosInstence';
+import Navbar from '@/components/utils/Navbar';
 
 let socket: ReturnType<typeof io>;
 
@@ -179,8 +180,10 @@ const ChatRoom = () => {
     };
 
     return (
+        <>
+        <Navbar/>
         <div className="flex h-screen bg-gray-50 font-sans">
-            {/* Sidebar */}
+            
             <div className="w-1/4 bg-white shadow-lg p-6 overflow-y-auto">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Chats</h2>
                 {loadingUsers ? (
@@ -320,6 +323,7 @@ const ChatRoom = () => {
                 )}
             </div>
         </div>
+        </>
     );
 };
 
