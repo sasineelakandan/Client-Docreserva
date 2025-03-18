@@ -262,12 +262,7 @@ const DoctorChatRoom = () => {
                             <p className="text-sm text-gray-500">{isOnline ? 'Online' : 'Offline'}</p>
                         </div>
                         <div className="ml-auto">
-                            <a href={`/doctor/videoCall?id=${activeUser}`}>
-                                <button className="flex items-center gap-2 p-3 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition-all duration-200">
-                                    <FaVideo className="w-5 h-5" />
-                                    Video Call
-                                </button>
-                            </a>
+                            
                         </div>
                     </div>
                 )}
