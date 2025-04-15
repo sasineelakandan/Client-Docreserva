@@ -6,7 +6,7 @@ import { log } from "console";
 
 const ADMIN_ROUTES = new Set(["/admin/adminHome", "/admin/patients","/admin/doctors","/admin/verifiedDoctors",'/admin/appointmetManagement','/admin/reviews']);
 const DOCTOR_ROUTES = new Set(["/doctor/doctorHome", "/doctor/doctorProfile",'/doctor/appointmentPage','/doctor/chatroomDoctor','/doctor/wallet','/doctor/slotmanagement','/doctor/videoCall','/doctor/Notificationdoctor','/doctor/prescription','/doctor/prescriptionHistory']);
-const USER_ROUTES = new Set([ '/user/userHome',"/user/userProfile","/user/alldoctors","/user/doctorDetails",'/user/patientDetails','/user/confirmBooking','/user/appointmentPageuser','/user/message','/user/Notification','/user/userWallet','/user/userVideocall']);
+const USER_ROUTES = new Set([ '/user/userHome',"/user/userProfile","/user/alldoctors","/user/doctorDetails",'/user/patientDetails','/user/confirmBooking','/user/appointmentPageuser','/user/message','/user/Notification','/user/userWallet','/user/userVideocall','/user/paymentSuccessPage','/user/paymentFailurePage']);
 const PUBLIC_ROUTES = new Set([
   "/user/login", 
   "/user/signup", 
@@ -19,8 +19,6 @@ const PUBLIC_ROUTES = new Set([
   '/doctor/forgotOtp',
   '/map',
   
-  '/user/paymentSuccessPage',
-  '/user/paymentFailurePage'
 ]);
 const UNPROTECTED_ROUTES = new Set(["/_next/", "/favicon.ico", "/api/"]);
 
