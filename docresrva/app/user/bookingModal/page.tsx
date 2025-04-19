@@ -122,6 +122,19 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
     return false; // Past date
   };
 
+  const formatSlotTime = (dateString:any, timeString:any) => {
+    const [hours, minutes] = timeString.split(':');
+    const dateObj = new Date(dateString);
+    dateObj.setHours(parseInt(hours), parseInt(minutes), 0);
+  
+    return dateObj.toLocaleTimeString('en-IN', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata',
+    });
+  };
+
   return (
     isModalOpen && (
       <div
@@ -169,7 +182,7 @@ const AppointmentBooking: React.FC<any> = ({ doctorId, isModalOpen, setIsModalOp
           onClick={() => !slot.isBooked && handleBooking(slot)}
           disabled={slot.isBooked || loading}
         >
-          {slot.day} - {slot.slot}
+          {slot.day} - {formatSlotTime(slot.date, slot.slot)} IST
         </button>
       )
     ))}
